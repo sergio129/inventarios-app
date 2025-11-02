@@ -94,12 +94,32 @@ const ProductSchema: Schema = new Schema({
   codigo: {
     type: String,
     trim: true,
-    index: { unique: true, sparse: true }
+    index: { 
+      unique: true, 
+      sparse: true,
+      partialFilterExpression: { 
+        $and: [
+          { codigo: { $exists: true } },
+          { codigo: { $ne: null } },
+          { codigo: { $ne: '' } }
+        ]
+      }
+    }
   },
   codigoBarras: {
     type: String,
     trim: true,
-    index: { unique: true, sparse: true }
+    index: { 
+      unique: true, 
+      sparse: true,
+      partialFilterExpression: { 
+        $and: [
+          { codigoBarras: { $exists: true } },
+          { codigoBarras: { $ne: null } },
+          { codigoBarras: { $ne: '' } }
+        ]
+      }
+    }
   },
   fechaVencimiento: {
     type: Date
