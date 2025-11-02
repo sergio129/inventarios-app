@@ -85,7 +85,7 @@ export default function InventoryPage() {
 
     fetchProducts();
     fetchCategories();
-  }, [session, status, router]);
+  }, [session, status]);
 
   // Cerrar combobox de categoría al hacer clic fuera o presionar Escape
   useEffect(() => {
@@ -157,7 +157,7 @@ export default function InventoryPage() {
     }
   };
 
-  const normalizeText = (text: string): string => {
+  const normalizeText = useCallback((text: string): string => {
     if (!text) return '';
     return text
       .trim()
@@ -166,7 +166,7 @@ export default function InventoryPage() {
       .replace(/[\u0300-\u036f]/g, '') // Remove accents
       .replace(/[^a-z0-9\s]/g, '') // Remove special characters
       .replace(/\s+/g, ' '); // Normalize spaces
-  };
+  }, []);
 
   const categoryOptions = useMemo(() => availableCategories.map(cat => cat.nombre), [availableCategories]);
 
