@@ -93,33 +93,11 @@ const ProductSchema: Schema = new Schema({
   },
   codigo: {
     type: String,
-    trim: true,
-    index: { 
-      unique: true, 
-      sparse: true,
-      partialFilterExpression: { 
-        $and: [
-          { codigo: { $exists: true } },
-          { codigo: { $ne: null } },
-          { codigo: { $ne: '' } }
-        ]
-      }
-    }
+    trim: true
   },
   codigoBarras: {
     type: String,
-    trim: true,
-    index: { 
-      unique: true, 
-      sparse: true,
-      partialFilterExpression: { 
-        $and: [
-          { codigoBarras: { $exists: true } },
-          { codigoBarras: { $ne: null } },
-          { codigoBarras: { $ne: '' } }
-        ]
-      }
-    }
+    trim: true
   },
   fechaVencimiento: {
     type: Date
@@ -174,6 +152,37 @@ ProductSchema.index({ categoria: 1 });
 ProductSchema.index({ marca: 1 });
 ProductSchema.index({ activo: 1 });
 ProductSchema.index({ stock: 1 });
+
+// Índices únicos con partial filter para permitir múltiples null
+ProductSchema.index(
+  { codigo: 1 },
+  { 
+    unique: true, 
+    sparse: true,
+    partialFilterExpression: { 
+      codigo: { $exists: true },
+      $nor: [
+        { codigo: null },
+        { codigo: '' }
+      ]
+    }
+  }
+);
+
+ProductSchema.index(
+  { codigoBarras: 1 },
+  { 
+    unique: true, 
+    sparse: true,
+    partialFilterExpression: { 
+      codigoBarras: { $exists: true },
+      $nor: [
+        { codigoBarras: null },
+        { codigoBarras: '' }
+      ]
+    }
+  }
+);
 
 // Método para verificar si necesita reabastecimiento
 ProductSchema.methods.necesitaReabastecimiento = function() {
