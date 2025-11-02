@@ -399,7 +399,7 @@ export default function ReportsPage() {
             <CardContent>
               <Button
                 className="w-full bg-green-600 hover:bg-green-700"
-                onClick={() => router.push('/inventory/products')}
+                onClick={() => router.push('/inventory')}
               >
                 Ver Inventario
               </Button>
@@ -416,7 +416,7 @@ export default function ReportsPage() {
             <CardContent>
               <Button
                 className="w-full bg-purple-600 hover:bg-purple-700"
-                onClick={() => router.push('/users')}
+                onClick={() => router.push('/admin/users')}
               >
                 Ver Usuarios
               </Button>
