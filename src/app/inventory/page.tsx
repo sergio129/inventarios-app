@@ -225,7 +225,7 @@ export default function InventoryPage() {
       filtered = filtered.filter(product =>
         product.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.laboratorio.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (product.marca && product.marca.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (product.codigo && product.codigo.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (product.codigoBarras && product.codigoBarras.toLowerCase().includes(searchTerm.toLowerCase()))
       );
@@ -381,7 +381,7 @@ export default function InventoryPage() {
       stockUnidadesSueltas: '',
       stockMinimo: '',
       categoria: '',
-      laboratorio: '',
+      marca: '',
       codigo: '',
       codigoBarras: ''
     });
@@ -1102,7 +1102,7 @@ export default function InventoryPage() {
                           </Badge>
                         </TableCell>
                         <TableCell className="py-4 px-6">
-                          <span className="text-gray-700 font-medium">{product.laboratorio}</span>
+                          <span className="text-gray-700 font-medium">{product.marca || '-'}</span>
                         </TableCell>
                         <TableCell className="py-4 px-6">
                           <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded-md text-gray-700">
