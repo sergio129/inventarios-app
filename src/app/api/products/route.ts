@@ -98,7 +98,8 @@ export async function POST(request: NextRequest) {
 
     await dbConnect();
 
-    const product = new Product({
+    // Construir objeto del producto dinámicamente para no incluir campos vacíos/null
+    const productData: any = {
       nombre,
       descripcion: descripcion || '',
       precio,
@@ -111,14 +112,28 @@ export async function POST(request: NextRequest) {
       stock: stockTotal,
       stockMinimo,
       categoria,
-      marca: marca ? (marca.trim() === '' ? null : marca) : null,
-      codigo: codigo ? (codigo.trim() === '' ? null : codigo) : null,
-      codigoBarras: codigoBarras ? (codigoBarras.trim() === '' ? null : codigoBarras) : null,
-      margenGananciaUnidad: margenGananciaUnidad || null,
-      margenGananciaCaja: margenGananciaCaja || null,
       activo: true,
       tipoVenta: 'ambos' // Por defecto permite venta por unidad y caja
-    });
+    };
+
+    // Solo agregar campos opcionales si tienen valor
+    if (marca && marca.trim() !== '') {
+      productData.marca = marca.trim();
+    }
+    if (codigo && codigo.trim() !== '') {
+      productData.codigo = codigo.trim();
+    }
+    if (codigoBarras && codigoBarras.trim() !== '') {
+      productData.codigoBarras = codigoBarras.trim();
+    }
+    if (margenGananciaUnidad) {
+      productData.margenGananciaUnidad = margenGananciaUnidad;
+    }
+    if (margenGananciaCaja) {
+      productData.margenGananciaCaja = margenGananciaCaja;
+    }
+
+    const product = new Product(productData);
 
     await product.save();
 

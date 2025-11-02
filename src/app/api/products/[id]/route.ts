@@ -49,16 +49,33 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
-    // Normalizar campos opcionales: strings vacíos -> null para respetar índices sparse
-    if (updateData.codigo === '') updateData.codigo = null;
-    if (updateData.codigoBarras === '') updateData.codigoBarras = null;
+    // Normalizar campos opcionales: strings vacíos -> remover del documento
+    const updateObj: any = { ...updateData, fechaActualizacion: new Date() };
+    const unsetObj: any = {};
+
+    // Si el campo viene vacío, marcarlo para remover del documento
+    if (updateData.codigo === '') {
+      unsetObj.codigo = '';
+      delete updateObj.codigo;
+    }
+    if (updateData.codigoBarras === '') {
+      unsetObj.codigoBarras = '';
+      delete updateObj.codigoBarras;
+    }
+    if (updateData.marca === '') {
+      unsetObj.marca = '';
+      delete updateObj.marca;
+    }
+
+    // Construir update con $set y $unset si es necesario
+    const update: any = { $set: updateObj };
+    if (Object.keys(unsetObj).length > 0) {
+      update.$unset = unsetObj;
+    }
 
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
-      {
-        ...updateData,
-        fechaActualizacion: new Date()
-      },
+      update,
       { new: true, runValidators: true }
     );
 
