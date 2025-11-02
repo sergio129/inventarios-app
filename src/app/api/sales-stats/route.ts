@@ -3,6 +3,13 @@ import { getServerSession } from 'next-auth/next';
 import dbConnect from '@/lib/mongodb';
 import Sale from '@/lib/models/Sale';
 import { authOptions } from '@/lib/auth';
+import { 
+  getNowLocal, 
+  getStartOfDay, 
+  getStartOfWeek, 
+  getStartOfMonth, 
+  getStartOfYear 
+} from '@/lib/date-utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,76 +20,91 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const period = searchParams.get('period') || 'day'; // day, week, month, year
+    const period = searchParams.get('period') || 'day';
 
     await dbConnect();
 
-    const now = new Date();
-    let startDate = new Date();
-    let groupFields: any;
+    console.log('📊 Sales Stats - Period:', period);
 
-    // Determinar rango de fechas según período
+    // Obtener dates de inicio y fin según período
+    const now = new Date();
+    let startDate: Date;
+    let endDate: Date;
+
     switch (period) {
       case 'day':
-        startDate.setHours(0, 0, 0, 0);
-        groupFields = {
-          year: { $year: '$fechaVenta' },
-          month: { $month: '$fechaVenta' },
-          day: { $dayOfMonth: '$fechaVenta' },
-          hour: { $hour: '$fechaVenta' }
-        };
+        startDate = getStartOfDay(now);
+        endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000 - 1);
         break;
       case 'week':
-        startDate.setDate(now.getDate() - now.getDay());
-        startDate.setHours(0, 0, 0, 0);
-        groupFields = {
-          year: { $year: '$fechaVenta' },
-          month: { $month: '$fechaVenta' },
-          day: { $dayOfMonth: '$fechaVenta' }
-        };
+        startDate = getStartOfWeek(now);
+        endDate = new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000 - 1);
         break;
       case 'month':
-        startDate.setDate(1);
-        startDate.setHours(0, 0, 0, 0);
-        groupFields = {
-          year: { $year: '$fechaVenta' },
-          month: { $month: '$fechaVenta' },
-          day: { $dayOfMonth: '$fechaVenta' }
-        };
+        startDate = getStartOfMonth(now);
+        endDate = new Date(startDate.getTime() + 31 * 24 * 60 * 60 * 1000 - 1); // Aproximado
         break;
       case 'year':
-        startDate.setMonth(0);
-        startDate.setDate(1);
-        startDate.setHours(0, 0, 0, 0);
-        groupFields = {
-          year: { $year: '$fechaVenta' },
-          month: { $month: '$fechaVenta' }
-        };
+        startDate = getStartOfYear(now);
+        endDate = new Date(startDate.getTime() + 365 * 24 * 60 * 60 * 1000 - 1); // Aproximado
         break;
       default:
         return NextResponse.json({ error: 'Período inválido' }, { status: 400 });
     }
 
-    console.log('📊 Sales Stats - Period:', period);
     console.log('📅 Start Date:', startDate);
-    console.log('📅 End Date:', now);
+    console.log('📅 End Date:', endDate);
 
-    // Obtener total de ventas en el rango
-    const totalCount = await Sale.countDocuments({
-      fechaVenta: { $gte: startDate, $lte: now }
-    });
-    console.log('📈 Total sales in range:', totalCount);
+    // Obtener todas las ventas en el rango de fechas usando fechaCreacion
+    const salesInRange = await Sale.find({
+      fechaCreacion: { $gte: startDate, $lte: endDate }
+    }).lean();
+    
+    console.log('📈 Total sales in range:', salesInRange.length);
 
-    // Obtener ventas agrupadas
+    let groupByFormat: string;
+    let groupByFields: any;
+
+    // Definir formato de agrupación según período
+    if (period === 'day') {
+      // Agrupar por hora
+      groupByFormat = '%Y-%m-%d %H:00';
+      groupByFields = {
+        $dateToString: {
+          format: '%Y-%m-%d %H:00',
+          date: '$fechaCreacion'
+        }
+      };
+    } else if (period === 'week' || period === 'month') {
+      // Agrupar por día
+      groupByFormat = '%Y-%m-%d';
+      groupByFields = {
+        $dateToString: {
+          format: '%Y-%m-%d',
+          date: '$fechaCreacion'
+        }
+      };
+    } else if (period === 'year') {
+      // Agrupar por mes
+      groupByFormat = '%Y-%m';
+      groupByFields = {
+        $dateToString: {
+          format: '%Y-%m',
+          date: '$fechaCreacion'
+        }
+      };
+    }
+
+    // Obtener ventas agrupadas - CON FILTRO DE FECHA LOCAL
     const salesStats = await Sale.aggregate([
       {
         $match: {
-          fechaVenta: { $gte: startDate, $lte: now }
+          fechaCreacion: { $gte: startDate, $lte: endDate }
         }
       },
       {
         $group: {
-          _id: groupFields,
+          _id: groupByFields,
           count: { $sum: 1 },
           totalIngresos: { $sum: { $toDouble: '$total' } },
           totalDescuentos: { $sum: { $toDouble: '$descuento' } },
@@ -96,29 +118,20 @@ export async function GET(request: NextRequest) {
         }
       },
       {
-        $sort: { '_id.year': 1, '_id.month': 1, '_id.day': 1, '_id.hour': 1 }
-      },
-      {
-        $addFields: {
-          '_id': {
-            $dateFromParts: {
-              year: '$_id.year',
-              month: '$_id.month',
-              day: '$_id.day',
-              hour: { $ifNull: ['$_id.hour', 0] }
-            }
-          }
-        }
+        $sort: { '_id': 1 }
       }
     ]);
 
-    console.log('📊 Sales Stats aggregated:', salesStats);
+    console.log('📊 Grouped sales count:', salesStats.length);
+    if (salesStats.length > 0) {
+      console.log('🔍 First group sample:', salesStats[0]);
+    }
 
-    // Calcular totales generales
+    // Calcular totales generales - CON FILTRO DE FECHA LOCAL
     const totalsAgg = await Sale.aggregate([
       {
         $match: {
-          fechaVenta: { $gte: startDate, $lte: now }
+          fechaCreacion: { $gte: startDate, $lte: endDate }
         }
       },
       {
@@ -152,9 +165,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       period,
       startDate,
-      endDate: now,
+      endDate,
       data: salesStats,
-      totals
+      totals,
+      debug: {
+        totalSalesInRange: salesInRange.length,
+        groupedCount: salesStats.length
+      }
     });
 
   } catch (error) {

@@ -4,6 +4,7 @@ import dbConnect from '@/lib/mongodb';
 import Sale from '@/lib/models/Sale';
 import Product from '@/lib/models/Product';
 import { authOptions } from '@/lib/auth';
+import { getNowLocal } from '@/lib/date-utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest) {
       estado: 'completada', // Cambiar a completada ya que se procesa inmediatamente
       vendedor: session.user.id,
       notas,
-      fechaVenta: new Date()
+      fechaVenta: getNowLocal()
     });
 
     // Actualizar stock de productos

@@ -331,23 +331,30 @@ export default function ReportsPage() {
                     </TableHeader>
                     <TableBody>
                       {salesStats.data && salesStats.data.length > 0 ? (
-                        salesStats.data.map((row: any, idx: number) => (
-                          <TableRow key={idx} className="hover:bg-gray-50">
-                            <TableCell className="font-medium">
-                              {new Date(row._id).toLocaleDateString('es-ES', {
-                                year: 'numeric',
-                                month: '2-digit',
-                                day: '2-digit',
-                                ...(period === 'day' && { hour: '2-digit', minute: '2-digit' })
-                              })}
-                            </TableCell>
-                            <TableCell className="text-right">{row.count}</TableCell>
-                            <TableCell className="text-right text-green-600 font-semibold">${row.totalIngresos.toFixed(2)}</TableCell>
-                            <TableCell className="text-right text-orange-600">${row.totalDescuentos.toFixed(2)}</TableCell>
-                            <TableCell className="text-right text-purple-600">${row.totalImpuestos.toFixed(2)}</TableCell>
-                            <TableCell className="text-right text-blue-600 font-semibold">{row.completadas}</TableCell>
-                          </TableRow>
-                        ))
+                        salesStats.data.map((row: any, idx: number) => {
+                          let dateStr = '';
+                          if (typeof row._id === 'string') {
+                            dateStr = row._id;
+                          } else {
+                            dateStr = new Date(row._id).toLocaleDateString('es-ES', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            });
+                          }
+                          return (
+                            <TableRow key={idx} className="hover:bg-gray-50">
+                              <TableCell className="font-medium">{dateStr}</TableCell>
+                              <TableCell className="text-right">{row.count}</TableCell>
+                              <TableCell className="text-right text-green-600 font-semibold">${row.totalIngresos.toFixed(2)}</TableCell>
+                              <TableCell className="text-right text-orange-600">${row.totalDescuentos.toFixed(2)}</TableCell>
+                              <TableCell className="text-right text-purple-600">${row.totalImpuestos.toFixed(2)}</TableCell>
+                              <TableCell className="text-right text-blue-600 font-semibold">{row.completadas}</TableCell>
+                            </TableRow>
+                          );
+                        })
                       ) : (
                         <TableRow>
                           <TableCell colSpan={6} className="text-center text-gray-500 py-8">

@@ -123,6 +123,10 @@ const SaleSchema: Schema = new Schema({
   notas: {
     type: String,
     trim: true
+  },
+  fechaVenta: {
+    type: Date,
+    default: Date.now
   }
 }, {
   timestamps: {

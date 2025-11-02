@@ -34,16 +34,25 @@ export const formatSalesForExport = (salesStats: any[]) => {
   }
 
   return salesStats.map((stat, idx) => {
-    const dateObj = new Date(stat._id);
+    let dateStr = '';
     
-    return {
-      'Fecha': dateObj.toLocaleDateString('es-ES', {
+    // Handle both string and Date formats
+    if (typeof stat._id === 'string') {
+      dateStr = stat._id;
+    } else if (stat._id instanceof Date) {
+      dateStr = stat._id.toLocaleDateString('es-ES', {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
         hour: '2-digit',
         minute: '2-digit'
-      }),
+      });
+    } else {
+      dateStr = String(stat._id);
+    }
+    
+    return {
+      'Fecha': dateStr,
       'Total Ventas': stat.count || 0,
       'Ingresos Totales': stat.totalIngresos?.toFixed(2) || '0.00',
       'Total Descuentos': stat.totalDescuentos?.toFixed(2) || '0.00',
