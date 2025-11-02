@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -71,7 +71,7 @@ export default function CategoriesPage() {
     }
   };
 
-  const filterCategories = () => {
+  const filterCategories = useCallback(() => {
     let filtered = categories;
 
     if (searchTerm) {
@@ -88,7 +88,7 @@ export default function CategoriesPage() {
     }
 
     setFilteredCategories(filtered);
-  };
+  }, [categories, searchTerm, statusFilter]);
 
   useEffect(() => {
     filterCategories();
