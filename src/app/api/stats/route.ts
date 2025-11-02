@@ -4,29 +4,7 @@ import dbConnect from '@/lib/mongodb';
 import Product from '@/lib/models/Product';
 import Sale from '@/lib/models/Sale';
 import User from '@/lib/models/User';
-
-// Configuración básica de auth para verificar sesión
-const authOptions = {
-  providers: [],
-  pages: {
-    signIn: '/login',
-  },
-  callbacks: {
-    async jwt({ token, user }: any) {
-      if (user) {
-        token.role = user.role;
-      }
-      return token;
-    },
-    async session({ session, token }: any) {
-      if (token) {
-        session.user.id = token.sub;
-        session.user.role = token.role;
-      }
-      return session;
-    },
-  },
-};
+import { authOptions } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {

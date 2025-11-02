@@ -2,28 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import dbConnect from '@/lib/mongodb';
 import Category from '@/lib/models/Category';
-
-const authOptions = {
-  providers: [],
-  pages: {
-    signIn: '/login',
-  },
-  callbacks: {
-    async jwt({ token, user }: any) {
-      if (user) {
-        token.role = user.role;
-      }
-      return token;
-    },
-    async session({ session, token }: any) {
-      if (token) {
-        session.user.id = token.sub;
-        session.user.role = token.role;
-      }
-      return session;
-    },
-  },
-};
+import { authOptions } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
