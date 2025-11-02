@@ -75,6 +75,7 @@ export default function SalesPage() {
   const [products, setProducts] = useState<IProduct[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<IProduct[]>([]);
   const [productSearchTerm, setProductSearchTerm] = useState('');
+  const [barcodeInput, setBarcodeInput] = useState('');
 
   // Estado para el modal de factura
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
@@ -167,6 +168,61 @@ export default function SalesPage() {
     filterProducts();
   }, [products, productSearchTerm, filterProducts]);
 
+  // Manejo de escaneo de código de barras
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Si el usuario está escribiendo en un input, no procesar
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' && target.id !== 'barcode-reader') {
+        return;
+      }
+
+      // Enter: procesar el código escanedo
+      if (e.key === 'Enter' && barcodeInput) {
+        e.preventDefault();
+        processBarcodeScanned(barcodeInput);
+        setBarcodeInput('');
+        return;
+      }
+
+      // Acumular caracteres para el código de barras
+      if (barcodeInput || (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey)) {
+        setBarcodeInput((prev) => prev + e.key);
+
+        // Limpiar timeout anterior
+        clearTimeout(timeoutId);
+
+        // Si no se presiona Enter en 100ms, limpiar (no es un escaneo)
+        timeoutId = setTimeout(() => {
+          setBarcodeInput('');
+        }, 100);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      clearTimeout(timeoutId);
+    };
+  }, [barcodeInput, products]);
+
+  const processBarcodeScanned = (barcode: string) => {
+    // Buscar el producto por código de barras
+    const product = products.find(
+      (p) => p.codigoBarras && p.codigoBarras.includes(barcode.trim())
+    );
+
+    if (product) {
+      // Agregar al carrito por unidad automáticamente
+      addToCart(product, 'unidad');
+      toast.success(`${product.nombre} agregado al carrito`);
+    } else {
+      toast.error(`Producto con código ${barcode} no encontrado`);
+    }
+  };
+
   const createSale = async () => {
     await processSale();
     fetchSales();
@@ -249,6 +305,18 @@ export default function SalesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
+      {/* Input invisible para lector de código de barras */}
+      <input
+        id="barcode-reader"
+        type="text"
+        value={barcodeInput}
+        onChange={(e) => setBarcodeInput(e.target.value)}
+        className="fixed -top-96 -left-96 opacity-0 pointer-events-none"
+        autoComplete="off"
+        spellCheck="false"
+        aria-hidden="true"
+      />
+
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] -z-10" />
       <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 -z-10" />
