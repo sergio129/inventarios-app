@@ -35,11 +35,11 @@ export default function LoginPage() {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 bg-blue-600 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-xl">SD</span>
+          <div className="mx-auto mb-4 h-12 w-12 bg-orange-600 rounded-full flex items-center justify-center">
+            <span className="text-white font-bold text-xl">IA</span>
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">Iniciar Sesión</CardTitle>
-          <CardDescription className="text-gray-600">Ingresa tus credenciales para acceder al sistema de SaludDirecta</CardDescription>
+          <CardDescription className="text-gray-600">Ingresa tus credenciales para acceder a inventarios-app</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

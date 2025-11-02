@@ -44,11 +44,11 @@ export default function RegisterPage() {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 bg-green-600 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-xl">SD</span>
+          <div className="mx-auto mb-4 h-12 w-12 bg-orange-600 rounded-full flex items-center justify-center">
+            <span className="text-white font-bold text-xl">IA</span>
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">Registro de Usuario</CardTitle>
-          <CardDescription className="text-gray-600">Crea una nueva cuenta para acceder al sistema de SaludDirecta</CardDescription>
+          <CardDescription className="text-gray-600">Crea una nueva cuenta para acceder a inventarios-app</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

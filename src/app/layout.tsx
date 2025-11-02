@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SaludDirecta - Gestión de Farmacia",
-  description: "Aplicación web para la gestión de inventario y ventas en farmacia",
+  title: "inventarios-app - Gestión de Inventario",
+  description: "Aplicación web para la gestión de inventario y ventas de comidas rápidas y productos",
 };
 
 export default function RootLayout({

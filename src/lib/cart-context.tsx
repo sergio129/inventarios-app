@@ -95,12 +95,12 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     try {
       console.log('Loading cart from localStorage...');
-      const savedCart = localStorage.getItem('saludDirecta_cart')
-      const savedCliente = localStorage.getItem('saludDirecta_cliente')
-      const savedDescuento = localStorage.getItem('saludDirecta_descuento')
-      const savedMetodoPago = localStorage.getItem('saludDirecta_metodoPago')
-      const savedNotas = localStorage.getItem('saludDirecta_notas')
-      const savedIsCartOpen = localStorage.getItem('saludDirecta_isCartOpen')
+      const savedCart = localStorage.getItem('inventariosApp_cart')
+      const savedCliente = localStorage.getItem('inventariosApp_cliente')
+      const savedDescuento = localStorage.getItem('inventariosApp_descuento')
+      const savedMetodoPago = localStorage.getItem('inventariosApp_metodoPago')
+      const savedNotas = localStorage.getItem('inventariosApp_notas')
+      const savedIsCartOpen = localStorage.getItem('inventariosApp_isCartOpen')
 
       if (savedCart) {
         const parsedCart = JSON.parse(savedCart)
@@ -138,38 +138,38 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } catch (error) {
       console.error('Error loading data from localStorage:', error)
       // Limpiar localStorage corrupto
-      localStorage.removeItem('saludDirecta_cart')
-      localStorage.removeItem('saludDirecta_cliente')
-      localStorage.removeItem('saludDirecta_descuento')
-      localStorage.removeItem('saludDirecta_metodoPago')
-      localStorage.removeItem('saludDirecta_notas')
-      localStorage.removeItem('saludDirecta_isCartOpen')
+      localStorage.removeItem('inventariosApp_cart')
+      localStorage.removeItem('inventariosApp_cliente')
+      localStorage.removeItem('inventariosApp_descuento')
+      localStorage.removeItem('inventariosApp_metodoPago')
+      localStorage.removeItem('inventariosApp_notas')
+      localStorage.removeItem('inventariosApp_isCartOpen')
     }
   }, [])
 
   // Guardar carrito en localStorage cuando cambie
   useEffect(() => {
-    localStorage.setItem('saludDirecta_cart', JSON.stringify(cart))
+    localStorage.setItem('inventariosApp_cart', JSON.stringify(cart))
   }, [cart])
 
   useEffect(() => {
-    localStorage.setItem('saludDirecta_cliente', JSON.stringify(cliente))
+    localStorage.setItem('inventariosApp_cliente', JSON.stringify(cliente))
   }, [cliente])
 
   useEffect(() => {
-    localStorage.setItem('saludDirecta_descuento', descuento.toString())
+    localStorage.setItem('inventariosApp_descuento', descuento.toString())
   }, [descuento])
 
   useEffect(() => {
-    localStorage.setItem('saludDirecta_metodoPago', metodoPago)
+    localStorage.setItem('inventariosApp_metodoPago', metodoPago)
   }, [metodoPago])
 
   useEffect(() => {
-    localStorage.setItem('saludDirecta_notas', notas)
+    localStorage.setItem('inventariosApp_notas', notas)
   }, [notas])
 
   useEffect(() => {
-    localStorage.setItem('saludDirecta_isCartOpen', isCartOpen.toString())
+    localStorage.setItem('inventariosApp_isCartOpen', isCartOpen.toString())
   }, [isCartOpen])
 
   const addToCart = (product: IProduct, tipoVenta: 'unidad' | 'empaque' = 'unidad', cantidad: number = 1) => {

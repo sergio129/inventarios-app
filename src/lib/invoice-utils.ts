@@ -61,8 +61,8 @@ export const generateInvoicePDF = async (sale: Sale): Promise<void> => {
     };
 
     // Header
-    yPosition = centerText('SaludDirecta', yPosition, 20, 'bold');
-    yPosition = centerText('Sistema de Gestión Farmacéutica', yPosition + 2, 12, 'normal');
+    yPosition = centerText('Inventarios-app', yPosition, 20, 'bold');
+    yPosition = centerText('Sistema de Gestión de Inventario', yPosition + 2, 12, 'normal');
     yPosition = centerText('Factura Electrónica', yPosition + 2, 10, 'normal');
 
     // Línea separadora
@@ -241,7 +241,7 @@ export const generateInvoicePDF = async (sale: Sale): Promise<void> => {
 
     pdf.setFont('helvetica', 'italic');
     pdf.setFontSize(8);
-    const footerText = 'Gracias por su compra en SaludDirecta - Factura generada automáticamente';
+    const footerText = 'Gracias por su compra en inventarios-app - Factura generada automáticamente';
     const footerWidth = pdf.getTextWidth(footerText);
     const footerX = (pageWidth - footerWidth) / 2;
     pdf.text(footerText, footerX, pageHeight - 15);
@@ -352,8 +352,8 @@ export const printInvoice = (sale: Sale): void => {
     <body>
       <div class="invoice-container">
         <div class="header">
-          <h1>SaludDirecta</h1>
-          <p>Sistema de Gestión Farmacéutica</p>
+          <h1>inventarios-app</h1>
+          <p>Sistema de Gestión de Inventario</p>
           <p>Factura Electrónica</p>
         </div>
 
@@ -438,7 +438,7 @@ export const printInvoice = (sale: Sale): void => {
         ` : ''}
 
         <div class="footer">
-          <p>Gracias por su compra en SaludDirecta</p>
+          <p>Gracias por su compra en inventarios-app</p>
           <p>Factura generada automáticamente por el sistema</p>
         </div>
       </div>

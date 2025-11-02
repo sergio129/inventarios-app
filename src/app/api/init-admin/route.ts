@@ -17,7 +17,7 @@ export async function POST() {
 
     const admin = new User({
       name: 'Administrador',
-      email: 'admin@saluddirecta.com',
+      email: 'admin@inventariosapp.com',
       password: hashedPassword,
       role: 'admin',
       activo: true,

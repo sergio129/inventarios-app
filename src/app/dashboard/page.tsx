@@ -185,10 +185,10 @@ export default function Dashboard() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold mb-2">
-                ¡Bienvenido a SaludDirecta!
+                ¡Bienvenido a Inventarios-app!
               </h1>
               <p className="text-blue-100 text-lg">
-                Sistema de gestión farmacéutica completo
+                Sistema de gestión de inventario para comidas rápidas
               </p>
             </div>
             <div className="flex items-center space-x-4">

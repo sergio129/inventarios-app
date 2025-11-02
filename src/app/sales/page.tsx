@@ -188,7 +188,7 @@ export default function SalesPage() {
           fechaCreacion: new Date(sale.fechaCreacion),
           vendedor: {
             name: 'Sistema',
-            email: 'sistema@saluddirecta.com'
+            email: 'sistema@inventariosapp.com'
           }
         };
         setSelectedSale(invoiceSale);

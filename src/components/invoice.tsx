@@ -111,8 +111,8 @@ export function Invoice({ sale, onClose, onPrint, onDownload }: InvoiceProps) {
         <div id="invoice-content" className="p-6 space-y-6">
           {/* Información de la empresa */}
           <div className="text-center border-b pb-4">
-            <h1 className="text-3xl font-bold text-blue-600">SaludDirecta</h1>
-            <p className="text-gray-600">Sistema de Gestión Farmacéutica</p>
+            <h1 className="text-3xl font-bold text-orange-600">inventarios-app</h1>
+            <p className="text-gray-600">Sistema de Gestión de Inventario</p>
             <p className="text-sm text-gray-500">Factura Electrónica</p>
           </div>
 
@@ -216,7 +216,7 @@ export function Invoice({ sale, onClose, onPrint, onDownload }: InvoiceProps) {
 
           {/* Pie de página */}
           <div className="text-center text-xs text-gray-500 border-t pt-4">
-            <p>Gracias por su compra en SaludDirecta</p>
+            <p>Gracias por su compra en inventarios-app</p>
             <p>Factura generada automáticamente por el sistema</p>
           </div>
         </div>
