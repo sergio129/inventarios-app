@@ -222,20 +222,18 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600 mb-1">{stat.title}</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {loading ? (
-                        <div className="animate-pulse bg-gray-200 h-8 w-16 rounded"></div>
-                      ) : (
-                        stat.value
-                      )}
-                    </p>
-                    <p className={`text-sm font-medium ${stat.changeType === 'positive' ? 'text-green-600' : 'text-red-600'}`}>
-                      {loading ? (
-                        <div className="animate-pulse bg-gray-200 h-4 w-12 rounded"></div>
-                      ) : (
-                        `${stat.change >= 0 ? '+' : ''}${stat.change}% vs ayer`
-                      )}
-                    </p>
+                    {loading ? (
+                      <div className="animate-pulse bg-gray-200 h-8 w-16 rounded mb-2"></div>
+                    ) : (
+                      <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                    )}
+                    {loading ? (
+                      <div className="animate-pulse bg-gray-200 h-4 w-12 rounded"></div>
+                    ) : (
+                      <p className={`text-sm font-medium ${stat.changeType === 'positive' ? 'text-green-600' : 'text-red-600'}`}>
+                        {`${stat.change >= 0 ? '+' : ''}${stat.change}% vs ayer`}
+                      </p>
+                    )}
                   </div>
                   <div className={`p-3 rounded-lg bg-gradient-to-br ${stat.color.replace('text-', 'from-').replace('text-', 'to-')} bg-opacity-10`}>
                     <stat.icon className={`h-6 w-6 ${stat.color}`} />

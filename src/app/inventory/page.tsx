@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -168,7 +168,7 @@ export default function InventoryPage() {
       .replace(/\s+/g, ' '); // Normalize spaces
   };
 
-  const categoryOptions = availableCategories.map(cat => cat.nombre);
+  const categoryOptions = useMemo(() => availableCategories.map(cat => cat.nombre), [availableCategories]);
 
   const calculatePriceFromMargin = (costPrice: number, margin: number) => {
     return costPrice * (1 + margin / 100);
