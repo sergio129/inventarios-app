@@ -543,7 +543,7 @@ export default function InventoryPage() {
               </Button>
               <ImportExportManager 
                 onImportSuccess={fetchProducts}
-                isAdmin={session?.user?.role === 'admin'}
+                isAdmin={(session?.user as any)?.role === 'admin'}
               />
               <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
                 <DialogTrigger asChild>
