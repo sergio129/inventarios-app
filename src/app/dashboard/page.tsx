@@ -23,7 +23,7 @@ export default function Dashboard() {
   const modules = [
     {
       title: 'Inventario',
-      description: 'Gestionar medicamentos y stock',
+      description: 'Gestionar Productos y stock',
       icon: Package,
       color: 'from-blue-500 to-blue-600',
       bgColor: 'from-blue-50 to-blue-100',

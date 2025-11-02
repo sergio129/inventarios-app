@@ -8,36 +8,36 @@ export async function POST() {
   try {
     await dbConnect();
 
-    // Crear categorías de ejemplo
+    // Crear categorías de ejemplo para retail/comida rápida
     const categoriasEjemplo = [
       {
-        nombre: 'Analgésicos',
-        descripcion: 'Medicamentos para el dolor y fiebre',
+        nombre: 'Bebidas',
+        descripcion: 'Bebidas frías y calientes',
         activo: true
       },
       {
-        nombre: 'Antiinflamatorios',
-        descripcion: 'Medicamentos para reducir inflamación',
+        nombre: 'Alimentos Procesados',
+        descripcion: 'Snacks y alimentos empacados',
         activo: true
       },
       {
-        nombre: 'Antibióticos',
-        descripcion: 'Medicamentos para infecciones bacterianas',
+        nombre: 'Lácteos',
+        descripcion: 'Productos lácteos y derivados',
         activo: true
       },
       {
-        nombre: 'Gastrointestinales',
-        descripcion: 'Medicamentos para problemas digestivos',
+        nombre: 'Condimentos y Salsas',
+        descripcion: 'Salsas, condimentos y especias',
         activo: true
       },
       {
-        nombre: 'Antialérgicos',
-        descripcion: 'Medicamentos para alergias',
+        nombre: 'Congelados',
+        descripcion: 'Productos congelados listos para cocinar',
         activo: true
       },
       {
-        nombre: 'Cardiovasculares',
-        descripcion: 'Medicamentos para el corazón y circulación',
+        nombre: 'Pan y Pastelería',
+        descripcion: 'Pan, pasteles y productos de panadería',
         activo: true
       }
     ];
@@ -52,66 +52,61 @@ export async function POST() {
 
     console.log('Categorías de ejemplo creadas');
 
-    // Crear productos de ejemplo
+    // Crear productos de ejemplo para retail/comida rápida
     const productosEjemplo = [
       {
-        nombre: 'Paracetamol 500mg',
-        descripcion: 'Analgésico y antipirético',
-        precio: 2500,
-        precioCompra: 1800,
+        nombre: 'Coca Cola 2L',
+        descripcion: 'Bebida gaseosa clásica',
+        precio: 8500,
+        precioCompra: 6000,
         stock: 150,
         stockMinimo: 20,
-        categoria: 'Analgésicos',
-        laboratorio: 'Genfar',
-        requiereReceta: false,
+        categoria: 'Bebidas',
+        marca: 'Coca Cola',
         activo: true
       },
       {
-        nombre: 'Ibuprofeno 400mg',
-        descripcion: 'Antiinflamatorio no esteroideo',
-        precio: 3200,
-        precioCompra: 2400,
+        nombre: 'Papas Fritas Lay\'s 200g',
+        descripcion: 'Snack de papas fritas crujientes',
+        precio: 5200,
+        precioCompra: 3800,
         stock: 120,
         stockMinimo: 15,
-        categoria: 'Antiinflamatorios',
-        laboratorio: 'MK',
-        requiereReceta: false,
+        categoria: 'Alimentos Procesados',
+        marca: 'Lay\'s',
         activo: true
       },
       {
-        nombre: 'Amoxicilina 500mg',
-        descripcion: 'Antibiótico de amplio espectro',
-        precio: 4500,
-        precioCompra: 3200,
+        nombre: 'Yogur Griego 500g',
+        descripcion: 'Yogur griego natural cremoso',
+        precio: 7800,
+        precioCompra: 5500,
         stock: 80,
         stockMinimo: 10,
-        categoria: 'Antibióticos',
-        laboratorio: 'Pfizer',
-        requiereReceta: true,
+        categoria: 'Lácteos',
+        marca: 'Danone',
         activo: true
       },
       {
-        nombre: 'Omeprazol 20mg',
-        descripcion: 'Inhibidor de la bomba de protones',
-        precio: 3800,
-        precioCompra: 2800,
+        nombre: 'Salsa de Tomate DIFFER 4000gr',
+        descripcion: 'Salsa de tomate para pizzas y pastas',
+        precio: 58500,
+        precioCompra: 45000,
         stock: 90,
         stockMinimo: 12,
-        categoria: 'Gastrointestinales',
-        laboratorio: 'AstraZeneca',
-        requiereReceta: false,
+        categoria: 'Condimentos y Salsas',
+        marca: 'DIFFER',
         activo: true
       },
       {
-        nombre: 'Loratadina 10mg',
-        descripcion: 'Antihistamínico',
-        precio: 2800,
-        precioCompra: 2000,
+        nombre: 'Alitas de Pollo Congeladas 1kg',
+        descripcion: 'Alitas de pollo listas para freír',
+        precio: 24500,
+        precioCompra: 17000,
         stock: 110,
         stockMinimo: 18,
-        categoria: 'Antialérgicos',
-        laboratorio: 'Bayer',
-        requiereReceta: false,
+        categoria: 'Congelados',
+        marca: 'Fripollo',
         activo: true
       }
     ];
