@@ -38,7 +38,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     } as any;
 
     // Validar campos requeridos contra el objeto fusionado (permite updates parciales)
-    const requiredFields = ['nombre', 'precio', 'precioCompra', 'stock', 'stockMinimo', 'categoria', 'laboratorio'];
+    const requiredFields = ['nombre', 'precio', 'precioCompra', 'stock', 'stockMinimo', 'categoria'];
     for (const field of requiredFields) {
       if (
         mergedForValidation[field] === undefined ||

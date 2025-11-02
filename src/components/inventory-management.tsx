@@ -25,10 +25,9 @@ interface Product {
   stock: number;
   stockMinimo: number;
   categoria: string;
-  laboratorio: string;
+  marca?: string;
   codigo?: string;
   codigoBarras?: string;
-  requiereReceta: boolean;
   activo: boolean;
   margenGananciaUnidad?: number;
   margenGananciaCaja?: number;

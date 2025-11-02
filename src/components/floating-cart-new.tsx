@@ -21,10 +21,9 @@ interface Product {
   stockCajas: number; // Número de cajas completas
   stockUnidadesSueltas: number; // Unidades sueltas
   categoria: string;
-  laboratorio: string;
+  marca?: string;
   codigo?: string;
   codigoBarras?: string;
-  requiereReceta: boolean;
   activo: boolean;
   // Nuevos campos para unidades y empaques
   unidadesPorEmpaque?: number;

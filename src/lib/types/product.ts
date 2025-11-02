@@ -9,10 +9,9 @@ export interface IProduct {
   stockUnidadesSueltas?: number
   stockMinimo?: number
   categoria?: string
-  laboratorio?: string
+  marca?: string
   codigo?: string | null
   codigoBarras?: string | null
-  requiereReceta?: boolean
   activo?: boolean
   unidadesPorEmpaque?: number
   tipoVenta?: 'unidad' | 'empaque' | 'ambos'

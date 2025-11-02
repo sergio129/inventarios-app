@@ -13,11 +13,10 @@ export interface IProduct extends Document {
   stockUnidadesSueltas: number; // Unidades sueltas (que no completan una caja)
   stockMinimo: number;
   categoria: string;
-  laboratorio: string;
+  marca?: string;
   codigo?: string;
   codigoBarras?: string;
   fechaVencimiento?: Date;
-  requiereReceta: boolean;
   activo: boolean;
   // Nuevos campos para manejo de unidades y empaques
   unidadesPorEmpaque?: number; // Número de unidades por caja/empaque
@@ -88,9 +87,8 @@ const ProductSchema: Schema = new Schema({
     required: [true, 'La categoría es requerida'],
     trim: true
   },
-  laboratorio: {
+  marca: {
     type: String,
-    required: [true, 'El laboratorio es requerido'],
     trim: true
   },
   codigo: {
@@ -105,10 +103,6 @@ const ProductSchema: Schema = new Schema({
   },
   fechaVencimiento: {
     type: Date
-  },
-  requiereReceta: {
-    type: Boolean,
-    default: false
   },
   activo: {
     type: Boolean,
@@ -157,7 +151,7 @@ const ProductSchema: Schema = new Schema({
 // Índices para mejorar rendimiento
 ProductSchema.index({ nombre: 1 });
 ProductSchema.index({ categoria: 1 });
-ProductSchema.index({ laboratorio: 1 });
+ProductSchema.index({ marca: 1 });
 ProductSchema.index({ activo: 1 });
 ProductSchema.index({ stock: 1 });
 

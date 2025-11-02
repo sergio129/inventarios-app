@@ -75,10 +75,9 @@ export async function POST(request: NextRequest) {
       stockUnidadesSueltas,
       stockMinimo,
       categoria,
-      laboratorio,
+      marca,
       codigo,
       codigoBarras,
-      requiereReceta,
       margenGananciaUnidad,
       margenGananciaCaja
     } = await request.json();
@@ -90,7 +89,7 @@ export async function POST(request: NextRequest) {
         unidadesPorCaja === undefined || unidadesPorCaja === null ||
         stockUnidadesSueltas === undefined || stockUnidadesSueltas === null ||
         stockMinimo === undefined || stockMinimo === null ||
-        !categoria || !laboratorio) {
+        !categoria) {
       return NextResponse.json({ error: 'Todos los campos requeridos deben ser proporcionados' }, { status: 400 });
     }
 
@@ -112,10 +111,9 @@ export async function POST(request: NextRequest) {
       stock: stockTotal,
       stockMinimo,
       categoria,
-      laboratorio,
+      marca: marca ? (marca.trim() === '' ? null : marca) : null,
       codigo: codigo ? (codigo.trim() === '' ? null : codigo) : null,
       codigoBarras: codigoBarras ? (codigoBarras.trim() === '' ? null : codigoBarras) : null,
-      requiereReceta: requiereReceta || false,
       margenGananciaUnidad: margenGananciaUnidad || null,
       margenGananciaCaja: margenGananciaCaja || null,
       activo: true,

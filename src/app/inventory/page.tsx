@@ -30,10 +30,9 @@ interface Product {
   stock: number; // Total calculated stock
   stockMinimo: number;
   categoria: string;
-  laboratorio: string;
+  marca?: string;
   codigo?: string;
   codigoBarras?: string;
-  requiereReceta: boolean;
   activo: boolean;
   tipoVenta: 'unidad' | 'empaque' | 'ambos';
   margenGananciaUnidad?: number;
@@ -71,10 +70,9 @@ export default function InventoryPage() {
     stockUnidadesSueltas: '',
     stockMinimo: '',
     categoria: '',
-    laboratorio: '',
+    marca: '',
     codigo: '',
-    codigoBarras: '',
-    requiereReceta: false
+    codigoBarras: ''
   });
 
   useEffect(() => {
@@ -270,10 +268,6 @@ export default function InventoryPage() {
       toast.error('La categoría es requerida');
       return;
     }
-    if (!createForm.laboratorio.trim()) {
-      toast.error('El laboratorio es requerido');
-      return;
-    }
     if (!createForm.codigo.trim()) {
       toast.error('El código interno es requerido');
       return;
@@ -303,10 +297,9 @@ export default function InventoryPage() {
           stockUnidadesSueltas: stockUnidadesSueltas,
           stockMinimo: parseInt(createForm.stockMinimo),
           categoria: createForm.categoria,
-          laboratorio: createForm.laboratorio,
+          marca: createForm.marca ? createForm.marca.trim() : null,
           codigo: createForm.codigo,
           codigoBarras: createForm.codigoBarras,
-          requiereReceta: createForm.requiereReceta,
           margenGananciaUnidad: createForm.margenGananciaUnidad ? parseFloat(createForm.margenGananciaUnidad) : null,
           margenGananciaCaja: createForm.margenGananciaCaja ? parseFloat(createForm.margenGananciaCaja) : null
         }),
@@ -329,10 +322,9 @@ export default function InventoryPage() {
           stockUnidadesSueltas: '',
           stockMinimo: '',
           categoria: '',
-          laboratorio: '',
+          marca: '',
           codigo: '',
-          codigoBarras: '',
-          requiereReceta: false
+          codigoBarras: ''
         });
         fetchProducts();
       } else {
@@ -361,10 +353,9 @@ export default function InventoryPage() {
       stockUnidadesSueltas: (product.stockUnidadesSueltas ?? 0).toString(),
       stockMinimo: product.stockMinimo?.toString() || '0',
       categoria: product.categoria,
-      laboratorio: product.laboratorio,
+      marca: product.marca || '',
       codigo: product.codigo || '',
-      codigoBarras: product.codigoBarras || '',
-      requiereReceta: product.requiereReceta || false
+      codigoBarras: product.codigoBarras || ''
     });
     setIsProductDialogOpen(true);
   };
@@ -392,8 +383,7 @@ export default function InventoryPage() {
       categoria: '',
       laboratorio: '',
       codigo: '',
-      codigoBarras: '',
-      requiereReceta: false
+      codigoBarras: ''
     });
   };
 
@@ -954,14 +944,14 @@ export default function InventoryPage() {
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="laboratorio" className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                          Laboratorio <span className="text-red-500">*</span>
+                        <Label htmlFor="marca" className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                          Marca del producto
                         </Label>
                         <Input
-                          id="laboratorio"
-                          value={createForm.laboratorio}
-                          onChange={(e) => setCreateForm({ ...createForm, laboratorio: e.target.value })}
-                          placeholder="Nombre del laboratorio fabricante"
+                          id="marca"
+                          value={createForm.marca}
+                          onChange={(e) => setCreateForm({ ...createForm, marca: e.target.value })}
+                          placeholder="Nombre de la marca o fabricante"
                           className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                         />
                       </div>
@@ -975,18 +965,6 @@ export default function InventoryPage() {
                         <CheckCircle className="h-5 w-5 text-gray-600" />
                       </div>
                       <h3 className="text-lg font-semibold text-gray-900">Configuración Adicional</h3>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <input
-                        type="checkbox"
-                        id="requiereReceta"
-                        checked={createForm.requiereReceta}
-                        onChange={(e) => setCreateForm({ ...createForm, requiereReceta: e.target.checked })}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <Label htmlFor="requiereReceta" className="text-sm font-medium text-gray-700">
-                        Requiere receta médica
-                      </Label>
                     </div>
                   </div>
                 </div>
@@ -1037,7 +1015,7 @@ export default function InventoryPage() {
                 <div className="relative">
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                   <Input
-                    placeholder="Buscar por nombre, código, descripción o laboratorio..."
+                    placeholder="Buscar por nombre, código, descripción o marca..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-12 h-12 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500/20 transition-all duration-200"
@@ -1086,7 +1064,7 @@ export default function InventoryPage() {
                   <TableRow className="border-b border-gray-200/50 bg-gradient-to-r from-gray-50/80 to-blue-50/30 hover:from-gray-50 hover:to-blue-50/50 transition-all duration-200">
                     <TableHead className="font-semibold text-gray-900 py-4 px-6">Producto</TableHead>
                     <TableHead className="font-semibold text-gray-900 py-4 px-6">Categoría</TableHead>
-                    <TableHead className="font-semibold text-gray-900 py-4 px-6">Laboratorio</TableHead>
+                    <TableHead className="font-semibold text-gray-900 py-4 px-6">Marca</TableHead>
                     <TableHead className="font-semibold text-gray-900 py-4 px-6">Código</TableHead>
                     <TableHead className="font-semibold text-gray-900 py-4 px-6">Código de Barras</TableHead>
                     <TableHead className="font-semibold text-gray-900 py-4 px-6">Stock</TableHead>
@@ -1176,15 +1154,6 @@ export default function InventoryPage() {
                             >
                               {product.activo ? 'Activo' : 'Inactivo'}
                             </Badge>
-                            {product.requiereReceta && (
-                              <Badge
-                                variant="destructive"
-                                className="bg-gradient-to-r from-red-500 to-pink-500 text-white font-medium shadow-sm"
-                              >
-                                <Pill className="h-3 w-3 mr-1" />
-                                Receta
-                              </Badge>
-                            )}
                           </div>
                         </TableCell>
                         <TableCell className="py-4 px-6">
