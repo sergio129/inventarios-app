@@ -25,7 +25,15 @@ export default function LoginPage() {
     });
 
     if (result?.error) {
-      setError(result.error);
+      // Mapear códigos de error a mensajes amigables
+      const errorMessages: Record<string, string> = {
+        'InvalidCredentials': 'Usuario o contraseña inválido',
+        'UserNotActive': 'Usuario no autorizado. Contacta al administrador.',
+        'CredentialsSignin': 'Usuario o contraseña inválido',
+      };
+      
+      const errorMessage = errorMessages[result.error] || 'Error al iniciar sesión. Intenta de nuevo.';
+      setError(errorMessage);
     } else {
       router.push('/dashboard');
     }
