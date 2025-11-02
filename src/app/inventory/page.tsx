@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Package, Plus, Search, ArrowLeft, AlertTriangle, CheckCircle, Tag, Pill, Edit, Trash2, Check, ChevronsUpDown, ShoppingCart, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCart } from '@/lib/cart-context';
+import ImportExportManager from '@/components/import-export-manager';
 
 interface Product {
   _id: string;
@@ -540,6 +541,10 @@ export default function InventoryPage() {
                 <TrendingUp className="h-4 w-4" />
                 Gestión de Inventario
               </Button>
+              <ImportExportManager 
+                onImportSuccess={fetchProducts}
+                isAdmin={session?.user?.role === 'admin'}
+              />
               <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
                 <DialogTrigger asChild>
                   <Button
