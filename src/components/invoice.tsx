@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Printer, Download, X } from 'lucide-react';
 import { generateInvoicePDF, printInvoice } from '@/lib/invoice-utils';
+import { useCompanyConfig } from '@/hooks/useCompanyConfig';
 import { toast } from 'sonner';
 
 interface Sale {
@@ -46,11 +47,13 @@ interface InvoiceProps {
 }
 
 export function Invoice({ sale, onClose, onPrint, onDownload }: InvoiceProps) {
+  const { config, loading: configLoading } = useCompanyConfig();
+
   const handlePrint = () => {
     if (onPrint) {
       onPrint();
     } else {
-      printInvoice(sale);
+      printInvoice(sale, config || undefined);
     }
   };
 
@@ -60,7 +63,7 @@ export function Invoice({ sale, onClose, onPrint, onDownload }: InvoiceProps) {
     } else {
       try {
         toast.loading('Generando PDF...', { id: 'pdf-download' });
-        await generateInvoicePDF(sale);
+        await generateInvoicePDF(sale, config || undefined);
         toast.success('PDF descargado exitosamente', { id: 'pdf-download' });
       } catch (error) {
         console.error('Error descargando PDF:', error);
@@ -91,7 +94,7 @@ export function Invoice({ sale, onClose, onPrint, onDownload }: InvoiceProps) {
       <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-200">
         {/* Header con acciones */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gray-50/50">
-          <h2 className="text-2xl font-bold text-gray-900">Factura #{sale.numeroFactura}</h2>
+          <h2 className="text-2xl font-bold text-gray-900">{config?.labels.factura_titulo || 'Factura'} #{sale.numeroFactura}</h2>
           <div className="flex gap-2">
             <Button onClick={handlePrint} className="flex items-center gap-2">
               <Printer className="h-4 w-4" />
@@ -111,33 +114,39 @@ export function Invoice({ sale, onClose, onPrint, onDownload }: InvoiceProps) {
         <div id="invoice-content" className="p-6 space-y-6">
           {/* Información de la empresa */}
           <div className="text-center border-b pb-4">
-            <h1 className="text-3xl font-bold text-orange-600">inventarios-app</h1>
-            <p className="text-gray-600">Sistema de Gestión de Inventario</p>
-            <p className="text-sm text-gray-500">Factura Electrónica</p>
+            <h1 className="text-3xl font-bold text-orange-600">{config?.nombreEmpresa || config?.labels.nombreApp || 'inventarios-app'}</h1>
+            <p className="text-gray-600">{config?.labels.subtitulo || 'Sistema de Gestión'}</p>
+            <p className="text-sm text-gray-500">{config?.labels.factura_titulo || 'Factura'} Electrónica</p>
+            {config?.informacion?.razonSocial && (
+              <p className="text-sm text-gray-500">{config.informacion.razonSocial}</p>
+            )}
+            {config?.informacion?.telefono && (
+              <p className="text-xs text-gray-400">{config.informacion.telefono}</p>
+            )}
           </div>
 
           {/* Información de la factura */}
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2">Información de la Venta</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">{config?.labels.factura_titulo || 'Factura'} - {config?.labels.modulo_ventas || 'Información'}</h3>
               <div className="space-y-1 text-sm">
-                <p><span className="font-medium">Factura:</span> {sale.numeroFactura}</p>
-                <p><span className="font-medium">Fecha:</span> {formatDate(sale.fechaVenta)}</p>
-                <p><span className="font-medium">Estado:</span>
+                <p><span className="font-medium">{config?.labels.factura_numero || 'Factura'}:</span> {sale.numeroFactura}</p>
+                <p><span className="font-medium">{config?.labels.factura_fecha || 'Fecha'}:</span> {formatDate(sale.fechaVenta)}</p>
+                <p><span className="font-medium">{config?.labels.factura_estado || 'Estado'}:</span>
                   <Badge variant={sale.estado === 'completada' ? 'default' : 'secondary'} className="ml-2">
                     {sale.estado}
                   </Badge>
                 </p>
                 {sale.vendedor && (
-                  <p><span className="font-medium">Vendedor:</span> {sale.vendedor.name}</p>
+                  <p><span className="font-medium">{config?.labels.factura_vendedor || 'Vendedor'}:</span> {sale.vendedor.name}</p>
                 )}
               </div>
             </div>
 
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2">Información del Cliente</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">{config?.labels.factura_cliente || 'Información del Cliente'}</h3>
               <div className="space-y-1 text-sm">
-                <p><span className="font-medium">Nombre:</span> {sale.cliente?.nombre || 'Cliente General'}</p>
+                <p><span className="font-medium">{config?.labels.producto_nombre || 'Nombre'}:</span> {sale.cliente?.nombre || 'Cliente General'}</p>
                 {sale.cliente?.cedula && (
                   <p><span className="font-medium">Cédula:</span> {sale.cliente.cedula}</p>
                 )}
@@ -150,15 +159,15 @@ export function Invoice({ sale, onClose, onPrint, onDownload }: InvoiceProps) {
 
           {/* Detalles de productos */}
           <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Detalles de Productos</h3>
+            <h3 className="font-semibold text-gray-900 mb-4">{config?.labels.factura_productos || 'Detalles de Productos'}</h3>
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-2 px-3 font-medium">Producto</th>
-                    <th className="text-center py-2 px-3 font-medium">Cant.</th>
-                    <th className="text-right py-2 px-3 font-medium">Precio Unit.</th>
-                    <th className="text-right py-2 px-3 font-medium">Total</th>
+                    <th className="text-left py-2 px-3 font-medium">{config?.labels.producto_nombre || 'Producto'}</th>
+                    <th className="text-center py-2 px-3 font-medium">{config?.labels.factura_cantidad || 'Cant.'}</th>
+                    <th className="text-right py-2 px-3 font-medium">{config?.labels.factura_precio_unitario || 'Precio Unit.'}</th>
+                    <th className="text-right py-2 px-3 font-medium">{config?.labels.factura_total || 'Total'}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -179,28 +188,28 @@ export function Invoice({ sale, onClose, onPrint, onDownload }: InvoiceProps) {
           <div className="flex justify-end">
             <div className="w-64 space-y-2">
               <div className="flex justify-between">
-                <span>Subtotal:</span>
+                <span>{config?.labels.factura_subtotal || 'Subtotal'}:</span>
                 <span>{formatCurrency(sale.subtotal)}</span>
               </div>
               {sale.descuento > 0 && (
                 <div className="flex justify-between text-green-600">
-                  <span>Descuento ({sale.descuento}%):</span>
+                  <span>{config?.labels.factura_descuento || 'Descuento'} ({sale.descuento}%):</span>
                   <span>-{formatCurrency((sale.subtotal * sale.descuento) / 100)}</span>
                 </div>
               )}
               {sale.impuesto > 0 && (
                 <div className="flex justify-between">
-                  <span>Impuesto:</span>
+                  <span>{config?.labels.factura_impuesto || 'Impuesto'}:</span>
                   <span>{formatCurrency(sale.impuesto)}</span>
                 </div>
               )}
               <Separator />
               <div className="flex justify-between font-bold text-lg">
-                <span>Total:</span>
+                <span>{config?.labels.factura_total || 'Total'}:</span>
                 <span>{formatCurrency(sale.total)}</span>
               </div>
               <div className="flex justify-between text-sm text-gray-600">
-                <span>Método de pago:</span>
+                <span>{config?.labels.factura_metodo_pago || 'Método de pago'}:</span>
                 <span className="capitalize">{sale.metodoPago}</span>
               </div>
             </div>
@@ -216,7 +225,7 @@ export function Invoice({ sale, onClose, onPrint, onDownload }: InvoiceProps) {
 
           {/* Pie de página */}
           <div className="text-center text-xs text-gray-500 border-t pt-4">
-            <p>Gracias por su compra en inventarios-app</p>
+            <p>Gracias por su compra en {config?.nombreEmpresa || config?.labels.nombreApp || 'inventarios-app'}</p>
             <p>Factura generada automáticamente por el sistema</p>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+import { CompanyConfig } from '@/hooks/useCompanyConfig';
 
 interface Sale {
   _id: string;
@@ -29,8 +30,21 @@ interface Sale {
   fechaCreacion: Date;
 }
 
-export const generateInvoicePDF = async (sale: Sale): Promise<void> => {
+// Valores por defecto
+const DEFAULT_CONFIG: Partial<CompanyConfig> = {
+  nombreEmpresa: 'inventarios-app',
+  labels: {
+    nombreApp: 'inventarios-app',
+    subtitulo: 'Sistema de Gestión de Inventario',
+    factura_titulo: 'Factura',
+  } as any,
+};
+
+export const generateInvoicePDF = async (sale: Sale, config?: CompanyConfig): Promise<void> => {
   try {
+    // Usar config proporcionada o valores por defecto
+    const finalConfig = config || (DEFAULT_CONFIG as CompanyConfig);
+    
     // Crear PDF directamente con jsPDF sin usar html2canvas
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageWidth = pdf.internal.pageSize.getWidth();
@@ -60,10 +74,10 @@ export const generateInvoicePDF = async (sale: Sale): Promise<void> => {
       return y + fontSize * 0.6;
     };
 
-    // Header
-    yPosition = centerText('Inventarios-app', yPosition, 20, 'bold');
-    yPosition = centerText('Sistema de Gestión de Inventario', yPosition + 2, 12, 'normal');
-    yPosition = centerText('Factura Electrónica', yPosition + 2, 10, 'normal');
+    // Header con valores dinámicos
+    yPosition = centerText(finalConfig.nombreEmpresa || 'inventarios-app', yPosition, 20, 'bold');
+    yPosition = centerText(finalConfig.labels?.subtitulo || 'Sistema de Gestión de Inventario', yPosition + 2, 12, 'normal');
+    yPosition = centerText(finalConfig.labels?.factura_titulo || 'Factura' + ' Electrónica', yPosition + 2, 10, 'normal');
 
     // Línea separadora
     pdf.setLineWidth(0.5);
@@ -241,7 +255,7 @@ export const generateInvoicePDF = async (sale: Sale): Promise<void> => {
 
     pdf.setFont('helvetica', 'italic');
     pdf.setFontSize(8);
-    const footerText = 'Gracias por su compra en inventarios-app - Factura generada automáticamente';
+    const footerText = `Gracias por su compra en ${finalConfig.nombreEmpresa || 'inventarios-app'} - Factura generada automáticamente`;
     const footerWidth = pdf.getTextWidth(footerText);
     const footerX = (pageWidth - footerWidth) / 2;
     pdf.text(footerText, footerX, pageHeight - 15);
@@ -256,7 +270,10 @@ export const generateInvoicePDF = async (sale: Sale): Promise<void> => {
   }
 };
 
-export const printInvoice = (sale: Sale): void => {
+export const printInvoice = (sale: Sale, config?: CompanyConfig): void => {
+  // Usar config proporcionada o valores por defecto
+  const finalConfig = config || (DEFAULT_CONFIG as CompanyConfig);
+  
   const printWindow = window.open('', '_blank');
   if (!printWindow) return;
 
@@ -352,9 +369,9 @@ export const printInvoice = (sale: Sale): void => {
     <body>
       <div class="invoice-container">
         <div class="header">
-          <h1>inventarios-app</h1>
-          <p>Sistema de Gestión de Inventario</p>
-          <p>Factura Electrónica</p>
+          <h1>${finalConfig.nombreEmpresa || 'inventarios-app'}</h1>
+          <p>${finalConfig.labels?.subtitulo || 'Sistema de Gestión de Inventario'}</p>
+          <p>${finalConfig.labels?.factura_titulo || 'Factura'} Electrónica</p>
         </div>
 
         <div class="info-section">
@@ -438,7 +455,7 @@ export const printInvoice = (sale: Sale): void => {
         ` : ''}
 
         <div class="footer">
-          <p>Gracias por su compra en inventarios-app</p>
+          <p>Gracias por su compra en ${finalConfig.nombreEmpresa || 'inventarios-app'}</p>
           <p>Factura generada automáticamente por el sistema</p>
         </div>
       </div>
