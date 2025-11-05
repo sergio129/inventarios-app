@@ -47,7 +47,7 @@ export default function LoginPage() {
             <span className="text-white font-bold text-xl">IA</span>
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">Iniciar Sesión</CardTitle>
-          <CardDescription className="text-gray-600">Ingresa tus credenciales para acceder a inventarios-app</CardDescription>
+          <CardDescription className="text-gray-600">Ingresa tus credenciales para acceder a inventarios</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

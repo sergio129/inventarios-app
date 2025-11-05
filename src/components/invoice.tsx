@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Printer, Download, X } from 'lucide-react';
@@ -111,7 +110,7 @@ export function Invoice({ sale, onClose, onPrint, onDownload }: InvoiceProps) {
         <div id="invoice-content" className="p-6 space-y-6">
           {/* Información de la empresa */}
           <div className="text-center border-b pb-4">
-            <h1 className="text-3xl font-bold text-orange-600">inventarios-app</h1>
+            <h1 className="text-3xl font-bold text-orange-600">Unik Retail</h1>
             <p className="text-gray-600">Sistema de Gestión de Inventario</p>
             <p className="text-sm text-gray-500">Factura Electrónica</p>
           </div>

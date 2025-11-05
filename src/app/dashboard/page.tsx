@@ -185,10 +185,10 @@ export default function Dashboard() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold mb-2">
-                ¡Bienvenido a Inventarios-app!
+                ¡Bienvenido a Inventarios UNIK!
               </h1>
               <p className="text-blue-100 text-lg">
-                Sistema de gestión de inventario para comidas rápidas
+                Sistema de gestión de inventario
               </p>
             </div>
             <div className="flex items-center space-x-4">
