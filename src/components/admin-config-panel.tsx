@@ -20,7 +20,90 @@ export const AdminConfigPanel: React.FC<AdminConfigProps> = ({ config, onSave })
 
   useEffect(() => {
     if (config) {
-      setFormData(config);
+      // Asegurar que siempre tenga todos los campos, aunque falten en la BD
+      const ensureFields = (obj: any, template: any): any => {
+        if (!obj) obj = {};
+        const result = { ...template, ...obj };
+        
+        // Para objetos anidados (labels, colores, informacion)
+        for (const key in template) {
+          if (typeof template[key] === 'object' && !Array.isArray(template[key])) {
+            result[key] = ensureFields(obj[key], template[key]);
+          }
+        }
+        return result;
+      };
+
+      const defaultFormData = {
+        nombreEmpresa: '',
+        logo: '',
+        labels: {
+          nombreApp: 'inventarios-app',
+          subtitulo: 'Sistema de Gestión',
+          bienvenida_titulo: '¡Bienvenido!',
+          bienvenida_subtitulo: 'Bienvenido al sistema',
+          dashboard_total_productos: 'Total Productos',
+          dashboard_ventas_hoy: 'Ventas Hoy',
+          dashboard_usuarios_activos: 'Usuarios Activos',
+          dashboard_pedidos_pendientes: 'Pedidos Pendientes',
+          modulo_inventario: 'Inventario',
+          modulo_ventas: 'Ventas',
+          modulo_usuarios: 'Usuarios',
+          modulo_reportes: 'Reportes',
+          modulo_categorias: 'Categorías',
+          factura_titulo: 'Factura',
+          factura_numero: 'Factura',
+          factura_fecha: 'Fecha',
+          factura_estado: 'Estado',
+          factura_vendedor: 'Vendedor',
+          factura_cliente: 'Cliente',
+          factura_productos: 'Productos',
+          factura_cantidad: 'Cantidad',
+          factura_precio_unitario: 'Precio Unitario',
+          factura_total: 'Total',
+          factura_subtotal: 'Subtotal',
+          factura_descuento: 'Descuento',
+          factura_impuesto: 'Impuesto',
+          factura_metodo_pago: 'Método de Pago',
+          producto_nombre: 'Nombre',
+          producto_descripcion: 'Descripción',
+          producto_precio: 'Precio',
+          producto_stock: 'Stock',
+          producto_categoria: 'Categoría',
+          producto_codigo: 'Código',
+          boton_guardar: 'Guardar',
+          boton_cancelar: 'Cancelar',
+          boton_eliminar: 'Eliminar',
+          boton_editar: 'Editar',
+          boton_agregar: 'Agregar',
+          boton_crear: 'Crear',
+        },
+        colores: {
+          primario: '#3b82f6',
+          secundario: '#6b7280',
+          exito: '#10b981',
+          peligro: '#ef4444',
+          advertencia: '#f59e0b',
+          informacion: '#0ea5e9',
+        },
+        informacion: {
+          razonSocial: '',
+          nit: '',
+          direccion: '',
+          telefono: '',
+          email: '',
+          ciudad: '',
+          pais: '',
+          sitioWeb: '',
+        },
+        activo: true,
+        _id: '',
+        fechaCreacion: new Date(),
+        fechaActualizacion: new Date(),
+      };
+
+      const completeConfig = ensureFields(config, defaultFormData);
+      setFormData(completeConfig);
     }
   }, [config]);
 

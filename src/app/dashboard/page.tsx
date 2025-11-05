@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useCompanyConfig } from '@/hooks/useCompanyConfig';
 import {
   Package,
   ShoppingCart,
@@ -19,6 +20,7 @@ import {
 export default function Dashboard() {
   const { data: session } = useSession();
   const router = useRouter();
+  const { config } = useCompanyConfig();
 
   const modules = [
     {
@@ -61,7 +63,7 @@ export default function Dashboard() {
 
   const [stats, setStats] = useState([
     {
-      title: 'Total Productos',
+      title: config?.labels?.dashboard_total_productos || 'Total Productos',
       value: '0',
       change: 0,
       changeType: 'positive' as const,
@@ -69,7 +71,7 @@ export default function Dashboard() {
       color: 'text-blue-600'
     },
     {
-      title: 'Ventas Hoy',
+      title: config?.labels?.dashboard_ventas_hoy || 'Ventas Hoy',
       value: '$0',
       change: 0,
       changeType: 'positive' as const,
@@ -77,7 +79,7 @@ export default function Dashboard() {
       color: 'text-green-600'
     },
     {
-      title: 'Usuarios Activos',
+      title: config?.labels?.dashboard_usuarios_activos || 'Usuarios Activos',
       value: '0',
       change: 0,
       changeType: 'positive' as const,
@@ -85,7 +87,7 @@ export default function Dashboard() {
       color: 'text-purple-600'
     },
     {
-      title: 'Pedidos Pendientes',
+      title: config?.labels?.dashboard_pedidos_pendientes || 'Pedidos Pendientes',
       value: '0',
       change: 0,
       changeType: 'positive' as const,
@@ -97,7 +99,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchStats();
-  }, []);
+  }, [config]);
 
   const fetchStats = async () => {
     try {
@@ -106,7 +108,7 @@ export default function Dashboard() {
         const data = await response.json();
         setStats([
           {
-            title: 'Total Productos',
+            title: config?.labels?.dashboard_total_productos || 'Total Productos',
             value: data.totalProductos.value,
             change: data.totalProductos.change,
             changeType: data.totalProductos.changeType,
@@ -114,7 +116,7 @@ export default function Dashboard() {
             color: 'text-blue-600'
           },
           {
-            title: 'Ventas Hoy',
+            title: config?.labels?.dashboard_ventas_hoy || 'Ventas Hoy',
             value: data.ventasHoy.value,
             change: data.ventasHoy.change,
             changeType: data.ventasHoy.changeType,
@@ -122,7 +124,7 @@ export default function Dashboard() {
             color: 'text-green-600'
           },
           {
-            title: 'Usuarios Activos',
+            title: config?.labels?.dashboard_usuarios_activos || 'Usuarios Activos',
             value: data.usuariosActivos.value,
             change: data.usuariosActivos.change,
             changeType: data.usuariosActivos.changeType,
@@ -130,7 +132,7 @@ export default function Dashboard() {
             color: 'text-purple-600'
           },
           {
-            title: 'Pedidos Pendientes',
+            title: config?.labels?.dashboard_pedidos_pendientes || 'Pedidos Pendientes',
             value: data.pedidosPendientes.value,
             change: data.pedidosPendientes.change,
             changeType: data.pedidosPendientes.changeType,
@@ -185,10 +187,10 @@ export default function Dashboard() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold mb-2">
-                ¡Bienvenido a Inventarios-app!
+                {config?.labels?.bienvenida_titulo || '¡Bienvenido a Inventarios-app!'}
               </h1>
               <p className="text-blue-100 text-lg">
-                Sistema de gestión de inventario para comidas rápidas
+                {config?.labels?.bienvenida_subtitulo || 'Sistema de gestión de inventario para comidas rápidas'}
               </p>
             </div>
             <div className="flex items-center space-x-4">
