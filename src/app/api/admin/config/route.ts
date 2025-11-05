@@ -5,7 +5,7 @@ import CompanyConfig from '@/lib/models/CompanyConfig';
 import { authOptions } from '@/lib/auth';
 
 // GET - Obtener configuración actual
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Solo administradores pueden crear configuración' }, { status: 403 });
     }
 
-    let body = await request.json();
+    const body = await request.json();
 
     // Validar que nombreEmpresa no esté vacío
     if (!body.nombreEmpresa || body.nombreEmpresa.trim() === '') {

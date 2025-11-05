@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { Settings, Users, FileText, BarChart3 } from 'lucide-react';
+import { Settings, Users, BarChart3 } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { data: session } = useSession();

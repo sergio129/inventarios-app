@@ -5,7 +5,7 @@ import CompanyConfig from '@/lib/models/CompanyConfig';
 import { authOptions } from '@/lib/auth';
 
 // POST - Migrar/Actualizar configuraciones existentes con campos faltantes
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
