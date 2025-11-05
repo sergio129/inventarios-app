@@ -63,25 +63,39 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
 
+    console.log('[id]/route - PUT - ID:', id);
+    console.log('[id]/route - PUT - Body recibido:', JSON.stringify(body, null, 2));
+
     await dbConnect();
 
+    // Preparar el objeto de actualización sin campos internos
+    const updateData = { ...body };
+    delete updateData._id;
+    delete updateData.id;
+    delete updateData.__v;
+
+    console.log('[id]/route - PUT - Datos a actualizar:', JSON.stringify(updateData, null, 2));
+
+    // Usar $set para asegurar que Mongoose maneje los nested objects correctamente
     const config = await CompanyConfig.findByIdAndUpdate(
       id,
-      body,
+      { $set: updateData },
       { new: true, runValidators: true }
     );
 
     if (!config) {
+      console.log('[id]/route - PUT - Configuración no encontrada con ID:', id);
       return NextResponse.json(
         { error: 'Configuración no encontrada' },
         { status: 404 }
       );
     }
 
+    console.log('[id]/route - PUT - Actualización exitosa');
     return NextResponse.json(config);
 
   } catch (error: any) {
-    console.error('Error actualizando configuración:', error);
+    console.error('[id]/route - Error actualizando configuración:', error);
     
     if (error.name === 'ValidationError') {
       return NextResponse.json(

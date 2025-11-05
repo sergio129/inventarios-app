@@ -74,52 +74,73 @@ export const generateInvoicePDF = async (sale: Sale, config?: CompanyConfig): Pr
       return y + fontSize * 0.6;
     };
 
-    // Header con valores dinámicos
-    yPosition = centerText(finalConfig.nombreEmpresa || 'inventarios-app', yPosition, 20, 'bold');
-    yPosition = centerText(finalConfig.labels?.subtitulo || 'Sistema de Gestión de Inventario', yPosition + 2, 12, 'normal');
-    yPosition = centerText(finalConfig.labels?.factura_titulo || 'Factura' + ' Electrónica', yPosition + 2, 10, 'normal');
+    // Header con valores dinámicos - Mejorado
+    // Nombre de la empresa (grande y destacado)
+    yPosition = centerText(finalConfig.nombreEmpresa || 'inventarios-app', yPosition, 24, 'bold');
+    yPosition += 3;
+    
+    // Subtítulo
+    yPosition = centerText(finalConfig.labels?.subtitulo || 'Sistema de Gestión de Inventario', yPosition, 11, 'normal');
+    yPosition += 2;
+    
+    // Tipo de documento
+    yPosition = centerText(finalConfig.labels?.factura_titulo || 'Factura', yPosition, 14, 'bold');
+    yPosition += 1;
+    
+    // Línea separadora decorativa
+    pdf.setLineWidth(1);
+    pdf.setDrawColor(37, 99, 235); // Azul
+    pdf.line(margin + 30, yPosition + 2, pageWidth - margin - 30, yPosition + 2);
+    yPosition += 10;
 
-    // Línea separadora
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, yPosition + 5, pageWidth - margin, yPosition + 5);
-    yPosition += 15;
-
-    // Información de la venta y cliente
+    // Información de la venta y cliente - Mejorado
     const leftColumnX = margin;
-    const rightColumnX = pageWidth / 2 + 10;
+    const rightColumnX = pageWidth / 2 + 5;
+    const colWidth = (pageWidth - 2 * margin) / 2 - 5;
 
     // Información de la venta (izquierda)
-    yPosition = addText('INFORMACIÓN DE LA VENTA', leftColumnX, yPosition, pageWidth / 2 - margin, 12, 'bold');
+    pdf.setFillColor(245, 245, 245); // Gris claro
+    pdf.rect(leftColumnX, yPosition - 4, colWidth, 6, 'F');
+    
+    yPosition = addText('INFORMACIÓN DE LA VENTA', leftColumnX + 2, yPosition, colWidth - 4, 11, 'bold');
     yPosition += 5;
-    yPosition = addText(`Factura: ${sale.numeroFactura}`, leftColumnX, yPosition, pageWidth / 2 - margin);
+    yPosition = addText(`Factura: ${sale.numeroFactura}`, leftColumnX + 2, yPosition, colWidth - 4, 9);
+    yPosition += 4;
     yPosition = addText(`Fecha: ${new Intl.DateTimeFormat('es-ES', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
-    }).format(new Date(sale.fechaVenta))}`, leftColumnX, yPosition, pageWidth / 2 - margin);
-    yPosition = addText(`Estado: ${sale.estado}`, leftColumnX, yPosition, pageWidth / 2 - margin);
+    }).format(new Date(sale.fechaVenta))}`, leftColumnX + 2, yPosition, colWidth - 4, 9);
+    yPosition += 4;
+    yPosition = addText(`Estado: ${sale.estado}`, leftColumnX + 2, yPosition, colWidth - 4, 9);
+    yPosition += 4;
     if (sale.vendedor) {
-      yPosition = addText(`Vendedor: ${sale.vendedor.name}`, leftColumnX, yPosition, pageWidth / 2 - margin);
+      yPosition = addText(`Vendedor: ${sale.vendedor.name}`, leftColumnX + 2, yPosition, colWidth - 4, 9);
+      yPosition += 2;
     }
 
-    // Reset yPosition para la columna derecha
-    let rightYPosition = margin + 20;
-
-    // Información del cliente (derecha)
-    rightYPosition = addText('INFORMACIÓN DEL CLIENTE', rightColumnX, rightYPosition, pageWidth / 2 - margin, 12, 'bold');
+    // Información del cliente (derecha) - Alineada con la izquierda
+    let rightYPosition = margin;
+    pdf.setFillColor(245, 245, 245); // Gris claro
+    pdf.rect(rightColumnX, rightYPosition - 4, colWidth, 6, 'F');
+    
+    rightYPosition = addText('INFORMACIÓN DEL CLIENTE', rightColumnX + 2, rightYPosition, colWidth - 4, 11, 'bold');
     rightYPosition += 5;
-    rightYPosition = addText(`Nombre: ${sale.cliente?.nombre || 'Cliente General'}`, rightColumnX, rightYPosition, pageWidth / 2 - margin);
+    rightYPosition = addText(`Nombre: ${sale.cliente?.nombre || 'Cliente General'}`, rightColumnX + 2, rightYPosition, colWidth - 4, 9);
+    rightYPosition += 4;
     if (sale.cliente?.cedula) {
-      rightYPosition = addText(`Cédula: ${sale.cliente.cedula}`, rightColumnX, rightYPosition, pageWidth / 2 - margin);
+      rightYPosition = addText(`Cédula: ${sale.cliente.cedula}`, rightColumnX + 2, rightYPosition, colWidth - 4, 9);
+      rightYPosition += 4;
     }
     if (sale.cliente?.telefono) {
-      rightYPosition = addText(`Teléfono: ${sale.cliente.telefono}`, rightColumnX, rightYPosition, pageWidth / 2 - margin);
+      rightYPosition = addText(`Teléfono: ${sale.cliente.telefono}`, rightColumnX + 2, rightYPosition, colWidth - 4, 9);
+      rightYPosition += 2;
     }
 
     // Usar la posición más baja entre las dos columnas
-    yPosition = Math.max(yPosition, rightYPosition) + 15;
+    yPosition = Math.max(yPosition, rightYPosition) + 10;
 
     // Verificar si necesitamos una nueva página
     if (yPosition > pageHeight - 60) {
@@ -127,11 +148,11 @@ export const generateInvoicePDF = async (sale: Sale, config?: CompanyConfig): Pr
       yPosition = margin;
     }
 
-    // Tabla de productos
-    yPosition = addText('DETALLES DE PRODUCTOS', margin, yPosition, pageWidth - 2 * margin, 12, 'bold');
-    yPosition += 10;
+    // Tabla de productos - Mejorada
+    yPosition = addText(finalConfig.labels?.factura_productos || 'DETALLES DE PRODUCTOS', margin, yPosition, pageWidth - 2 * margin, 11, 'bold');
+    yPosition += 8;
 
-    // Headers de tabla
+    // Headers de tabla con fondo azul
     const tableStartY = yPosition;
     const colWidths = [80, 20, 35, 35]; // Ancho de cada columna
     const colPositions = [margin];
@@ -139,47 +160,51 @@ export const generateInvoicePDF = async (sale: Sale, config?: CompanyConfig): Pr
       colPositions.push(colPositions[i-1] + colWidths[i-1]);
     }
 
-    // Dibujar headers
-    pdf.setFillColor(240, 240, 240);
-    pdf.rect(margin, yPosition - 5, pageWidth - 2 * margin, 8, 'F');
+    // Dibujar headers con fondo azul
+    pdf.setFillColor(37, 99, 235); // Azul
+    pdf.rect(margin, yPosition - 6, pageWidth - 2 * margin, 7, 'F');
     pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(9);
-    pdf.text('Producto', colPositions[0] + 2, yPosition);
-    pdf.text('Cant.', colPositions[1] + 2, yPosition);
-    pdf.text('Precio Unit.', colPositions[2] + 2, yPosition);
-    pdf.text('Total', colPositions[3] + 2, yPosition);
+    pdf.setFontSize(10);
+    pdf.setTextColor(255, 255, 255); // Texto blanco
+    pdf.text(finalConfig.labels?.producto_nombre || 'Producto', colPositions[0] + 2, yPosition - 1);
+    pdf.text(finalConfig.labels?.factura_cantidad || 'Cant.', colPositions[1] + 2, yPosition - 1);
+    pdf.text(finalConfig.labels?.factura_precio_unitario || 'Precio Unit.', colPositions[2] + 2, yPosition - 1);
+    pdf.text(finalConfig.labels?.factura_total || 'Total', colPositions[3] + 2, yPosition - 1);
 
-    yPosition += 8;
+    yPosition += 5;
+    pdf.setTextColor(0, 0, 0); // Texto negro
 
     // Líneas de productos
     pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(8);
+    pdf.setFontSize(9);
 
     sale.items.forEach((item, index) => {
       // Verificar si necesitamos una nueva página
-      if (yPosition > pageHeight - 30) {
+      if (yPosition > pageHeight - 40) {
         pdf.addPage();
         yPosition = margin;
 
         // Repetir headers en nueva página
-        pdf.setFillColor(240, 240, 240);
-        pdf.rect(margin, yPosition - 5, pageWidth - 2 * margin, 8, 'F');
+        pdf.setFillColor(37, 99, 235);
+        pdf.rect(margin, yPosition - 6, pageWidth - 2 * margin, 7, 'F');
         pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(9);
-        pdf.text('Producto', colPositions[0] + 2, yPosition);
-        pdf.text('Cant.', colPositions[1] + 2, yPosition);
-        pdf.text('Precio Unit.', colPositions[2] + 2, yPosition);
-        pdf.text('Total', colPositions[3] + 2, yPosition);
-        yPosition += 8;
+        pdf.setFontSize(10);
+        pdf.setTextColor(255, 255, 255);
+        pdf.text(finalConfig.labels?.producto_nombre || 'Producto', colPositions[0] + 2, yPosition - 1);
+        pdf.text(finalConfig.labels?.factura_cantidad || 'Cant.', colPositions[1] + 2, yPosition - 1);
+        pdf.text(finalConfig.labels?.factura_precio_unitario || 'Precio Unit.', colPositions[2] + 2, yPosition - 1);
+        pdf.text(finalConfig.labels?.factura_total || 'Total', colPositions[3] + 2, yPosition - 1);
+        yPosition += 5;
         pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(8);
+        pdf.setFontSize(9);
+        pdf.setTextColor(0, 0, 0);
       }
 
-      // Dibujar fila
+      // Dibujar fila con colores alternados
       const rowHeight = 6;
       if (index % 2 === 0) {
-        pdf.setFillColor(250, 250, 250);
-        pdf.rect(margin, yPosition - 2, pageWidth - 2 * margin, rowHeight, 'F');
+        pdf.setFillColor(248, 249, 250); // Gris muy claro
+        pdf.rect(margin, yPosition - 4, pageWidth - 2 * margin, rowHeight, 'F');
       }
 
       // Texto de las celdas
@@ -192,46 +217,73 @@ export const generateInvoicePDF = async (sale: Sale, config?: CompanyConfig): Pr
       yPosition += rowHeight;
     });
 
-    // Bordes de tabla
-    pdf.setLineWidth(0.2);
-    pdf.rect(margin, tableStartY - 5, pageWidth - 2 * margin, yPosition - tableStartY + 3);
+    // Bordes de tabla mejorado
+    pdf.setLineWidth(0.3);
+    pdf.setDrawColor(200, 200, 200);
+    pdf.rect(margin, tableStartY - 6, pageWidth - 2 * margin, yPosition - tableStartY + 6);
 
-    yPosition += 10;
+    yPosition += 12;
 
     // Verificar si necesitamos una nueva página para totales
-    if (yPosition > pageHeight - 60) {
+    if (yPosition > pageHeight - 50) {
       pdf.addPage();
       yPosition = margin;
     }
 
-    // Totales (columna derecha)
-    const totalsX = pageWidth - margin - 80;
-    yPosition = addText('RESUMEN', totalsX, yPosition, 80, 12, 'bold');
-    yPosition += 5;
+    // Totales (columna derecha) - Mejorado
+    const totalsX = pageWidth - margin - 90;
+    const totalsWidth = 90;
+    
+    // Fondo para la sección de totales
+    pdf.setFillColor(245, 245, 245);
+    pdf.rect(totalsX - 5, yPosition - 4, totalsWidth + 5, 2, 'F'); // Solo para el título
+    
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(11);
+    pdf.text('RESUMEN', totalsX - 5, yPosition);
+    yPosition += 8;
 
-    yPosition = addText(`Subtotal: ${new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(sale.subtotal)}`, totalsX, yPosition, 80);
+    // Líneas de totales
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(9);
+    
+    pdf.text(`${finalConfig.labels?.factura_subtotal || 'Subtotal'}:`, totalsX - 5, yPosition);
+    pdf.text(new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(sale.subtotal), pageWidth - margin - 20, yPosition, { align: 'right' });
+    yPosition += 5;
+    
     if (sale.descuento > 0) {
-      yPosition = addText(`Descuento (${sale.descuento}%): -${new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format((sale.subtotal * sale.descuento) / 100)}`, totalsX, yPosition, 80);
+      pdf.text(`${finalConfig.labels?.factura_descuento || 'Descuento'} (${sale.descuento}%):`, totalsX - 5, yPosition);
+      pdf.setTextColor(34, 197, 94); // Verde
+      pdf.text('-' + new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format((sale.subtotal * sale.descuento) / 100), pageWidth - margin - 20, yPosition, { align: 'right' });
+      pdf.setTextColor(0, 0, 0);
+      yPosition += 5;
     }
+    
     if (sale.impuesto > 0) {
-      yPosition = addText(`Impuesto: ${new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(sale.impuesto)}`, totalsX, yPosition, 80);
+      pdf.text(`${finalConfig.labels?.factura_impuesto || 'Impuesto'}:`, totalsX - 5, yPosition);
+      pdf.text(new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(sale.impuesto), pageWidth - margin - 20, yPosition, { align: 'right' });
+      yPosition += 5;
     }
 
     // Línea separadora para total
     pdf.setLineWidth(0.5);
-    pdf.line(totalsX, yPosition + 2, totalsX + 80, yPosition + 2);
-    yPosition += 8;
+    pdf.setDrawColor(37, 99, 235); // Azul
+    pdf.line(totalsX - 5, yPosition + 1, pageWidth - margin, yPosition + 1);
+    yPosition += 6;
 
-    // Total
+    // Total - Destacado
     pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(12);
-    pdf.text(`TOTAL: ${new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(sale.total)}`, totalsX, yPosition);
-    yPosition += 8;
+    pdf.setFontSize(13);
+    pdf.setTextColor(37, 99, 235);
+    pdf.text(`${finalConfig.labels?.factura_total || 'TOTAL'}:`, totalsX - 5, yPosition);
+    pdf.text(new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(sale.total), pageWidth - margin - 20, yPosition, { align: 'right' });
+    pdf.setTextColor(0, 0, 0);
+    yPosition += 7;
 
     // Método de pago
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(9);
-    pdf.text(`Método de pago: ${sale.metodoPago}`, totalsX, yPosition);
+    pdf.text(`${finalConfig.labels?.factura_metodo_pago || 'Método de pago'}: ${sale.metodoPago}`, totalsX - 5, yPosition);
 
     yPosition += 15;
 

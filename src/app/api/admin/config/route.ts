@@ -125,10 +125,13 @@ export async function PUT(request: NextRequest) {
 
     const body = await request.json();
     
+    console.log('PUT /api/admin/config - Body recibido:', JSON.stringify(body, null, 2));
+    
     // Obtener el ID desde el cuerpo
     const configId = body._id || body.id;
     
     if (!configId) {
+      console.log('PUT - No hay ID de configuración');
       return NextResponse.json(
         { error: 'ID de configuración requerido' },
         { status: 400 }
@@ -137,20 +140,31 @@ export async function PUT(request: NextRequest) {
 
     await dbConnect();
 
-    // Actualizar la configuración
+    // Preparar el objeto de actualización sin el _id
+    const updateData = { ...body };
+    delete updateData._id;
+    delete updateData.id;
+    delete updateData.__v;
+
+    console.log('PUT - Actualizando config con ID:', configId);
+    console.log('PUT - Datos a actualizar:', JSON.stringify(updateData, null, 2));
+
+    // Actualizar la configuración usando $set para asegurar que Mongoose maneje los nested objects
     const config = await CompanyConfig.findByIdAndUpdate(
       configId,
-      body,
+      { $set: updateData },
       { new: true, runValidators: true }
     );
 
     if (!config) {
+      console.log('PUT - Configuración no encontrada con ID:', configId);
       return NextResponse.json(
         { error: 'Configuración no encontrada' },
         { status: 404 }
       );
     }
 
+    console.log('PUT - Configuración actualizada exitosamente');
     return NextResponse.json(config);
 
   } catch (error: any) {

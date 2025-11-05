@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { AdminConfigPanel } from '@/components/admin-config-panel';
 import { CompanyConfig } from '@/hooks/useCompanyConfig';
+import { toast } from 'sonner';
 
 export default function AdminConfigPage() {
   const { data: session, status } = useSession();
@@ -38,6 +39,12 @@ export default function AdminConfigPage() {
     labels: {
       nombreApp: 'inventarios-app',
       subtitulo: 'Sistema de Gestión',
+      bienvenida_titulo: '¡Bienvenido a Inventarios-app!',
+      bienvenida_subtitulo: 'Sistema de gestión de inventario para comidas rápidas',
+      dashboard_total_productos: 'Total Productos',
+      dashboard_ventas_hoy: 'Ventas Hoy',
+      dashboard_usuarios_activos: 'Usuarios Activos',
+      dashboard_pedidos_pendientes: 'Pedidos Pendientes',
       modulo_inventario: 'Inventario',
       modulo_ventas: 'Ventas',
       modulo_usuarios: 'Usuarios',
@@ -175,10 +182,51 @@ export default function AdminConfigPage() {
         {/* Info Section */}
         <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-blue-900 mb-2">¿Necesitas ayuda?</h3>
-          <p className="text-blue-800 text-sm">
+          <p className="text-blue-800 text-sm mb-4">
             Aquí puedes personalizar todos los textos, colores e información de tu empresa. 
             Los cambios se aplicarán automáticamente en toda la aplicación.
           </p>
+          
+          <div className="mt-4">
+            <details className="cursor-pointer">
+              <summary className="text-blue-700 font-semibold hover:text-blue-900">
+                🔄 Herramientas Avanzadas (Migración de Datos)
+              </summary>
+              <div className="mt-3 p-3 bg-white rounded border border-blue-200">
+                <p className="text-sm text-gray-600 mb-3">
+                  Si encuentras campos faltantes, ejecuta esta migración para actualizar todos los registros:
+                </p>
+                <button
+                  onClick={async () => {
+                    try {
+                      const toastId = toast.loading('Ejecutando migración...');
+                      
+                      const response = await fetch('/api/admin/config/migrate', {
+                        method: 'POST',
+                      });
+                      
+                      if (response.ok) {
+                        const data = await response.json();
+                        toast.success(
+                          `✅ Migración exitosa: ${data.configs.length} configuración(es) actualizada(s)`,
+                          { id: toastId }
+                        );
+                        // Recargar la configuración después de la migración
+                        setTimeout(() => fetchConfig(), 500);
+                      } else {
+                        toast.error('❌ Error en la migración', { id: toastId });
+                      }
+                    } catch (err) {
+                      toast.error('❌ Error: ' + (err instanceof Error ? err.message : 'Error desconocido'));
+                    }
+                  }}
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm font-semibold"
+                >
+                  Ejecutar Migración
+                </button>
+              </div>
+            </details>
+          </div>
         </div>
       </div>
     </div>

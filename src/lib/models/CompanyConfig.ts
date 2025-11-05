@@ -12,6 +12,14 @@ export interface ICompanyConfig extends Document {
     nombreApp: string;
     subtitulo: string;
     
+    // Dashboard y Bienvenida
+    bienvenida_titulo: string;
+    bienvenida_subtitulo: string;
+    dashboard_total_productos: string;
+    dashboard_ventas_hoy: string;
+    dashboard_usuarios_activos: string;
+    dashboard_pedidos_pendientes: string;
+    
     // Módulos
     modulo_inventario: string;
     modulo_ventas: string;
@@ -102,6 +110,32 @@ const CompanyConfigSchema: Schema = new Schema({
     subtitulo: {
       type: String,
       default: 'Sistema de Gestión de Inventario'
+    },
+    
+    // Dashboard y Bienvenida
+    bienvenida_titulo: {
+      type: String,
+      default: '¡Bienvenido a Inventarios-app!'
+    },
+    bienvenida_subtitulo: {
+      type: String,
+      default: 'Sistema de gestión de inventario para comidas rápidas'
+    },
+    dashboard_total_productos: {
+      type: String,
+      default: 'Total Productos'
+    },
+    dashboard_ventas_hoy: {
+      type: String,
+      default: 'Ventas Hoy'
+    },
+    dashboard_usuarios_activos: {
+      type: String,
+      default: 'Usuarios Activos'
+    },
+    dashboard_pedidos_pendientes: {
+      type: String,
+      default: 'Pedidos Pendientes'
     },
     
     // Módulos

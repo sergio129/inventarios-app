@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { CompanyConfig } from '@/hooks/useCompanyConfig';
+import { CompanyConfig, useCompanyConfig } from '@/hooks/useCompanyConfig';
 import { toast } from 'sonner';
 
 interface AdminConfigProps {
@@ -14,6 +14,9 @@ export const AdminConfigPanel: React.FC<AdminConfigProps> = ({ config, onSave })
   const [loading, setLoading] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
+  
+  // Usar el hook para poder refetch después de guardar
+  const { refetch } = useCompanyConfig();
 
   useEffect(() => {
     if (config) {
@@ -51,18 +54,50 @@ export const AdminConfigPanel: React.FC<AdminConfigProps> = ({ config, onSave })
 
       // Determinar si es creación o actualización
       const isUpdate = formData._id && formData._id.trim() !== '';
-      const url = isUpdate 
-        ? `/api/admin/config/${formData._id}`
-        : '/api/admin/config';
+      
+      let url: string;
+      let method: string;
+      let dataToSend: any;
 
-      const method = isUpdate ? 'PUT' : 'POST';
+      if (isUpdate) {
+        // Update: usar el endpoint con ID en la URL
+        url = `/api/admin/config/${formData._id}`;
+        method = 'PUT';
+        
+        // Preparar datos para actualización: incluye TODOS los campos
+        dataToSend = {
+          nombreEmpresa: formData.nombreEmpresa,
+          logo: formData.logo || '',
+          labels: formData.labels || {},
+          colores: formData.colores || {},
+          informacion: formData.informacion || {},
+          activo: formData.activo,
+          _id: formData._id,
+          fechaCreacion: formData.fechaCreacion,
+          fechaActualizacion: formData.fechaActualizacion,
+        };
+      } else {
+        // Create: usar el endpoint general sin ID
+        url = '/api/admin/config';
+        method = 'POST';
+        
+        // Para creación, no incluir _id si está vacío
+        dataToSend = {
+          nombreEmpresa: formData.nombreEmpresa,
+          logo: formData.logo || '',
+          labels: formData.labels || {},
+          colores: formData.colores || {},
+          informacion: formData.informacion || {},
+          activo: formData.activo,
+        };
+      }
+
+      console.log('handleSave - isUpdate:', isUpdate);
+      console.log('handleSave - url:', url);
+      console.log('handleSave - method:', method);
+      console.log('handleSave - dataToSend:', JSON.stringify(dataToSend, null, 2));
 
       const toastId = toast.loading('Guardando configuración...');
-
-      // Preparar datos sin el _id si es creación
-      const dataToSend = isUpdate 
-        ? formData 
-        : { ...formData, _id: undefined };
 
       const response = await fetch(url, {
         method,
@@ -81,16 +116,19 @@ export const AdminConfigPanel: React.FC<AdminConfigProps> = ({ config, onSave })
         }
         
         const errorMessage = errorData?.error || `Error ${response.status}: ${response.statusText}`;
+        console.error('handleSave - Error response:', errorMessage);
         toast.error(errorMessage, { id: toastId });
         return;
       }
 
       const savedConfig = await response.json();
+      console.log('handleSave - Respuesta del servidor:', JSON.stringify(savedConfig, null, 2));
+      
       setFormData(savedConfig);
       setSaveSuccess(true);
       
       toast.success(
-        formData._id 
+        isUpdate
           ? 'Configuración actualizada exitosamente' 
           : 'Configuración creada exitosamente',
         { id: toastId }
@@ -99,6 +137,9 @@ export const AdminConfigPanel: React.FC<AdminConfigProps> = ({ config, onSave })
       if (onSave) {
         onSave(savedConfig);
       }
+      
+      // Refetch para actualizar el hook en todos los componentes
+      await refetch();
 
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (error) {
@@ -230,6 +271,83 @@ export const AdminConfigPanel: React.FC<AdminConfigProps> = ({ config, onSave })
               onChange={(e) => handleInputChange('labels.subtitulo', e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               placeholder="Subtítulo de la aplicación"
+            />
+          </div>
+
+          {/* Bienvenida y Dashboard */}
+          <div className="md:col-span-2">
+            <h3 className="font-semibold text-gray-700 mb-3">Bienvenida y Dashboard</h3>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Título de Bienvenida
+            </label>
+            <input
+              type="text"
+              value={formData.labels.bienvenida_titulo}
+              onChange={(e) => handleInputChange('labels.bienvenida_titulo', e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Subtítulo de Bienvenida
+            </label>
+            <input
+              type="text"
+              value={formData.labels.bienvenida_subtitulo}
+              onChange={(e) => handleInputChange('labels.bienvenida_subtitulo', e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Etiqueta: Total Productos
+            </label>
+            <input
+              type="text"
+              value={formData.labels.dashboard_total_productos}
+              onChange={(e) => handleInputChange('labels.dashboard_total_productos', e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Etiqueta: Ventas Hoy
+            </label>
+            <input
+              type="text"
+              value={formData.labels.dashboard_ventas_hoy}
+              onChange={(e) => handleInputChange('labels.dashboard_ventas_hoy', e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Etiqueta: Usuarios Activos
+            </label>
+            <input
+              type="text"
+              value={formData.labels.dashboard_usuarios_activos}
+              onChange={(e) => handleInputChange('labels.dashboard_usuarios_activos', e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Etiqueta: Pedidos Pendientes
+            </label>
+            <input
+              type="text"
+              value={formData.labels.dashboard_pedidos_pendientes}
+              onChange={(e) => handleInputChange('labels.dashboard_pedidos_pendientes', e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
