@@ -1,13 +1,9 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IReturnItem {
-  productoId: string;
   nombreProducto: string;
-  cantidadOriginal: number;
-  cantidadDevuelta: number;
-  precioUnitario: number;
-  precioTotal: number;
-  motivo: string;
+  cantidad: number;
+  razon: string;
 }
 
 export interface IReturn extends Document {
@@ -18,12 +14,14 @@ export interface IReturn extends Document {
     cedula: string;
     nombre: string;
   };
-  items: IReturnItem[];
+  productosDevueltos: IReturnItem[];
   subtotal: number;
   descuento: number;
   impuesto: number;
   total: number;
   montoReembolso: number;
+  montoDevuelto: number;
+  razonDevolucion: string;
   estado: 'pendiente' | 'aprobada' | 'rechazada' | 'procesada';
   tipoDevolucion: 'completa' | 'parcial';
   metodoPago: string;

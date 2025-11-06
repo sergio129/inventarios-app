@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     const estado = searchParams.get('estado');
     const numeroFactura = searchParams.get('numeroFactura');
 
-    let query: any = {};
+    const query: any = {};
 
     if (cedula) {
       query['cliente.cedula'] = cedula.toLowerCase().trim();
