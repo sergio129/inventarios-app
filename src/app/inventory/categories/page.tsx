@@ -51,6 +51,12 @@ export default function CategoriesPage() {
       return;
     }
 
+    // Solo administradores pueden acceder a categorías
+    if ((session.user as { role?: string })?.role !== 'admin') {
+      router.push('/inventory');
+      return;
+    }
+
     fetchCategories();
   }, [session, status, router]);
 

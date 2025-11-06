@@ -526,36 +526,41 @@ export default function InventoryPage() {
                 <span className="hidden md:inline">Dashboard</span>
                 <span className="md:hidden">Dashboard</span>
               </Button>
-              <Button
-                onClick={() => router.push('/inventory/categories')}
-                variant="outline"
-                className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 border-purple-300 text-purple-700 hover:border-purple-400 hover:bg-purple-50 transition-all duration-200 shadow-sm"
-              >
-                <Tag className="h-3 md:h-4 w-3 md:w-4" />
-                <span>Categorías</span>
-              </Button>
-              <Button
-                onClick={() => router.push('/inventory/management')}
-                variant="outline"
-                className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 border-green-300 text-green-700 hover:border-green-400 hover:bg-green-50 transition-all duration-200 shadow-sm whitespace-nowrap"
-              >
-                <TrendingUp className="h-3 md:h-4 w-3 md:w-4" />
-                <span className="hidden sm:inline">Gestión</span>
-              </Button>
+              {(session?.user as { role?: string })?.role === 'admin' && (
+                <Button
+                  onClick={() => router.push('/inventory/categories')}
+                  variant="outline"
+                  className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 border-purple-300 text-purple-700 hover:border-purple-400 hover:bg-purple-50 transition-all duration-200 shadow-sm"
+                >
+                  <Tag className="h-3 md:h-4 w-3 md:w-4" />
+                  <span>Categorías</span>
+                </Button>
+              )}
+              {(session?.user as { role?: string })?.role === 'admin' && (
+                <Button
+                  onClick={() => router.push('/inventory/management')}
+                  variant="outline"
+                  className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 border-green-300 text-green-700 hover:border-green-400 hover:bg-green-50 transition-all duration-200 shadow-sm whitespace-nowrap"
+                >
+                  <TrendingUp className="h-3 md:h-4 w-3 md:w-4" />
+                  <span className="hidden sm:inline">Gestión</span>
+                </Button>
+              )}
               <ImportExportManager 
                 onImportSuccess={fetchProducts}
                 isAdmin={(session?.user as any)?.role === 'admin'}
               />
-              <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button
-                    onClick={openCreateDialog}
-                    className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-                  >
-                    <Plus className="h-3 md:h-4 w-3 md:w-4" />
-                    <span>Nuevo Producto</span>
-                  </Button>
-                </DialogTrigger>
+              {(session?.user as { role?: string })?.role === 'admin' && (
+                <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button
+                      onClick={openCreateDialog}
+                      className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                    >
+                      <Plus className="h-3 md:h-4 w-3 md:w-4" />
+                      <span>Nuevo Producto</span>
+                    </Button>
+                  </DialogTrigger>
               <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white to-gray-50 border-0 shadow-2xl">
                 <DialogHeader className="pb-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 -m-6 mb-6 p-6 rounded-t-lg">
                   <DialogTitle className="text-2xl font-bold text-gray-900 flex items-center gap-3">
@@ -1000,6 +1005,7 @@ export default function InventoryPage() {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+              )}
           </div>
         </div>
 
@@ -1175,26 +1181,30 @@ export default function InventoryPage() {
                               <span className="hidden md:inline">Agregar</span>
                               <span className="md:hidden">+</span>
                             </Button>
-                            <Button
-                              onClick={() => openEditDialog(product)}
-                              variant="outline"
-                              size="sm"
-                              className="flex items-center gap-1 border-blue-200 text-blue-700 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 whitespace-nowrap"
-                            >
-                              <Edit className="h-3 md:h-4 w-3 md:w-4" />
-                              <span className="hidden md:inline">Editar</span>
-                              <span className="md:hidden">✎</span>
-                            </Button>
-                            <Button
-                              onClick={() => openDeleteDialog(product)}
-                              variant="outline"
-                              size="sm"
-                              className="flex items-center gap-1 border-red-200 text-red-700 hover:border-red-300 hover:bg-red-50 transition-all duration-200 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 whitespace-nowrap"
-                            >
-                              <Trash2 className="h-3 md:h-4 w-3 md:w-4" />
-                              <span className="hidden md:inline">Eliminar</span>
-                              <span className="md:hidden">✕</span>
-                            </Button>
+                            {(session?.user as { role?: string })?.role === 'admin' && (
+                              <>
+                                <Button
+                                  onClick={() => openEditDialog(product)}
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex items-center gap-1 border-blue-200 text-blue-700 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 whitespace-nowrap"
+                                >
+                                  <Edit className="h-3 md:h-4 w-3 md:w-4" />
+                                  <span className="hidden md:inline">Editar</span>
+                                  <span className="md:hidden">✎</span>
+                                </Button>
+                                <Button
+                                  onClick={() => openDeleteDialog(product)}
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex items-center gap-1 border-red-200 text-red-700 hover:border-red-300 hover:bg-red-50 transition-all duration-200 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 whitespace-nowrap"
+                                >
+                                  <Trash2 className="h-3 md:h-4 w-3 md:w-4" />
+                                  <span className="hidden md:inline">Eliminar</span>
+                                  <span className="md:hidden">✕</span>
+                                </Button>
+                              </>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>
