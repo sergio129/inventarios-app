@@ -193,7 +193,7 @@ export function ClientPurchaseHistory({
                 </TableHeader>
                 <TableBody>
                   {purchases.map((purchase) => (
-                    <div key={purchase._id}>
+                    <>
                       <TableRow className="hover:bg-blue-50 cursor-pointer border-b border-gray-100 transition-colors">
                         <TableCell className="w-12 px-4 py-4">
                           <button
@@ -354,7 +354,7 @@ export function ClientPurchaseHistory({
                           </TableCell>
                         </TableRow>
                       )}
-                    </div>
+                    </>
                   ))}
                 </TableBody>
               </Table>
