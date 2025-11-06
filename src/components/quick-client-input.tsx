@@ -247,29 +247,29 @@ export function QuickClientInput({ onClientSelect, currentClient }: QuickClientI
 
       {/* Mostrar cliente seleccionado */}
       {clienteEncontrado && nombre && cedula && (
-        <div className={`border-2 p-3 rounded-lg ${
+        <div className={`border-2 p-4 rounded-lg space-y-2 ${
           esNuevoCliente
             ? 'bg-blue-50 border-blue-300'
-            : 'bg-gradient-to-r from-indigo-50 to-blue-50 border-indigo-200'
+            : 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-300'
         }`}>
           <div className="flex items-start justify-between">
-            <div className="flex-1 space-y-1">
+            <div className="flex-1 space-y-2">
               <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-indigo-600" />
-                <span className="font-semibold text-gray-900">{nombre}</span>
+                <User className="h-5 w-5 text-green-600" />
+                <span className="font-bold text-gray-900 text-lg">{nombre}</span>
                 {esNuevoCliente && (
                   <Badge className="bg-blue-100 text-blue-800 text-xs">
                     Nuevo (pendiente)
                   </Badge>
                 )}
               </div>
-              <div className="text-sm text-gray-600 ml-6">
-                Cédula: <span className="font-mono font-semibold">{cedula}</span>
+              <div className="text-sm text-gray-700 ml-7">
+                <span className="font-semibold">Cédula:</span> <span className="font-mono">{cedula}</span>
               </div>
               {telefono && (
-                <div className="text-sm text-gray-600 ml-6 flex items-center gap-1">
+                <div className="text-sm text-gray-700 ml-7 flex items-center gap-2">
                   <Phone className="h-3 w-3" />
-                  {telefono}
+                  <span>{telefono}</span>
                 </div>
               )}
             </div>

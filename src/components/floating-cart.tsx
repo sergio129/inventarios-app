@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/currency-utils';
 import { useCart } from '@/lib/cart-context';
+import { QuickClientInput } from '@/components/quick-client-input';
 
 import IProduct from '@/lib/types/product'
 
@@ -394,35 +395,12 @@ export function FloatingCart() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="sm:col-span-2">
-                    <Label htmlFor="cliente-nombre" className="text-sm">Nombre</Label>
-                    <Input
-                      id="cliente-nombre"
-                      placeholder="Nombre del cliente"
-                      value={cliente.nombre}
-                      onChange={(e) => setCliente({ ...cliente, nombre: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="cliente-cedula" className="text-sm">Cédula</Label>
-                    <Input
-                      id="cliente-cedula"
-                      placeholder="Cédula del cliente"
-                      value={cliente.cedula}
-                      onChange={(e) => setCliente({ ...cliente, cedula: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="cliente-telefono" className="text-sm">Teléfono</Label>
-                    <Input
-                      id="cliente-telefono"
-                      placeholder="Teléfono del cliente"
-                      value={cliente.telefono}
-                      onChange={(e) => setCliente({ ...cliente, telefono: e.target.value })}
-                    />
-                  </div>
-                </div>
+                <QuickClientInput
+                  currentClient={cliente}
+                  onClientSelect={(selectedClient) => {
+                    setCliente(selectedClient);
+                  }}
+                />
               </CardContent>
             </Card>
 
