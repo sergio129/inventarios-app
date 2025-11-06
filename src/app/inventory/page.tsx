@@ -516,30 +516,31 @@ export default function InventoryPage() {
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-2 md:gap-3">
               <Button
                 onClick={() => router.push('/dashboard')}
                 variant="outline"
-                className="flex items-center gap-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all duration-200 shadow-sm"
+                className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-all duration-200 shadow-sm"
               >
-                <ArrowLeft className="h-4 w-4" />
-                Dashboard
+                <ArrowLeft className="h-3 md:h-4 w-3 md:w-4" />
+                <span className="hidden md:inline">Dashboard</span>
+                <span className="md:hidden">Dashboard</span>
               </Button>
               <Button
                 onClick={() => router.push('/inventory/categories')}
                 variant="outline"
-                className="flex items-center gap-2 border-purple-300 text-purple-700 hover:border-purple-400 hover:bg-purple-50 transition-all duration-200 shadow-sm"
+                className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 border-purple-300 text-purple-700 hover:border-purple-400 hover:bg-purple-50 transition-all duration-200 shadow-sm"
               >
-                <Tag className="h-4 w-4" />
-                Categorías
+                <Tag className="h-3 md:h-4 w-3 md:w-4" />
+                <span>Categorías</span>
               </Button>
               <Button
                 onClick={() => router.push('/inventory/management')}
                 variant="outline"
-                className="flex items-center gap-2 border-green-300 text-green-700 hover:border-green-400 hover:bg-green-50 transition-all duration-200 shadow-sm"
+                className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 border-green-300 text-green-700 hover:border-green-400 hover:bg-green-50 transition-all duration-200 shadow-sm whitespace-nowrap"
               >
-                <TrendingUp className="h-4 w-4" />
-                Gestión de Inventario
+                <TrendingUp className="h-3 md:h-4 w-3 md:w-4" />
+                <span className="hidden sm:inline">Gestión</span>
               </Button>
               <ImportExportManager 
                 onImportSuccess={fetchProducts}
@@ -549,10 +550,10 @@ export default function InventoryPage() {
                 <DialogTrigger asChild>
                   <Button
                     onClick={openCreateDialog}
-                    className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                    className="flex items-center gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                   >
-                    <Plus className="h-4 w-4" />
-                    Nuevo Producto
+                    <Plus className="h-3 md:h-4 w-3 md:w-4" />
+                    <span>Nuevo Producto</span>
                   </Button>
                 </DialogTrigger>
               <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white to-gray-50 border-0 shadow-2xl">
@@ -1067,15 +1068,15 @@ export default function InventoryPage() {
               <Table>
                 <TableHeader>
                   <TableRow className="border-b border-gray-200/50 bg-gradient-to-r from-gray-50/80 to-blue-50/30 hover:from-gray-50 hover:to-blue-50/50 transition-all duration-200">
-                    <TableHead className="font-semibold text-gray-900 py-4 px-6">Producto</TableHead>
-                    <TableHead className="font-semibold text-gray-900 py-4 px-6">Categoría</TableHead>
-                    <TableHead className="font-semibold text-gray-900 py-4 px-6">Marca</TableHead>
-                    <TableHead className="font-semibold text-gray-900 py-4 px-6">Código</TableHead>
-                    <TableHead className="font-semibold text-gray-900 py-4 px-6">Código de Barras</TableHead>
-                    <TableHead className="font-semibold text-gray-900 py-4 px-6">Stock</TableHead>
-                    <TableHead className="font-semibold text-gray-900 py-4 px-6">Precio</TableHead>
-                    <TableHead className="font-semibold text-gray-900 py-4 px-6">Estado</TableHead>
-                    <TableHead className="font-semibold text-gray-900 py-4 px-6">Acciones</TableHead>
+                    <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm">Producto</TableHead>
+                    <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden md:table-cell">Categoría</TableHead>
+                    <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden lg:table-cell">Marca</TableHead>
+                    <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden md:table-cell">Código</TableHead>
+                    <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden lg:table-cell">Código de Barras</TableHead>
+                    <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm">Stock</TableHead>
+                    <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden sm:table-cell">Precio</TableHead>
+                    <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden sm:table-cell">Estado</TableHead>
+                    <TableHead className="font-semibold text-gray-900 py-4 px-2 md:px-6 text-xs md:text-sm">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -1086,72 +1087,72 @@ export default function InventoryPage() {
                     return (
                       <TableRow
                         key={product._id}
-                        className="border-b border-gray-100/50 hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-purple-50/30 transition-all duration-200 group"
+                        className="border-b border-gray-100/50 hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-purple-50/30 transition-all duration-200 group text-xs md:text-sm"
                       >
-                        <TableCell className="py-4 px-6">
+                        <TableCell className="py-3 md:py-4 px-3 md:px-6">
                           <div className="space-y-1">
                             <div className="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
                               {product.nombre}
                             </div>
-                            <div className="text-sm text-gray-500 max-w-xs truncate">
+                            <div className="text-xs text-gray-500 max-w-xs truncate">
                               {product.descripcion}
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell className="py-4 px-6">
+                        <TableCell className="py-3 md:py-4 px-3 md:px-6 hidden md:table-cell">
                           <Badge
                             variant="outline"
-                            className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 text-blue-700 font-medium shadow-sm"
+                            className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 text-blue-700 font-medium shadow-sm text-xs"
                           >
                             {product.categoria}
                           </Badge>
                         </TableCell>
-                        <TableCell className="py-4 px-6">
-                          <span className="text-gray-700 font-medium">{product.marca || '-'}</span>
+                        <TableCell className="py-3 md:py-4 px-3 md:px-6 hidden lg:table-cell">
+                          <span className="text-gray-700 font-medium text-xs md:text-sm">{product.marca || '-'}</span>
                         </TableCell>
-                        <TableCell className="py-4 px-6">
-                          <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded-md text-gray-700">
+                        <TableCell className="py-3 md:py-4 px-3 md:px-6 hidden md:table-cell">
+                          <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded-md text-gray-700">
                             {product.codigo || '-'}
                           </span>
                         </TableCell>
-                        <TableCell className="py-4 px-6">
-                          <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded-md text-gray-700">
+                        <TableCell className="py-3 md:py-4 px-3 md:px-6 hidden lg:table-cell">
+                          <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded-md text-gray-700">
                             {product.codigoBarras || '-'}
                           </span>
                         </TableCell>
-                        <TableCell className="py-4 px-6">
+                        <TableCell className="py-3 md:py-4 px-3 md:px-6">
                           <div className="flex items-center gap-2">
-                            <div className="text-sm">
+                            <div className="text-xs md:text-sm">
                               <div className={`font-bold text-lg ${
                                 product.stock <= product.stockMinimo ? 'text-red-600' :
                                 product.stock <= product.stockMinimo * 1.5 ? 'text-yellow-600' : 'text-green-600'
                               }`}>
-                                {product.stock} total
+                                {product.stock}
                               </div>
-                              <div className="text-xs text-gray-500">
-                                {product.stockCajas} cajas × {product.unidadesPorCaja} + {product.stockUnidadesSueltas} sueltas
+                              <div className="text-xs text-gray-500 hidden md:block">
+                                {product.stockCajas}c × {product.unidadesPorCaja} + {product.stockUnidadesSueltas}s
                               </div>
                             </div>
                             {product.stock <= product.stockMinimo && (
-                              <StatusIcon className="h-5 w-5 text-red-500 animate-pulse" />
+                              <StatusIcon className="h-4 md:h-5 w-4 md:w-5 text-red-500 animate-pulse" />
                             )}
                           </div>
                         </TableCell>
-                        <TableCell className="py-4 px-6">
+                        <TableCell className="py-3 md:py-4 px-3 md:px-6 hidden sm:table-cell">
                           <div className="space-y-1">
-                            <div className="font-bold text-gray-900 text-lg">
+                            <div className="font-bold text-gray-900 text-sm md:text-lg">
                               ${product.precio.toLocaleString()}
                             </div>
-                            <div className="text-sm text-gray-500">
-                              Compra: ${product.precioCompra.toLocaleString()}
+                            <div className="text-xs text-gray-500 hidden md:block">
+                              C: ${product.precioCompra.toLocaleString()}
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell className="py-4 px-6">
-                          <div className="flex flex-wrap gap-2">
+                        <TableCell className="py-3 md:py-4 px-3 md:px-6 hidden sm:table-cell">
+                          <div className="flex flex-wrap gap-1">
                             <Badge
                               variant={stockStatus.color as "default" | "secondary" | "destructive" | "outline"}
-                              className={`font-medium shadow-sm ${
+                              className={`font-medium shadow-sm text-xs ${
                                 stockStatus.color === 'default' ? 'bg-green-100 text-green-800 border-green-200' :
                                 stockStatus.color === 'destructive' ? 'bg-red-100 text-red-800 border-red-200' :
                                 'bg-gray-100 text-gray-800 border-gray-200'
@@ -1161,35 +1162,38 @@ export default function InventoryPage() {
                             </Badge>
                           </div>
                         </TableCell>
-                        <TableCell className="py-4 px-6">
-                          <div className="flex gap-2">
+                        <TableCell className="py-4 px-2 md:px-6">
+                          <div className="flex flex-col gap-1 md:flex-row md:gap-2">
                             <Button
                               onClick={() => handleAddToCart(product)}
                               variant="outline"
                               size="sm"
-                              className="flex items-center gap-1 border-green-200 text-green-700 hover:border-green-300 hover:bg-green-50 transition-all duration-200"
+                              className="flex items-center gap-1 border-green-200 text-green-700 hover:border-green-300 hover:bg-green-50 transition-all duration-200 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 whitespace-nowrap"
                               disabled={product.stock <= 0}
                             >
-                              <ShoppingCart className="h-4 w-4" />
-                              Agregar
+                              <ShoppingCart className="h-3 md:h-4 w-3 md:w-4" />
+                              <span className="hidden md:inline">Agregar</span>
+                              <span className="md:hidden">+</span>
                             </Button>
                             <Button
                               onClick={() => openEditDialog(product)}
                               variant="outline"
                               size="sm"
-                              className="flex items-center gap-1 border-blue-200 text-blue-700 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200"
+                              className="flex items-center gap-1 border-blue-200 text-blue-700 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 whitespace-nowrap"
                             >
-                              <Edit className="h-4 w-4" />
-                              Editar
+                              <Edit className="h-3 md:h-4 w-3 md:w-4" />
+                              <span className="hidden md:inline">Editar</span>
+                              <span className="md:hidden">✎</span>
                             </Button>
                             <Button
                               onClick={() => openDeleteDialog(product)}
                               variant="outline"
                               size="sm"
-                              className="flex items-center gap-1 border-red-200 text-red-700 hover:border-red-300 hover:bg-red-50 transition-all duration-200"
+                              className="flex items-center gap-1 border-red-200 text-red-700 hover:border-red-300 hover:bg-red-50 transition-all duration-200 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 whitespace-nowrap"
                             >
-                              <Trash2 className="h-4 w-4" />
-                              Eliminar
+                              <Trash2 className="h-3 md:h-4 w-3 md:w-4" />
+                              <span className="hidden md:inline">Eliminar</span>
+                              <span className="md:hidden">✕</span>
                             </Button>
                           </div>
                         </TableCell>
