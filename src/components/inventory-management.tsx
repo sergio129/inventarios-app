@@ -8,9 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Search, Package, Plus, Edit, TrendingUp, ArrowLeft } from 'lucide-react';
+import { Search, Package, Plus, Edit, TrendingUp, ArrowLeft, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import ProductHistory from '@/components/product-history';
+import { validarPreciosCoherentes } from '@/lib/validation-service';
 
 interface Product {
   _id: string;
@@ -47,6 +48,15 @@ interface InventoryUpdateForm {
   margenGananciaCaja: string;
 }
 
+interface Filters {
+  stockMin: string;
+  stockMax: string;
+  precioMin: string;
+  precioMax: string;
+  sortBy: 'nombre' | 'stock' | 'precio' | 'categoria';
+  sortOrder: 'asc' | 'desc';
+}
+
 export default function InventoryManagement() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
@@ -57,6 +67,14 @@ export default function InventoryManagement() {
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
   const [lowStockAlertOpen, setLowStockAlertOpen] = useState(false);
   const [lowStockProducts, setLowStockProducts] = useState<Product[]>([]);
+  const [filters, setFilters] = useState<Filters>({
+    stockMin: '',
+    stockMax: '',
+    precioMin: '',
+    precioMax: '',
+    sortBy: 'nombre',
+    sortOrder: 'asc',
+  });
   const [updateForm, setUpdateForm] = useState<InventoryUpdateForm>({
     stockCajas: '',
     unidadesPorCaja: '',
@@ -87,13 +105,60 @@ export default function InventoryManagement() {
   }, [products]);
 
   useEffect(() => {
-    const filtered = products.filter(product =>
-      product.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.codigo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.categoria.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    let filtered = products.filter(product => {
+      // Búsqueda por término
+      const matchesSearch = 
+        product.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.codigo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.categoria.toLowerCase().includes(searchTerm.toLowerCase());
+
+      if (!matchesSearch) return false;
+
+      // Filtro de stock
+      const totalStock = (product.stockCajas * product.unidadesPorCaja) + product.stockUnidadesSueltas;
+      if (filters.stockMin && totalStock < parseInt(filters.stockMin)) return false;
+      if (filters.stockMax && totalStock > parseInt(filters.stockMax)) return false;
+
+      // Filtro de precio
+      if (filters.precioMin && product.precio < parseFloat(filters.precioMin)) return false;
+      if (filters.precioMax && product.precio > parseFloat(filters.precioMax)) return false;
+
+      return true;
+    });
+
+    // Ordenamiento
+    filtered.sort((a, b) => {
+      let valueA: any, valueB: any;
+
+      switch (filters.sortBy) {
+        case 'stock':
+          valueA = (a.stockCajas * a.unidadesPorCaja) + a.stockUnidadesSueltas;
+          valueB = (b.stockCajas * b.unidadesPorCaja) + b.stockUnidadesSueltas;
+          break;
+        case 'precio':
+          valueA = a.precio;
+          valueB = b.precio;
+          break;
+        case 'categoria':
+          valueA = a.categoria;
+          valueB = b.categoria;
+          break;
+        default:
+          valueA = a.nombre;
+          valueB = b.nombre;
+      }
+
+      if (typeof valueA === 'string') {
+        return filters.sortOrder === 'asc'
+          ? valueA.localeCompare(valueB)
+          : valueB.localeCompare(valueA);
+      }
+
+      return filters.sortOrder === 'asc' ? valueA - valueB : valueB - valueA;
+    });
+
     setFilteredProducts(filtered);
-  }, [products, searchTerm]);
+  }, [products, searchTerm, filters]);
 
   // Actualizar formulario cuando cambia selectedProduct
   useEffect(() => {
@@ -296,11 +361,12 @@ export default function InventoryManagement() {
         </div>
       </div>
 
-      {/* Barra de búsqueda */}
+      {/* Barra de búsqueda y filtros */}
       <Card className="mb-6">
         <CardContent className="pt-6">
-          <div className="flex gap-4">
-            <div className="flex-1">
+          <div className="space-y-4">
+            {/* Búsqueda */}
+            <div>
               <Label htmlFor="search" className="text-sm font-medium text-gray-700 mb-2 block">
                 Buscar productos
               </Label>
@@ -315,6 +381,139 @@ export default function InventoryManagement() {
                 />
               </div>
             </div>
+
+            {/* Filtros Avanzados */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 pt-4 border-t">
+              {/* Filtro Stock Mínimo */}
+              <div className="space-y-2">
+                <Label htmlFor="stockMin" className="text-xs font-medium text-gray-600">
+                  Stock Mínimo
+                </Label>
+                <Input
+                  id="stockMin"
+                  type="number"
+                  placeholder="Desde"
+                  value={filters.stockMin}
+                  onChange={(e) =>
+                    setFilters({ ...filters, stockMin: e.target.value })
+                  }
+                  className="text-sm"
+                  min="0"
+                />
+              </div>
+
+              {/* Filtro Stock Máximo */}
+              <div className="space-y-2">
+                <Label htmlFor="stockMax" className="text-xs font-medium text-gray-600">
+                  Stock Máximo
+                </Label>
+                <Input
+                  id="stockMax"
+                  type="number"
+                  placeholder="Hasta"
+                  value={filters.stockMax}
+                  onChange={(e) =>
+                    setFilters({ ...filters, stockMax: e.target.value })
+                  }
+                  className="text-sm"
+                  min="0"
+                />
+              </div>
+
+              {/* Filtro Precio Mínimo */}
+              <div className="space-y-2">
+                <Label htmlFor="precioMin" className="text-xs font-medium text-gray-600">
+                  Precio Mín
+                </Label>
+                <Input
+                  id="precioMin"
+                  type="number"
+                  placeholder="Desde"
+                  value={filters.precioMin}
+                  onChange={(e) =>
+                    setFilters({ ...filters, precioMin: e.target.value })
+                  }
+                  className="text-sm"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+
+              {/* Filtro Precio Máximo */}
+              <div className="space-y-2">
+                <Label htmlFor="precioMax" className="text-xs font-medium text-gray-600">
+                  Precio Máx
+                </Label>
+                <Input
+                  id="precioMax"
+                  type="number"
+                  placeholder="Hasta"
+                  value={filters.precioMax}
+                  onChange={(e) =>
+                    setFilters({ ...filters, precioMax: e.target.value })
+                  }
+                  className="text-sm"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+
+              {/* Ordenar Por */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-gray-600">
+                  Ordenar Por
+                </Label>
+                <div className="flex gap-2">
+                  <select
+                    value={filters.sortBy}
+                    onChange={(e) =>
+                      setFilters({ ...filters, sortBy: e.target.value as any })
+                    }
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  >
+                    <option value="nombre">Nombre</option>
+                    <option value="stock">Stock</option>
+                    <option value="precio">Precio</option>
+                    <option value="categoria">Categoría</option>
+                  </select>
+                  <button
+                    onClick={() =>
+                      setFilters({
+                        ...filters,
+                        sortOrder: filters.sortOrder === 'asc' ? 'desc' : 'asc',
+                      })
+                    }
+                    className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50"
+                    title={`Ordenar ${filters.sortOrder === 'asc' ? 'descendente' : 'ascendente'}`}
+                  >
+                    {filters.sortOrder === 'asc' ? '↑' : '↓'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Botón Limpiar Filtros */}
+            {(filters.stockMin || filters.stockMax || filters.precioMin || filters.precioMax) && (
+              <div className="pt-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    setFilters({
+                      stockMin: '',
+                      stockMax: '',
+                      precioMin: '',
+                      precioMax: '',
+                      sortBy: 'nombre',
+                      sortOrder: 'asc',
+                    })
+                  }
+                  className="text-xs"
+                >
+                  ✕ Limpiar Filtros
+                </Button>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

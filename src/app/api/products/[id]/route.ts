@@ -4,6 +4,7 @@ import dbConnect from '@/lib/mongodb';
 import Product from '@/lib/models/Product';
 import { authOptions } from '@/lib/auth';
 import { registrarAuditLog, detectarCambios } from '@/lib/audit-service';
+import { validarPreciosCoherentes } from '@/lib/validation-service';
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -47,6 +48,17 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         mergedForValidation[field] === ''
       ) {
         return NextResponse.json({ error: `El campo ${field} es requerido` }, { status: 400 });
+      }
+    }
+
+    // Validar precios coherentes
+    if (updateData.precio || updateData.precioCompra) {
+      const precioVenta = updateData.precio ?? existingProduct.precio;
+      const precioCompra = updateData.precioCompra ?? existingProduct.precioCompra;
+      
+      const validacionPrecio = validarPreciosCoherentes(precioCompra, precioVenta);
+      if (!validacionPrecio.valido) {
+        return NextResponse.json({ error: validacionPrecio.mensaje }, { status: 400 });
       }
     }
 
