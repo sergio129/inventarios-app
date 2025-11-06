@@ -9,6 +9,8 @@ export interface IClient {
   ciudad?: string;
   ultimaCompra?: Date;
   totalCompras?: number;
+  totalDevoluciones?: number;
+  ultimaDevolucion?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -50,6 +52,13 @@ const ClientSchema = new mongoose.Schema(
     totalCompras: {
       type: Number,
       default: 0,
+    },
+    totalDevoluciones: {
+      type: Number,
+      default: 0,
+    },
+    ultimaDevolucion: {
+      type: Date,
     },
   },
   {

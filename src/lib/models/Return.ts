@@ -12,7 +12,7 @@ export interface IReturnItem {
 
 export interface IReturn extends Document {
   numeroDevolucion: string;
-  ventaId: string;
+  ventaId?: string;
   numeroFactura: string;
   cliente: {
     cedula: string;
@@ -45,7 +45,6 @@ const ReturnSchema = new Schema<IReturn>(
     },
     ventaId: {
       type: String,
-      required: true,
       index: true,
     },
     numeroFactura: {
@@ -62,7 +61,7 @@ const ReturnSchema = new Schema<IReturn>(
       },
       nombre: String,
     },
-    items: [
+    productosDevueltos: [
       {
         productoId: String,
         nombreProducto: String,

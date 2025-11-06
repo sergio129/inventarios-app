@@ -160,7 +160,7 @@ export function ReturnsComponent({ salesData = [] }: ReturnComponentProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          venta: selectedSale._id,
+          ventaId: selectedSale._id,
           numeroFactura: selectedSale.numeroFactura,
           cliente: selectedSale.cliente,
           productosDevueltos: selectedProducts.map((item, idx) => ({

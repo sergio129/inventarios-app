@@ -68,18 +68,23 @@ export async function POST(request: NextRequest) {
     }
 
     const {
+      venta,
       ventaId,
       numeroFactura,
       cliente,
-      items,
-      descuento,
+      productosDevueltos,
+      montoDevuelto,
+      razonDevolucion,
       notas,
-      tipoDevolucion,
     } = await request.json();
 
-    if (!ventaId || !numeroFactura || !cliente || !items || items.length === 0) {
+    // Aceptar tanto "venta" como "ventaId" para compatibilidad
+    const ventaIdFinal = venta || ventaId;
+
+    // Validación mejorada
+    if (!ventaIdFinal || !numeroFactura || !productosDevueltos || productosDevueltos.length === 0) {
       return NextResponse.json(
-        { error: 'Datos incompletos para la devolución' },
+        { error: 'Datos incompletos para la devolución. Se requiere: venta, numeroFactura, productosDevueltos' },
         { status: 400 }
       );
     }
@@ -87,7 +92,7 @@ export async function POST(request: NextRequest) {
     await dbConnect();
 
     // Verificar que la venta existe
-    const sale = await Sale.findById(ventaId);
+    const sale = await Sale.findById(ventaIdFinal);
     if (!sale) {
       return NextResponse.json(
         { error: 'Venta no encontrada' },
@@ -95,66 +100,86 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calcular totales de la devolución
-    let subtotal = 0;
-    let impuesto = 0;
-
-    for (const item of items) {
-      subtotal += item.precioTotal || 0;
-    }
-
-    // Aplicar descuento si existe
-    const descuentoAplicado = descuento || 0;
-    const subtotalConDescuento = subtotal - descuentoAplicado;
-
-    // Calcular impuesto (IVA 19%)
-    impuesto = Math.round(subtotalConDescuento * 0.19);
-
-    const total = subtotalConDescuento + impuesto;
-    const montoReembolso = total;
-
-    // Crear número único de devolución
+    // Generar número de devolución
     const numeroDevolucion = generateReturnNumber();
 
-    // Crear documento de devolución
-    const newReturn = new Return({
+    // Crear registro de devolución
+    const returnRecord = new Return({
       numeroDevolucion,
-      ventaId,
       numeroFactura,
-      cliente: {
-        cedula: cliente.cedula.toLowerCase().trim(),
-        nombre: cliente.nombre,
-      },
-      items,
-      subtotal,
-      descuento: descuentoAplicado,
-      impuesto,
-      total,
-      montoReembolso,
+      ventaId: ventaIdFinal,
+      cliente,
+      productosDevueltos,
+      montoDevuelto: montoDevuelto || 0,
+      razonDevolucion: razonDevolucion || 'no_especificada',
+      notas: notas || '',
       estado: 'pendiente',
-      tipoDevolucion: tipoDevolucion || 'parcial',
-      metodoPago: sale.metodoPago || 'No especificado',
-      notas,
-      vendedor: session.user.id,
       fechaCreacion: new Date(),
     });
 
-    await newReturn.save();
+    await returnRecord.save();
 
-    // Aumentar stock de los productos devueltos
-    for (const item of items) {
-      await Product.findByIdAndUpdate(
-        item.productoId,
-        { $inc: { stock: item.cantidadDevuelta } },
-        { new: true }
-      );
+    // ⭐ RESTAURAR STOCK DE LOS PRODUCTOS DEVUELTOS
+    for (const productoDevuelto of productosDevueltos) {
+      try {
+        // Encontrar el producto por nombre
+        const product = await Product.findOne({
+          nombre: productoDevuelto.nombreProducto,
+        });
+
+        if (product) {
+          // Restaurar el stock sumando la cantidad devuelta
+          product.stock += productoDevuelto.cantidad;
+          await product.save();
+
+          console.log(
+            `✓ Stock restaurado para "${productoDevuelto.nombreProducto}": +${productoDevuelto.cantidad} (nuevo stock: ${product.stock})`
+          );
+        } else {
+          console.warn(
+            `⚠ Producto "${productoDevuelto.nombreProducto}" no encontrado en inventario`
+          );
+        }
+      } catch (stockError) {
+        console.error(
+          `✗ Error restaurando stock para "${productoDevuelto.nombreProducto}":`,
+          stockError
+        );
+        // No bloquear la devolución si hay error con el stock
+      }
     }
 
-    return NextResponse.json(newReturn, { status: 201 });
-  } catch (error) {
-    console.error('Error creando devolución:', error);
+    // Actualizar estadísticas del cliente
+    if (cliente && cliente.cedula) {
+      try {
+        const cedulaNormalizada = cliente.cedula.toLowerCase().trim();
+        await Client.findOneAndUpdate(
+          { cedula: cedulaNormalizada },
+          {
+            $inc: { totalDevoluciones: 1 },
+            ultimaDevolucion: new Date(),
+          },
+          { new: true }
+        );
+        console.log(`✓ Cliente ${cedulaNormalizada} actualizado con devolución registrada`);
+      } catch (clientError) {
+        console.warn('⚠ Error actualizando cliente:', clientError);
+      }
+    }
+
     return NextResponse.json(
-      { error: 'Error interno del servidor' },
+      {
+        success: true,
+        message: 'Devolución registrada exitosamente y stock restaurado automáticamente',
+        numeroDevolucion,
+        return: returnRecord,
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error('✗ Error creando devolución:', error);
+    return NextResponse.json(
+      { error: 'Error interno del servidor', details: String(error) },
       { status: 500 }
     );
   }
