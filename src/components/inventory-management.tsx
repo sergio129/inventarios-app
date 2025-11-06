@@ -54,6 +54,8 @@ export default function InventoryManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
+  const [lowStockAlertOpen, setLowStockAlertOpen] = useState(false);
+  const [lowStockProducts, setLowStockProducts] = useState<Product[]>([]);
   const [updateForm, setUpdateForm] = useState<InventoryUpdateForm>({
     stockCajas: '',
     unidadesPorCaja: '',
@@ -70,6 +72,19 @@ export default function InventoryManagement() {
     fetchProducts();
   }, []);
 
+  // Detectar productos con stock bajo
+  useEffect(() => {
+    const productsWithLowStock = products.filter(product => {
+      // Calcular el stock total correctamente
+      const totalStock = (product.stockCajas * product.unidadesPorCaja) + product.stockUnidadesSueltas;
+      return totalStock > 0 && totalStock <= 2;
+    });
+    if (productsWithLowStock.length > 0) {
+      setLowStockProducts(productsWithLowStock);
+      setLowStockAlertOpen(true);
+    }
+  }, [products]);
+
   useEffect(() => {
     const filtered = products.filter(product =>
       product.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -78,6 +93,28 @@ export default function InventoryManagement() {
     );
     setFilteredProducts(filtered);
   }, [products, searchTerm]);
+
+  // Actualizar formulario cuando cambia selectedProduct
+  useEffect(() => {
+    if (selectedProduct) {
+      const precioCompra = selectedProduct.precioCompra ?? 0;
+      const precioCompraCaja = selectedProduct.precioCompraCaja ?? 0;
+      const precio = selectedProduct.precio ?? 0;
+      const precioCaja = selectedProduct.precioCaja ?? 0;
+
+      setUpdateForm({
+        stockCajas: (selectedProduct.stockCajas ?? 0).toString(),
+        unidadesPorCaja: (selectedProduct.unidadesPorCaja ?? 1).toString(),
+        stockUnidadesSueltas: (selectedProduct.stockUnidadesSueltas ?? 0).toString(),
+        precioCompra: precioCompra.toString(),
+        precioCompraCaja: precioCompraCaja.toString(),
+        precio: precio.toString(),
+        precioCaja: precioCaja.toString(),
+        margenGananciaUnidad: precioCompra > 0 ? (((precio - precioCompra) / precioCompra) * 100).toFixed(2) : '0',
+        margenGananciaCaja: precioCompraCaja > 0 ? (((precioCaja - precioCompraCaja) / precioCompraCaja) * 100).toFixed(2) : '0'
+      });
+    }
+  }, [selectedProduct]);
 
   const fetchProducts = async () => {
     try {
@@ -610,6 +647,87 @@ export default function InventoryManagement() {
             <Button onClick={updateInventory} className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
               Actualizar Inventario
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo de Alerta de Stock Bajo */}
+      <Dialog open={lowStockAlertOpen} onOpenChange={setLowStockAlertOpen}>
+        <DialogContent className="sm:max-w-[600px] bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-200">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-700">
+              <div className="p-2 bg-red-100 rounded-lg">
+                <TrendingUp className="h-5 w-5 text-red-600 rotate-180" />
+              </div>
+              ⚠️ Alerta de Stock Bajo
+            </DialogTitle>
+            <DialogDescription className="text-gray-700">
+              Los siguientes productos están llegando al nivel mínimo de inventario (≤ 2 unidades)
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="max-h-[400px] overflow-y-auto">
+            <div className="space-y-3">
+              {lowStockProducts.map((product) => {
+                const totalStock = (product.stockCajas * product.unidadesPorCaja) + product.stockUnidadesSueltas;
+                return (
+                <div
+                  key={product._id}
+                  className="p-4 bg-white rounded-lg border border-red-200 hover:border-red-300 transition-colors"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h4 className="font-semibold text-gray-900">{product.nombre}</h4>
+                        <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">
+                          Stock: {totalStock}
+                        </span>
+                      </div>
+                      <div className="text-sm text-gray-600 mb-2">
+                        <p>Código: <span className="font-mono">{product.codigo || 'N/A'}</span></p>
+                        <p>Categoría: <span className="font-medium">{product.categoria}</span></p>
+                      </div>
+                      <div className="flex gap-4 text-sm">
+                        <div className="bg-blue-50 px-2 py-1 rounded">
+                          <span className="text-gray-600">Cajas: </span>
+                          <span className="font-semibold">{product.stockCajas}</span>
+                        </div>
+                        <div className="bg-green-50 px-2 py-1 rounded">
+                          <span className="text-gray-600">Sueltas: </span>
+                          <span className="font-semibold">{product.stockUnidadesSueltas}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => {
+                        openUpdateDialog(product);
+                        setLowStockAlertOpen(false);
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700 text-white text-xs whitespace-nowrap"
+                    >
+                      Reabastecer
+                    </Button>
+                  </div>
+                </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setLowStockAlertOpen(false)}
+              className="border-red-200 text-red-700 hover:bg-red-50"
+            >
+              Descartar Alerta
+            </Button>
+            <Button
+              onClick={() => setLowStockAlertOpen(false)}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              Entendido
             </Button>
           </DialogFooter>
         </DialogContent>
