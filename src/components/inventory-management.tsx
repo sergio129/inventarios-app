@@ -233,8 +233,41 @@ export default function InventoryManagement() {
     setIsUpdateDialogOpen(true);
   };
 
+  const validarAntesDeGuardar = (): { valido: boolean; mensajes: string[] } => {
+    const mensajes: string[] = [];
+
+    const precioCompra = parseFloat(updateForm.precioCompra || '0') || 0;
+    const precio = parseFloat(updateForm.precio || '0') || 0;
+
+    // Validar precios
+    if (precioCompra > 0 && precio > 0) {
+      const validacionPrecio = validarPreciosCoherentes(precioCompra, precio);
+      if (!validacionPrecio.valido) {
+        mensajes.push(validacionPrecio.mensaje);
+      }
+    }
+
+    // Validar unidades por caja
+    const unidadesPorCaja = parseInt(updateForm.unidadesPorCaja || '1');
+    if (unidadesPorCaja < 1) {
+      mensajes.push('Las unidades por caja deben ser mínimo 1');
+    }
+
+    return {
+      valido: mensajes.length === 0,
+      mensajes,
+    };
+  };
+
   const updateInventory = async () => {
     if (!selectedProduct) return;
+
+    // Validar antes de enviar
+    const validacion = validarAntesDeGuardar();
+    if (!validacion.valido) {
+      validacion.mensajes.forEach(msg => toast.error(msg));
+      return;
+    }
 
     try {
       const response = await fetch(`/api/products/${selectedProduct._id}`, {
