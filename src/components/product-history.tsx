@@ -80,7 +80,7 @@ export default function ProductHistory({ productoId }: ProductHistoryProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4 max-h-[400px] overflow-y-auto">
-          {historial.map((entry, index) => (
+          {historial.map((entry) => (
             <div
               key={entry._id}
               className="border-l-4 border-blue-500 pl-4 py-2"
