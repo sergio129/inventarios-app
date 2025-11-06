@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { User, Phone, Search, X, AlertCircle } from 'lucide-react';
+import { User, Phone, Search, X, AlertCircle, History } from 'lucide-react';
 import { toast } from 'sonner';
+import { ClientPurchaseHistory } from './client-purchase-history';
 
 interface ClientData {
   cedula: string;
@@ -30,6 +31,7 @@ export function QuickClientInput({ onClientSelect, currentClient }: QuickClientI
   const [clienteEncontrado, setClienteEncontrado] = useState(false);
   const [esNuevoCliente, setEsNuevoCliente] = useState(false);
   const [mostrarFormularioNuevo, setMostrarFormularioNuevo] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   // Sincronizar cuando currentClient cambia
   useEffect(() => {
@@ -273,9 +275,28 @@ export function QuickClientInput({ onClientSelect, currentClient }: QuickClientI
                 </div>
               )}
             </div>
+            {!esNuevoCliente && (
+              <Button
+                onClick={() => setShowHistoryModal(true)}
+                variant="outline"
+                size="sm"
+                className="ml-2 gap-2 border-green-300 text-green-600 hover:bg-green-50"
+              >
+                <History className="h-4 w-4" />
+                Ver historial
+              </Button>
+            )}
           </div>
         </div>
       )}
+
+      {/* Modal de historial de compras */}
+      <ClientPurchaseHistory
+        cedula={cedula}
+        clientName={nombre}
+        isOpen={showHistoryModal}
+        onOpenChange={setShowHistoryModal}
+      />
     </div>
   );
 }
