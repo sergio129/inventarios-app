@@ -127,14 +127,14 @@ export function ClientPurchaseHistory({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full sm:max-w-2xl max-h-screen overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <ShoppingCart className="h-5 w-5" />
+      <DialogContent className="w-full sm:max-w-3xl max-h-[90vh] overflow-y-auto bg-gradient-to-b from-slate-50 to-white">
+        <DialogHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-lg -m-6 mb-6">
+          <DialogTitle className="flex items-center gap-2 text-white text-lg">
+            <ShoppingCart className="h-6 w-6" />
             Historial de Compras
           </DialogTitle>
-          <DialogDescription>
-            {clientName} • Cédula: {cedula}
+          <DialogDescription className="text-blue-100 mt-1">
+            {clientName} • Cédula: <span className="font-mono font-semibold">{cedula}</span>
           </DialogDescription>
         </DialogHeader>
 
@@ -161,16 +161,16 @@ export function ClientPurchaseHistory({
         ) : (
           <div className="space-y-4 mt-6">
             {/* Resumen */}
-            <div className="grid grid-cols-2 gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
-              <div>
-                <p className="text-sm text-gray-600">Total Compras</p>
-                <p className="text-2xl font-bold text-blue-600">
+            <div className="grid grid-cols-2 gap-4 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200 shadow-sm">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-gray-600">Total de Compras</p>
+                <p className="text-3xl font-bold text-blue-600">
                   {purchases.length}
                 </p>
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Monto Total</p>
-                <p className="text-2xl font-bold text-green-600">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-gray-600">Monto Total Invertido</p>
+                <p className="text-3xl font-bold text-green-600">
                   ${getTotalAmount().toLocaleString('es-CO', {
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 0,
