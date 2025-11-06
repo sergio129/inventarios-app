@@ -215,7 +215,7 @@ export function Invoice({ sale, onClose, onPrint, onDownload }: InvoiceProps) {
 
           {/* Pie de página */}
           <div className="text-center text-xs text-gray-500 border-t pt-4">
-            <p>Gracias por su compra en inventarios-app</p>
+            <p>Gracias por su compra en la Unik</p>
             <p>Factura generada automáticamente por el sistema</p>
           </div>
         </div>

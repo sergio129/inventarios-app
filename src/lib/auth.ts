@@ -70,7 +70,7 @@ export const authOptions = {
       // Permite validación adicional
       return true;
     },
-    async jwt({ token, user, account }: any) {
+    async jwt({ token, user}: any) {
       try {
         if (user) {
           token.role = user.role;
