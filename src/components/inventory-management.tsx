@@ -367,60 +367,63 @@ export default function InventoryManagement() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header con navegación */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <Button
-            variant="ghost"
-            onClick={() => router.push('/inventory')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Volver al Inventario
-          </Button>
-          <h1 className="text-3xl font-bold text-gray-900">Gestión de Inventario</h1>
-          <p className="text-gray-600">Actualiza stock y precios de productos sin modificar su información básica</p>
-        </div>
-        <div className="flex gap-2">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header con navegación - Moderno */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <Button
+              variant="ghost"
+              onClick={() => router.push('/inventory')}
+              className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 mb-4 rounded-lg"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Volver al Inventario
+            </Button>
+            <div className="space-y-2">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
+                Gestión de Inventario
+              </h1>
+              <p className="text-gray-600 font-medium">Actualiza stock y precios de productos sin modificar su información básica</p>
+            </div>
+          </div>
           <Button
             variant="outline"
             onClick={() => router.push('/dashboard')}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 border-indigo-200 text-indigo-600 hover:bg-indigo-50 rounded-lg px-4 py-2"
           >
             <Package className="h-4 w-4" />
             Dashboard
           </Button>
         </div>
-      </div>
 
-      {/* Barra de búsqueda y filtros */}
-      <Card className="mb-6">
-        <CardContent className="pt-6">
+        {/* Barra de búsqueda y filtros */}
+        <Card className="mb-6 border-0 shadow-lg bg-white rounded-xl overflow-hidden">
+          <CardContent className="pt-6">
           <div className="space-y-4">
             {/* Búsqueda */}
             <div>
-              <Label htmlFor="search" className="text-sm font-medium text-gray-700 mb-2 block">
-                Buscar productos
+              <Label htmlFor="search" className="text-sm font-bold text-gray-700 mb-3 block">
+                🔍 Buscar productos
               </Label>
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-3.5 h-5 w-5 text-indigo-400" />
                 <Input
                   id="search"
                   placeholder="Buscar por nombre, código o categoría..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-indigo-500 transition-all bg-gray-50 hover:bg-white"
                 />
               </div>
             </div>
 
             {/* Filtros Avanzados */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 pt-4 border-t">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 pt-6 border-t-2 border-gray-200">
               {/* Filtro Stock Mínimo */}
               <div className="space-y-2">
-                <Label htmlFor="stockMin" className="text-xs font-medium text-gray-600">
-                  Stock Mínimo
+                <Label htmlFor="stockMin" className="text-xs font-bold text-gray-600 uppercase tracking-wide">
+                  📦 Stock Mín
                 </Label>
                 <Input
                   id="stockMin"
@@ -430,15 +433,15 @@ export default function InventoryManagement() {
                   onChange={(e) =>
                     setFilters({ ...filters, stockMin: e.target.value })
                   }
-                  className="text-sm"
+                  className="text-sm border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 bg-gray-50 hover:bg-white transition-all"
                   min="0"
                 />
               </div>
 
               {/* Filtro Stock Máximo */}
               <div className="space-y-2">
-                <Label htmlFor="stockMax" className="text-xs font-medium text-gray-600">
-                  Stock Máximo
+                <Label htmlFor="stockMax" className="text-xs font-bold text-gray-600 uppercase tracking-wide">
+                  📦 Stock Máx
                 </Label>
                 <Input
                   id="stockMax"
@@ -448,15 +451,15 @@ export default function InventoryManagement() {
                   onChange={(e) =>
                     setFilters({ ...filters, stockMax: e.target.value })
                   }
-                  className="text-sm"
+                  className="text-sm border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 bg-gray-50 hover:bg-white transition-all"
                   min="0"
                 />
               </div>
 
               {/* Filtro Precio Mínimo */}
               <div className="space-y-2">
-                <Label htmlFor="precioMin" className="text-xs font-medium text-gray-600">
-                  Precio Mín
+                <Label htmlFor="precioMin" className="text-xs font-bold text-gray-600 uppercase tracking-wide">
+                  💰 Precio Mín
                 </Label>
                 <Input
                   id="precioMin"
@@ -466,7 +469,7 @@ export default function InventoryManagement() {
                   onChange={(e) =>
                     setFilters({ ...filters, precioMin: e.target.value })
                   }
-                  className="text-sm"
+                  className="text-sm border-2 border-gray-200 rounded-lg focus:border-green-500 focus:ring-green-500 bg-gray-50 hover:bg-white transition-all"
                   min="0"
                   step="0.01"
                 />
@@ -474,8 +477,8 @@ export default function InventoryManagement() {
 
               {/* Filtro Precio Máximo */}
               <div className="space-y-2">
-                <Label htmlFor="precioMax" className="text-xs font-medium text-gray-600">
-                  Precio Máx
+                <Label htmlFor="precioMax" className="text-xs font-bold text-gray-600 uppercase tracking-wide">
+                  💰 Precio Máx
                 </Label>
                 <Input
                   id="precioMax"
@@ -485,7 +488,7 @@ export default function InventoryManagement() {
                   onChange={(e) =>
                     setFilters({ ...filters, precioMax: e.target.value })
                   }
-                  className="text-sm"
+                  className="text-sm border-2 border-gray-200 rounded-lg focus:border-green-500 focus:ring-green-500 bg-gray-50 hover:bg-white transition-all"
                   min="0"
                   step="0.01"
                 />
@@ -493,8 +496,8 @@ export default function InventoryManagement() {
 
               {/* Ordenar Por */}
               <div className="space-y-2">
-                <Label className="text-xs font-medium text-gray-600">
-                  Ordenar Por
+                <Label className="text-xs font-bold text-gray-600 uppercase tracking-wide">
+                  📊 Ordenar Por
                 </Label>
                 <div className="flex gap-2">
                   <select
@@ -502,7 +505,7 @@ export default function InventoryManagement() {
                     onChange={(e) =>
                       setFilters({ ...filters, sortBy: e.target.value as any })
                     }
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    className="flex-1 px-3 py-2 border-2 border-gray-200 rounded-lg text-sm font-medium focus:border-purple-500 focus:ring-purple-500 bg-gray-50 hover:bg-white transition-all cursor-pointer"
                   >
                     <option value="nombre">Nombre</option>
                     <option value="stock">Stock</option>
@@ -516,7 +519,7 @@ export default function InventoryManagement() {
                         sortOrder: filters.sortOrder === 'asc' ? 'desc' : 'asc',
                       })
                     }
-                    className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50"
+                    className="px-3 py-2 border-2 border-gray-200 rounded-lg text-sm font-bold bg-gray-50 hover:bg-white hover:border-purple-500 hover:text-purple-600 transition-all"
                     title={`Ordenar ${filters.sortOrder === 'asc' ? 'descendente' : 'ascendente'}`}
                   >
                     {filters.sortOrder === 'asc' ? '↑' : '↓'}
@@ -527,7 +530,7 @@ export default function InventoryManagement() {
 
             {/* Botón Limpiar Filtros */}
             {(filters.stockMin || filters.stockMax || filters.precioMin || filters.precioMax) && (
-              <div className="pt-2">
+              <div className="pt-2 flex justify-end">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -541,7 +544,7 @@ export default function InventoryManagement() {
                       sortOrder: 'asc',
                     })
                   }
-                  className="text-xs"
+                  className="text-xs font-bold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all"
                 >
                   ✕ Limpiar Filtros
                 </Button>
@@ -552,94 +555,100 @@ export default function InventoryManagement() {
       </Card>
 
       {/* Tabla de productos */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5" />
+      <Card className="border-0 shadow-lg bg-white rounded-xl overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-indigo-50 to-blue-50 border-b-2 border-gray-200 py-5">
+          <CardTitle className="flex items-center gap-2 text-indigo-900 text-xl">
+            <Package className="h-6 w-6 text-indigo-600" />
             Productos ({filteredProducts.length})
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-gray-600 mt-1">
             Selecciona un producto para actualizar su inventario y precios
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Producto</TableHead>
-                <TableHead>Código</TableHead>
-                <TableHead>Categoría</TableHead>
-                <TableHead>Stock Actual</TableHead>
-                <TableHead>Precio Venta</TableHead>
-                <TableHead>Precio Compra</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredProducts.map((product) => (
-                <TableRow key={product._id}>
-                  <TableCell className="font-medium">{product.nombre}</TableCell>
-                  <TableCell className="font-mono text-sm">{product.codigo}</TableCell>
-                  <TableCell>{product.categoria}</TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      <div className="font-bold">{product.stock} total</div>
-                      <div className="text-gray-500">
-                        {product.stockCajas} cajas × {product.unidadesPorCaja} + {product.stockUnidadesSueltas} sueltas
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      <div>${product.precio.toLocaleString()} (unidad)</div>
-                      {product.precioCaja > 0 && (
-                        <div className="text-gray-500">${product.precioCaja.toLocaleString()} (caja)</div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      <div>${product.precioCompra.toLocaleString()} (unidad)</div>
-                      {product.precioCompraCaja > 0 && (
-                        <div className="text-gray-500">${product.precioCompraCaja.toLocaleString()} (caja)</div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openUpdateDialog(product)}
-                      className="flex items-center gap-2"
-                    >
-                      <Edit className="h-4 w-4" />
-                      Actualizar
-                    </Button>
-                  </TableCell>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gradient-to-r from-gray-50 to-gray-100 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-150 border-b-2 border-gray-300">
+                  <TableHead className="font-bold text-gray-700 py-4 px-4">Producto</TableHead>
+                  <TableHead className="font-bold text-gray-700 py-4 px-4">Código</TableHead>
+                  <TableHead className="font-bold text-gray-700 py-4 px-4">Categoría</TableHead>
+                  <TableHead className="font-bold text-gray-700 py-4 px-4">📦 Stock Actual</TableHead>
+                  <TableHead className="font-bold text-gray-700 py-4 px-4">💰 Precio Venta</TableHead>
+                  <TableHead className="font-bold text-gray-700 py-4 px-4">💳 Precio Compra</TableHead>
+                  <TableHead className="text-right font-bold text-gray-700 py-4 px-4">Acciones</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredProducts.map((product) => (
+                  <TableRow key={product._id} className="border-b border-gray-100 hover:bg-blue-50 transition-colors">
+                    <TableCell className="font-bold text-gray-900 py-4 px-4">{product.nombre}</TableCell>
+                    <TableCell className="font-mono text-sm text-indigo-600 py-4 px-4 bg-gray-50">{product.codigo}</TableCell>
+                    <TableCell className="text-gray-700 py-4 px-4">
+                      <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold">
+                        {product.categoria}
+                      </span>
+                    </TableCell>
+                    <TableCell className="py-4 px-4">
+                      <div className="text-sm">
+                        <div className="font-bold text-lg text-green-600">{product.stock} total</div>
+                        <div className="text-gray-500 text-xs">
+                          {product.stockCajas} cajas × {product.unidadesPorCaja} + {product.stockUnidadesSueltas} sueltas
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4 px-4">
+                      <div className="text-sm">
+                        <div className="font-bold text-green-600">${product.precio.toLocaleString()}</div>
+                        {product.precioCaja > 0 && (
+                          <div className="text-gray-500 text-xs">${product.precioCaja.toLocaleString()} (caja)</div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4 px-4">
+                      <div className="text-sm">
+                        <div className="font-bold text-orange-600">${product.precioCompra.toLocaleString()}</div>
+                        {product.precioCompraCaja > 0 && (
+                          <div className="text-gray-500 text-xs">${product.precioCompraCaja.toLocaleString()} (caja)</div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right py-4 px-4">
+                      <Button
+                        onClick={() => openUpdateDialog(product)}
+                        className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold rounded-lg flex items-center gap-2 px-4 py-2 transition-all"
+                      >
+                        <Edit className="h-4 w-4" />
+                        Actualizar
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
       {/* Modal de actualización de inventario */}
       <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-xl">
+          <DialogHeader className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-t-xl -m-6 mb-6 p-6 pb-4">
+            <DialogTitle className="flex items-center gap-3 text-white text-2xl font-bold">
+              <TrendingUp className="h-6 w-6" />
               Actualizar Inventario - {selectedProduct?.nombre}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-indigo-100 mt-2">
               Modifica el stock y precios del producto. Los cambios se aplicarán inmediatamente.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-6 py-4">
             {/* Sección de Control de Inventario */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Control de Inventario</h3>
+            <div className="space-y-4 bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border-2 border-blue-200">
+              <h3 className="text-lg font-bold text-indigo-900 flex items-center gap-2">
+                📦 Control de Inventario
+              </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
@@ -727,16 +736,18 @@ export default function InventoryManagement() {
                 </div>
               </div>
 
-              <div className="bg-blue-50 p-4 rounded-md">
-                <div className="text-sm text-blue-800">
-                  <strong>Total estimado:</strong> {((parseInt(updateForm.stockCajas) || 0) * (parseInt(updateForm.unidadesPorCaja) || 1)) + (parseInt(updateForm.stockUnidadesSueltas) || 0)} unidades
+              <div className="bg-green-100 border-l-4 border-green-500 p-4 rounded-lg">
+                <div className="text-sm font-bold text-green-800">
+                  ✓ Total estimado: <span className="text-lg">{((parseInt(updateForm.stockCajas) || 0) * (parseInt(updateForm.unidadesPorCaja) || 1)) + (parseInt(updateForm.stockUnidadesSueltas) || 0)} unidades</span>
                 </div>
               </div>
             </div>
 
             {/* Sección de Precios y Ganancias */}
-            <div className="space-y-6">
-              <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Precios y Márgenes de Ganancia</h3>
+            <div className="space-y-6 bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border-2 border-green-200">
+              <h3 className="text-lg font-bold text-emerald-900 flex items-center gap-2">
+                💰 Precios y Márgenes de Ganancia
+              </h3>
 
               {/* Precios de Compra */}
               <div className="space-y-4">
@@ -880,11 +891,18 @@ export default function InventoryManagement() {
             </div>
           )}
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsUpdateDialogOpen(false)}>
-              Cancelar
+          <DialogFooter className="gap-3 pt-6 border-t-2 border-gray-200">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsUpdateDialogOpen(false)}
+              className="border-2 border-gray-300 text-gray-700 font-bold hover:bg-gray-100 rounded-lg"
+            >
+              ✕ Cancelar
             </Button>
-            <Button onClick={updateInventory} className="flex items-center gap-2">
+            <Button 
+              onClick={updateInventory} 
+              className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold rounded-lg flex items-center gap-2 px-6"
+            >
               <TrendingUp className="h-4 w-4" />
               Actualizar Inventario
             </Button>
@@ -972,6 +990,7 @@ export default function InventoryManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }
