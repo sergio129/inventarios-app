@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import dbConnect from '@/lib/mongodb';
 import Product from '@/lib/models/Product';
 import { authOptions } from '@/lib/auth';
+import { registrarAuditLog, detectarCambios } from '@/lib/audit-service';
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -83,6 +84,22 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'Producto no encontrado' }, { status: 404 });
     }
 
+    // Registrar en auditoría
+    const cambios = detectarCambios(existingProduct.toObject(), updatedProduct.toObject());
+    if (cambios.length > 0) {
+      await registrarAuditLog(
+        session.user.id || session.user.email || 'desconocido',
+        session.user.email || 'desconocido',
+        session.user.name || 'Usuario Desconocido',
+        id,
+        updatedProduct.nombre,
+        'actualizar',
+        cambios,
+        `Actualización de ${cambios.length} campo(s)`,
+        request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined
+      );
+    }
+
     return NextResponse.json(updatedProduct);
 
   } catch (error: any) {
@@ -135,6 +152,19 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     if (!deletedProduct) {
       return NextResponse.json({ error: 'Producto no encontrado' }, { status: 404 });
     }
+
+    // Registrar eliminación en auditoría
+    await registrarAuditLog(
+      session.user.id || session.user.email || 'desconocido',
+      session.user.email || 'desconocido',
+      session.user.name || 'Usuario Desconocido',
+      id,
+      deletedProduct.nombre,
+      'eliminar',
+      [{ campo: 'activo', valorAnterior: true, valorNuevo: false }],
+      'Producto desactivado',
+      request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || undefined
+    );
 
     return NextResponse.json({ message: 'Producto eliminado exitosamente' });
 

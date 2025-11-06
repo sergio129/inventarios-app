@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Search, Package, Plus, Edit, TrendingUp, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import ProductHistory from '@/components/product-history';
 
 interface Product {
   _id: string;
@@ -639,6 +640,13 @@ export default function InventoryManagement() {
               </div>
             </div>
           </div>
+
+          {/* Historial de Cambios */}
+          {selectedProduct && (
+            <div className="mt-6 border-t pt-6">
+              <ProductHistory productoId={selectedProduct._id} />
+            </div>
+          )}
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsUpdateDialogOpen(false)}>
