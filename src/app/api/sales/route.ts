@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth/next';
 import dbConnect from '@/lib/mongodb';
 import Sale from '@/lib/models/Sale';
 import Product from '@/lib/models/Product';
+import Client from '@/lib/models/Client';
+import ClientPurchaseHistory from '@/lib/models/ClientPurchaseHistory';
 import { authOptions } from '@/lib/auth';
 import { getNowLocal } from '@/lib/date-utils';
 
@@ -130,6 +132,45 @@ export async function POST(request: NextRequest) {
     }
 
     await sale.save();
+
+    // Actualizar estadísticas del cliente y crear historial de compras
+    if (cliente && cliente.cedula) {
+      try {
+        const cedulaNormalizada = cliente.cedula.toLowerCase().trim();
+        
+        // Actualizar cliente: incrementar totalCompras y establecer ultimaCompra
+        await Client.findOneAndUpdate(
+          { cedula: cedulaNormalizada },
+          {
+            $inc: { totalCompras: 1 },
+            ultimaCompra: new Date()
+          },
+          { new: true }
+        );
+
+        // Crear registro de historial de compras
+        const purchaseHistory = new ClientPurchaseHistory({
+          cliente: {
+            cedula: cedulaNormalizada,
+            nombre: cliente.nombre || 'Sin nombre'
+          },
+          numeroFactura: sale.numeroFactura,
+          items: sale.items,
+          subtotal: sale.subtotal,
+          descuento: sale.descuento,
+          impuesto: sale.impuesto,
+          total: sale.total,
+          metodoPago: sale.metodoPago || 'No especificado',
+          notas: sale.notas || ''
+        });
+        
+        await purchaseHistory.save();
+      } catch (clientError) {
+        console.warn('Advertencia: Error actualizando cliente o creando historial:', clientError);
+        // No lanzamos error aquí porque la venta ya se creó exitosamente
+        // Solo registramos la advertencia
+      }
+    }
 
     return NextResponse.json(sale, { status: 201 });
 
