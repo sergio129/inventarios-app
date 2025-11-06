@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import Sale from '@/lib/models/Sale';
+import Client from '@/lib/models/Client';
 
 // GET: Buscar clientes por cédula o nombre / obtener recientes
 export async function GET(request: NextRequest) {
@@ -17,50 +18,74 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
     const limit = parseInt(searchParams.get('limit') || '10');
-    const type = searchParams.get('type') || 'all'; // 'all', 'recent', 'search'
 
-    let query: any = {};
-    
-    if (type === 'search' && search) {
-      query = {
-        $or: [
-          { 'cliente.cedula': { $regex: search, $options: 'i' } },
-          { 'cliente.nombre': { $regex: search, $options: 'i' } }
-        ],
-        'cliente.cedula': { $exists: true, $ne: null }
-      };
-    } else if (type === 'recent') {
-      query = { 'cliente.cedula': { $exists: true, $ne: null } };
+    if (!search || search.length < 2) {
+      return NextResponse.json([]);
     }
 
-    // Obtener clientes únicos de las ventas
-    const clients = await Sale.aggregate([
-      { $match: query },
+    // Buscar en la tabla de Clientes primero (más rápido)
+    const clientsFromDB = await Client.find(
       {
-        $group: {
-          _id: '$cliente.cedula',
-          nombre: { $first: '$cliente.nombre' },
-          cedula: { $first: '$cliente.cedula' },
-          telefono: { $first: '$cliente.telefono' },
-          ultimaCompra: { $max: '$fechaCreacion' },
-          totalCompras: { $sum: 1 }
-        }
+        $or: [
+          { cedula: { $regex: search, $options: 'i' } },
+          { nombre: { $regex: search, $options: 'i' } }
+        ]
       },
-      {
-        $project: {
-          _id: 0,
-          cedula: 1,
-          nombre: 1,
-          telefono: { $ifNull: ['$telefono', ''] },
-          ultimaCompra: 1,
-          totalCompras: 1
-        }
-      },
-      { $sort: { ultimaCompra: -1 } },
-      { $limit: limit }
-    ]);
+      { cedula: 1, nombre: 1, telefono: 1, ultimaCompra: 1, totalCompras: 1 }
+    )
+      .sort({ ultimaCompra: -1 })
+      .limit(limit)
+      .lean();
 
-    return NextResponse.json(clients);
+    // Si no hay resultados en BD, buscar en historial de ventas
+    if (clientsFromDB.length === 0) {
+      const clientsFromSales = await Sale.aggregate([
+        {
+          $match: {
+            $or: [
+              { 'cliente.cedula': { $regex: search, $options: 'i' } },
+              { 'cliente.nombre': { $regex: search, $options: 'i' } }
+            ],
+            'cliente.cedula': { $exists: true, $ne: null }
+          }
+        },
+        {
+          $group: {
+            _id: '$cliente.cedula',
+            nombre: { $first: '$cliente.nombre' },
+            cedula: { $first: '$cliente.cedula' },
+            telefono: { $first: '$cliente.telefono' },
+            ultimaCompra: { $max: '$fechaCreacion' },
+            totalCompras: { $sum: 1 }
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            cedula: 1,
+            nombre: 1,
+            telefono: { $ifNull: ['$telefono', ''] },
+            ultimaCompra: 1,
+            totalCompras: 1
+          }
+        },
+        { $sort: { ultimaCompra: -1 } },
+        { $limit: limit }
+      ]);
+
+      return NextResponse.json(clientsFromSales);
+    }
+
+    // Convertir a formato consistente
+    const formattedClients = clientsFromDB.map((client: any) => ({
+      cedula: client.cedula,
+      nombre: client.nombre,
+      telefono: client.telefono || '',
+      ultimaCompra: client.ultimaCompra,
+      totalCompras: client.totalCompras || 0
+    }));
+
+    return NextResponse.json(formattedClients);
   } catch (error) {
     console.error('Error fetching clients:', error);
     return NextResponse.json(
@@ -70,7 +95,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST: Guardar cliente automáticamente (solo validar)
+// POST: Guardar cliente en BD
 export async function POST(request: NextRequest) {
   try {
     await dbConnect();
@@ -90,11 +115,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Solo retornar el cliente validado
+    // Verificar si el cliente ya existe
+    let client = await Client.findOne({ cedula: cedula.toLowerCase().trim() });
+
+    if (client) {
+      // Si existe, actualizar teléfono si es proporcionado
+      if (telefono) {
+        client.telefono = telefono;
+        await client.save();
+      }
+    } else {
+      // Si no existe, crear nuevo cliente
+      client = new Client({
+        cedula: cedula.toLowerCase().trim(),
+        nombre,
+        telefono: telefono || '',
+      });
+      await client.save();
+    }
+
     return NextResponse.json({
-      cedula,
-      nombre,
-      telefono: telefono || ''
+      cedula: client.cedula,
+      nombre: client.nombre,
+      telefono: client.telefono || ''
     });
   } catch (error) {
     console.error('Error saving client:', error);

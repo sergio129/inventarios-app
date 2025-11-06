@@ -288,6 +288,26 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     try {
+      // Guardar cliente si existe (especialmente clientes nuevos)
+      if (cliente.nombre && cliente.cedula) {
+        try {
+          await fetch('/api/clients', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              cedula: cliente.cedula,
+              nombre: cliente.nombre,
+              telefono: cliente.telefono || ''
+            }),
+          });
+        } catch (clientError) {
+          console.error('Error saving client:', clientError);
+          // No interrumpir la venta si falla guardar cliente
+        }
+      }
+
       const saleData = {
         cliente: cliente.nombre ? cliente : undefined,
         items: cart.map(item => ({
