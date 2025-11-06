@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ShoppingCart, Search, ArrowLeft, Receipt, Minus, Package, User, Percent } from 'lucide-react';
 import { Invoice } from '@/components/invoice';
+import { QuickClientInput } from '@/components/quick-client-input';
 import { toast } from 'sonner';
 import { useCart } from '@/lib/cart-context';
 import { formatCurrency } from '@/lib/currency-utils';
@@ -523,62 +524,40 @@ export default function SalesPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div>
-                      <Label htmlFor="cliente-nombre" className="text-sm font-medium">Nombre del Cliente (Opcional)</Label>
-                      <Input
-                        id="cliente-nombre"
-                        value={cliente.nombre}
-                        onChange={(e) => setCliente({ ...cliente, nombre: e.target.value })}
-                        placeholder="Nombre completo"
-                      />
-                    </div>
+                  {/* Entrada Rápida de Cliente */}
+                  <div>
+                    <Label className="text-sm font-bold text-gray-700 mb-2 block">Cliente</Label>
+                    <QuickClientInput
+                      currentClient={cliente}
+                      onClientSelect={(selectedClient) => {
+                        setCliente(selectedClient);
+                      }}
+                    />
+                  </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Label htmlFor="cliente-cedula" className="text-sm font-medium">Cédula</Label>
-                        <Input
-                          id="cliente-cedula"
-                          value={cliente.cedula}
-                          onChange={(e) => setCliente({ ...cliente, cedula: e.target.value })}
-                          placeholder="1234567890"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="cliente-telefono" className="text-sm font-medium">Teléfono</Label>
-                        <Input
-                          id="cliente-telefono"
-                          value={cliente.telefono}
-                          onChange={(e) => setCliente({ ...cliente, telefono: e.target.value })}
-                          placeholder="0987654321"
-                        />
-                      </div>
-                    </div>
+                  <div>
+                    <Label htmlFor="metodo-pago" className="text-sm font-medium">Método de Pago</Label>
+                    <Select value={metodoPago} onValueChange={setMetodoPago}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="efectivo">Efectivo</SelectItem>
+                        <SelectItem value="tarjeta">Tarjeta de Crédito/Débito</SelectItem>
+                        <SelectItem value="transferencia">Transferencia Bancaria</SelectItem>
+                        <SelectItem value="credito">Crédito</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                    <div>
-                      <Label htmlFor="metodo-pago" className="text-sm font-medium">Método de Pago</Label>
-                      <Select value={metodoPago} onValueChange={setMetodoPago}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="efectivo">Efectivo</SelectItem>
-                          <SelectItem value="tarjeta">Tarjeta de Crédito/Débito</SelectItem>
-                          <SelectItem value="transferencia">Transferencia Bancaria</SelectItem>
-                          <SelectItem value="credito">Crédito</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="notas" className="text-sm font-medium">Notas (Opcional)</Label>
-                      <Input
-                        id="notas"
-                        value={notas}
-                        onChange={(e) => setNotas(e.target.value)}
-                        placeholder="Observaciones adicionales"
-                      />
-                    </div>
+                  <div>
+                    <Label htmlFor="notas" className="text-sm font-medium">Notas (Opcional)</Label>
+                    <Input
+                      id="notas"
+                      value={notas}
+                      onChange={(e) => setNotas(e.target.value)}
+                      placeholder="Observaciones adicionales"
+                    />
                   </div>
 
                   <Button
