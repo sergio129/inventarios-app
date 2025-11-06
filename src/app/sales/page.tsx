@@ -10,9 +10,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ShoppingCart, Search, ArrowLeft, Receipt, Minus, Package, User, Percent } from 'lucide-react';
+import { ShoppingCart, Search, ArrowLeft, Receipt, Minus, Package, User, Percent, RotateCcw } from 'lucide-react';
 import { Invoice } from '@/components/invoice';
 import { QuickClientInput } from '@/components/quick-client-input';
+import { ReturnsComponent } from '@/components/returns-component';
 import { toast } from 'sonner';
 import { useCart } from '@/lib/cart-context';
 import { formatCurrency } from '@/lib/currency-utils';
@@ -71,6 +72,7 @@ export default function SalesPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [activeTab, setActiveTab] = useState<'ventas' | 'devoluciones'>('ventas');
 
   // Nuevos estados para la funcionalidad de ventas
   const [products, setProducts] = useState<IProduct[]>([]);
@@ -574,18 +576,53 @@ export default function SalesPage() {
           </div>
         </div>
 
-        {/* Historial de Ventas */}
+        {/* Tabs de Historial y Devoluciones */}
         <Card className="mt-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-              <Receipt className="h-5 w-5 text-indigo-600" />
-              Historial de Ventas
-            </CardTitle>
-            <CardDescription className="text-gray-600">
-              Registro completo de todas las ventas realizadas
-            </CardDescription>
+          <CardHeader className="pb-4 border-b">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                  <Receipt className="h-5 w-5 text-indigo-600" />
+                  {activeTab === 'ventas' ? 'Historial de Ventas' : 'Gestión de Devoluciones'}
+                </CardTitle>
+                <CardDescription className="text-gray-600">
+                  {activeTab === 'ventas'
+                    ? 'Registro completo de todas las ventas realizadas'
+                    : 'Procesa y visualiza devoluciones de clientes'}
+                </CardDescription>
+              </div>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex gap-2 mt-4 border-b border-gray-200">
+              <button
+                onClick={() => setActiveTab('ventas')}
+                className={`px-6 py-3 font-medium text-sm transition-all border-b-2 ${
+                  activeTab === 'ventas'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <Receipt className="h-4 w-4 mr-2 inline" />
+                Ventas
+              </button>
+              <button
+                onClick={() => setActiveTab('devoluciones')}
+                className={`px-6 py-3 font-medium text-sm transition-all border-b-2 ${
+                  activeTab === 'devoluciones'
+                    ? 'border-red-600 text-red-600'
+                    : 'border-transparent text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <RotateCcw className="h-4 w-4 mr-2 inline" />
+                Devoluciones
+              </button>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
+            {/* Tab de Ventas */}
+            {activeTab === 'ventas' && (
+              <>
             {/* Filtros */}
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
               <div className="flex-1">
@@ -694,6 +731,13 @@ export default function SalesPage() {
                 <h3 className="text-lg font-medium mb-2">No hay ventas registradas</h3>
                 <p>Las ventas aparecerán aquí una vez que se realicen</p>
               </div>
+            )}
+            </>
+            )}
+
+            {/* Tab de Devoluciones */}
+            {activeTab === 'devoluciones' && (
+              <ReturnsComponent salesData={sales} />
             )}
           </CardContent>
         </Card>
