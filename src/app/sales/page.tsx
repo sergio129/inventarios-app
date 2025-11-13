@@ -18,6 +18,7 @@ import { PriceQueryModal } from '@/components/price-query-modal';
 import { toast } from 'sonner';
 import { useCart } from '@/lib/cart-context';
 import { formatCurrency } from '@/lib/currency-utils';
+import { calcularDescuentoMaximo, obtenerMensajeDescuentoMaximo } from '@/lib/discount-validator';
 import IProduct from '@/lib/types/product'
 
 interface Sale {
@@ -87,6 +88,10 @@ export default function SalesPage() {
 
   // Estado para el modal de consulta de precios
   const [showPriceQuery, setShowPriceQuery] = useState(false);
+
+  // Estado para validación de descuento
+  const [descuentoMaximoPermitido, setDescuentoMaximoPermitido] = useState(0);
+  const [mensajeDescuentoMaximo, setMensajeDescuentoMaximo] = useState('');
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -220,6 +225,34 @@ export default function SalesPage() {
     };
   }, [barcodeInput, products, showPriceQuery]);
 
+  // Calcular descuento máximo permitido basado en las ganancias
+  useEffect(() => {
+    if (cart.length === 0) {
+      setDescuentoMaximoPermitido(0);
+      setMensajeDescuentoMaximo('');
+      return;
+    }
+
+    // Crear mapa de productos para fácil lookup
+    const productMap = new Map(products.map(p => [p._id, p]));
+
+    // Preparar items con formato esperado por calcularDescuentoMaximo
+    const cartItems = cart.map(item => ({
+      producto: item.producto,
+      cantidad: item.cantidad,
+      tipoVenta: item.tipoVenta as 'unidad' | 'empaque',
+      precioUnitario: item.precioUnitario,
+      precioTotal: item.precioTotal
+    }));
+
+    const descuentoMaximo = calcularDescuentoMaximo(cartItems, productMap);
+    setDescuentoMaximoPermitido(descuentoMaximo);
+    
+    const subtotal = calculateSubtotal();
+    const mensaje = obtenerMensajeDescuentoMaximo(descuentoMaximo, subtotal);
+    setMensajeDescuentoMaximo(mensaje);
+  }, [cart, products, calculateSubtotal]);
+
   const processBarcodeScanned = (barcode: string) => {
     // Buscar el producto por código de barras - primero búsqueda exacta, luego parcial
     let product = products.find(
@@ -250,6 +283,14 @@ export default function SalesPage() {
   };
 
   const createSale = async () => {
+    // Validar descuento antes de procesar
+    if (descuento > descuentoMaximoPermitido) {
+      toast.error(
+        `Descuento no permitido. ${mensajeDescuentoMaximo}\n\nEl descuento no puede ser mayor al 50% de las ganancias totales de los productos.`
+      );
+      return;
+    }
+
     await processSale();
     fetchSales();
     fetchProducts(); // Recargar productos para actualizar stock
@@ -531,12 +572,23 @@ export default function SalesPage() {
                         id="descuento"
                         type="number"
                         min="0"
-                        max="100"
+                        max={descuentoMaximoPermitido}
                         value={descuento}
                         onChange={(e) => setDescuento(Number(e.target.value) || 0)}
-                        className="w-20 h-8 text-sm"
+                        className={`w-20 h-8 text-sm ${descuento > descuentoMaximoPermitido ? 'border-red-500 bg-red-50' : ''}`}
                       />
+                      {descuentoMaximoPermitido > 0 && (
+                        <span className={`text-xs ${descuento > descuentoMaximoPermitido ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>
+                          Máx: {descuentoMaximoPermitido.toFixed(2)}%
+                        </span>
+                      )}
                     </div>
+
+                    {descuento > descuentoMaximoPermitido && (
+                      <div className="p-2 bg-red-50 border border-red-200 rounded-md text-xs text-red-700">
+                        ⚠️ Descuento excede el máximo permitido ({descuentoMaximoPermitido.toFixed(2)}%). {mensajeDescuentoMaximo}
+                      </div>
+                    )}
 
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total:</span>

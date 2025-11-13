@@ -93,6 +93,34 @@ export async function POST(request: NextRequest) {
     const fecha = new Date();
     const numeroFactura = `FAC-${fecha.getFullYear()}${String(fecha.getMonth() + 1).padStart(2, '0')}${String(fecha.getDate()).padStart(2, '0')}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
 
+    // Validar que el descuento no exceda el 50% de las ganancias totales
+    let gananciaTotal = 0;
+    for (const item of items) {
+      const product = await Product.findById(item.producto);
+      if (product) {
+        const precioVenta = item.tipoVenta === 'empaque'
+          ? (product.precioCaja || product.precio)
+          : product.precio;
+        const precioCompra = item.tipoVenta === 'empaque'
+          ? (product.precioCompraCaja || product.precioCompra)
+          : product.precioCompra;
+        
+        const gananciaUnitaria = precioVenta - precioCompra;
+        gananciaTotal += gananciaUnitaria * item.cantidad;
+      }
+    }
+
+    // El descuento máximo permitido es el 50% de la ganancia total
+    const descuentoMaximoEnDinero = (gananciaTotal * 50) / 100;
+    const descuentoEnDinero = (subtotal * (descuento || 0)) / 100;
+
+    if (descuentoEnDinero > descuentoMaximoEnDinero) {
+      const descuentoMaximoEnPorcentaje = (descuentoMaximoEnDinero / subtotal) * 100;
+      return NextResponse.json({
+        error: `Descuento no permitido. El máximo descuento permitido es ${descuentoMaximoEnPorcentaje.toFixed(2)}% (basado en el 50% de las ganancias totales de los productos).`
+      }, { status: 400 });
+    }
+
     const discountAmount = (subtotal * (descuento || 0)) / 100;
     const total = subtotal - discountAmount;
 
