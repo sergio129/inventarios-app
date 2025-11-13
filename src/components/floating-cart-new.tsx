@@ -176,6 +176,81 @@ export function FloatingCart() {
     };
   }, [searchTimeout]);
 
+  // Global barcode scanning listener
+  useEffect(() => {
+    if (!isCartOpen) return;
+
+    let accumulatedBarcode = '';
+    let barcodeTimeout: NodeJS.Timeout;
+
+    const handleKeyPress = (event: KeyboardEvent) => {
+      // Ignore if user is typing in an input field (except barcode inputs)
+      const target = event.target as HTMLElement;
+      if (target.tagName === 'INPUT' && 
+          !target.id?.includes('barcode') && 
+          !target.className?.includes('hidden')) {
+        return;
+      }
+
+      // Ignore special keys
+      if (event.key.length > 1) return;
+
+      // Accumulate characters
+      accumulatedBarcode += event.key;
+
+      // Clear previous timeout
+      if (barcodeTimeout) {
+        clearTimeout(barcodeTimeout);
+      }
+
+      // Set new timeout - if no input for 300ms, process barcode
+      barcodeTimeout = setTimeout(async () => {
+        if (accumulatedBarcode.trim()) {
+          const barcode = accumulatedBarcode.trim();
+          
+          // Search in products
+          try {
+            const response = await fetch(`/api/products?limit=100`);
+            if (response.ok) {
+              const products = await response.json();
+              
+              // Three-tier search
+              let product = products.find((p: Product) => 
+                p.codigoBarras && p.codigoBarras.trim() === barcode
+              );
+              
+              if (!product) {
+                product = products.find((p: Product) => 
+                  p.codigoBarras && p.codigoBarras.includes(barcode)
+                );
+              }
+              
+              if (!product) {
+                product = products.find((p: Product) => 
+                  p.codigo && p.codigo.trim() === barcode
+                );
+              }
+              
+              if (product && product.activo && product.stock > 0) {
+                addToCart(product, 'unidad');
+              }
+            }
+          } catch (error) {
+            console.error('Error al procesar código de barras:', error);
+          }
+          
+          accumulatedBarcode = '';
+        }
+      }, 300);
+    };
+
+    window.addEventListener('keypress', handleKeyPress);
+    return () => {
+      window.removeEventListener('keypress', handleKeyPress);
+      if (barcodeTimeout) clearTimeout(barcodeTimeout);
+    };
+  }, [isCartOpen, addToCart]);
+
   // Close search results when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -210,8 +285,8 @@ export function FloatingCart() {
   }
 
   return (
-    <div className="fixed inset-0 backdrop-blur-md bg-black/20 z-50 flex items-center justify-center p-1 sm:p-2 md:p-4">
-      <Card className="w-full h-full sm:h-[98vh] md:h-[95vh] lg:h-[85vh] max-w-full sm:max-w-lg md:max-w-3xl lg:max-w-5xl overflow-hidden flex flex-col">
+    <div className="fixed inset-0 backdrop-blur-xl bg-gradient-to-br from-black/40 via-black/20 to-black/10 z-50 flex items-center justify-center p-1 sm:p-2 md:p-4">
+      <Card className="w-full h-full sm:h-[98vh] md:h-[95vh] lg:h-[85vh] max-w-full sm:max-w-lg md:max-w-3xl lg:max-w-5xl overflow-hidden flex flex-col shadow-2xl border-white/10 bg-white/95 backdrop-blur-sm">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 sm:pb-3 border-b px-3 sm:px-4 md:px-5 py-2 sm:py-3">
           <CardTitle className="flex items-center gap-1 sm:gap-2 text-sm sm:text-base md:text-lg">
             <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />

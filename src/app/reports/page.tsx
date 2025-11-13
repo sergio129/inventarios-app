@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BarChart3, ArrowLeft, TrendingUp, Package, ShoppingCart, Users, DollarSign, Download } from 'lucide-react';
 import { toast } from 'sonner';
+import { FloatingCart } from '@/components/floating-cart-new';
 import { exportToExcel, formatSalesForExport } from '@/lib/excel-utils';
 
 interface Stats {
@@ -116,6 +117,7 @@ export default function ReportsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <FloatingCart />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">

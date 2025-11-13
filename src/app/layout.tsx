@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AuthProvider from "@/components/AuthProvider";
 import { CartProvider } from "@/lib/cart-context";
-import { FloatingCart } from "@/components/floating-cart";
 import { Toaster } from "sonner";
 import FullscreenManager from "@/components/FullscreenManager";
 
@@ -36,7 +35,6 @@ export default function RootLayout({
         <AuthProvider>
           <CartProvider>
             {children}
-            <FloatingCart />
             <Toaster />
           </CartProvider>
         </AuthProvider>
