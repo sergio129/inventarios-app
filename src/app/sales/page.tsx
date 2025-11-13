@@ -10,10 +10,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ShoppingCart, Search, ArrowLeft, Receipt, Minus, Package, User, Percent, RotateCcw } from 'lucide-react';
+import { ShoppingCart, Search, ArrowLeft, Receipt, Minus, Package, User, Percent, RotateCcw, Eye } from 'lucide-react';
 import { Invoice } from '@/components/invoice';
 import { QuickClientInput } from '@/components/quick-client-input';
 import { ReturnsComponent } from '@/components/returns-component';
+import { PriceQueryModal } from '@/components/price-query-modal';
 import { toast } from 'sonner';
 import { useCart } from '@/lib/cart-context';
 import { formatCurrency } from '@/lib/currency-utils';
@@ -83,6 +84,9 @@ export default function SalesPage() {
   // Estado para el modal de factura
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [showInvoice, setShowInvoice] = useState(false);
+
+  // Estado para el modal de consulta de precios
+  const [showPriceQuery, setShowPriceQuery] = useState(false);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -176,6 +180,11 @@ export default function SalesPage() {
     let timeoutId: NodeJS.Timeout;
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Si el modal de consulta de precios está abierto, no procesar códigos de barras para agregar al carrito
+      if (showPriceQuery) {
+        return;
+      }
+
       // Si el usuario está escribiendo en un input, no procesar
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' && target.id !== 'barcode-reader') {
@@ -209,7 +218,7 @@ export default function SalesPage() {
       window.removeEventListener('keydown', handleKeyDown);
       clearTimeout(timeoutId);
     };
-  }, [barcodeInput, products]);
+  }, [barcodeInput, products, showPriceQuery]);
 
   const processBarcodeScanned = (barcode: string) => {
     // Buscar el producto por código de barras
@@ -343,6 +352,14 @@ export default function SalesPage() {
             </div>
 
             <div className="flex gap-3">
+              <Button
+                onClick={() => setShowPriceQuery(true)}
+                variant="secondary"
+                className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white transition-all duration-200 shadow-sm"
+              >
+                <Eye className="h-4 w-4" />
+                Consultar Precios
+              </Button>
               <Button
                 onClick={() => router.push('/dashboard')}
                 variant="outline"
@@ -750,6 +767,12 @@ export default function SalesPage() {
           onClose={closeInvoice}
         />
       )}
+
+      {/* Modal de Consulta de Precios */}
+      <PriceQueryModal
+        isOpen={showPriceQuery}
+        onClose={() => setShowPriceQuery(false)}
+      />
     </div>
   );
 }
