@@ -74,6 +74,27 @@ export function PriceQueryModal({ isOpen, onClose, onBarcodeDetected }: PriceQue
     filterProducts();
   }, [products, searchTerm, barcodeInput, filterProducts]);
 
+  // Efecto para limpiar el código de barras después de un tiempo si se encontró un producto
+  useEffect(() => {
+    if (!barcodeInput) return;
+
+    const timeoutId = setTimeout(() => {
+      // Si el código de barras encontró un producto, limpiar después de 1.5 segundos
+      const foundProducts = filteredProducts.filter(
+        (p) => p.codigoBarras && p.codigoBarras.includes(barcodeInput)
+      );
+
+      if (foundProducts.length > 0) {
+        // Limpiar el código de barras para permitir el siguiente escaneo
+        setBarcodeInput('');
+        // Limpiar también el término de búsqueda
+        setSearchTerm('');
+      }
+    }, 1500);
+
+    return () => clearTimeout(timeoutId);
+  }, [barcodeInput, filteredProducts]);
+
   // Manejo de escaneo de código de barras
   useEffect(() => {
     if (!isModalOpen) return;
@@ -93,10 +114,11 @@ export function PriceQueryModal({ isOpen, onClose, onBarcodeDetected }: PriceQue
         return;
       }
 
-      // Enter: procesar el código escanedo
+      // Enter: procesar el código escanedo y limpiar búsqueda anterior
       if (e.key === 'Enter' && barcodeInput) {
         e.preventDefault();
-        setBarcodeInput('');
+        // Limpiar el término de búsqueda de texto para mostrar solo el código de barras
+        setSearchTerm('');
         return;
       }
 
