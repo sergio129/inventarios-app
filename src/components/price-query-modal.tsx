@@ -87,6 +87,23 @@ export function PriceQueryModal({ isOpen, onClose }: PriceQueryModalProps) {
     let accumulatedBarcode = '';
     let timeoutId: NodeJS.Timeout;
 
+    const processBarcode = (barcode: string) => {
+      if (barcode.trim()) {
+        // Buscar el producto con este código de barras
+        const foundProduct = products.find(
+          (p) => p.codigoBarras && p.codigoBarras.includes(barcode.trim())
+        );
+
+        if (foundProduct) {
+          setSelectedProduct(foundProduct);
+          setShowSearchModal(false);
+        } else {
+          toast.error('Producto no encontrado');
+        }
+      }
+      accumulatedBarcode = '';
+    };
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isModalOpen || !showSearchModal) {
         return;
@@ -99,26 +116,13 @@ export function PriceQueryModal({ isOpen, onClose }: PriceQueryModalProps) {
         return;
       }
 
-      // Enter: procesar el código escanedo
+      // Enter: procesar inmediatamente
       if (e.key === 'Enter') {
         e.preventDefault();
         if (accumulatedBarcode.trim()) {
-          const barcode = accumulatedBarcode.trim();
-          setBarcodeInput(barcode);
-
-          // Buscar el producto con este código de barras
-          const foundProduct = products.find(
-            (p) => p.codigoBarras && p.codigoBarras.includes(barcode)
-          );
-
-          if (foundProduct) {
-            setSelectedProduct(foundProduct);
-            setShowSearchModal(false);
-          } else {
-            toast.error('Producto no encontrado');
-            accumulatedBarcode = '';
-          }
+          processBarcode(accumulatedBarcode);
         }
+        clearTimeout(timeoutId);
         return;
       }
 
@@ -128,9 +132,12 @@ export function PriceQueryModal({ isOpen, onClose }: PriceQueryModalProps) {
 
         clearTimeout(timeoutId);
 
+        // Si se detiene la entrada por 300ms, procesar automáticamente
         timeoutId = setTimeout(() => {
-          accumulatedBarcode = '';
-        }, 100);
+          if (accumulatedBarcode.trim() && accumulatedBarcode.length > 5) {
+            processBarcode(accumulatedBarcode);
+          }
+        }, 300);
       }
     };
 
@@ -170,7 +177,7 @@ export function PriceQueryModal({ isOpen, onClose }: PriceQueryModalProps) {
   // Modal de búsqueda
   if (showSearchModal) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 backdrop-blur-md bg-black/20 z-50 flex items-center justify-center p-4">
         <Card className="w-full max-w-4xl max-h-[90vh] flex flex-col">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b">
             <div className="flex items-center gap-2">
@@ -295,7 +302,7 @@ export function PriceQueryModal({ isOpen, onClose }: PriceQueryModalProps) {
   // Modal de detalles del producto
   if (selectedProduct) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 backdrop-blur-md bg-black/20 z-50 flex items-center justify-center p-4">
         <Card className="w-full max-w-2xl">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b">
             <div className="flex items-center gap-2">
