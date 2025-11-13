@@ -221,10 +221,24 @@ export default function SalesPage() {
   }, [barcodeInput, products, showPriceQuery]);
 
   const processBarcodeScanned = (barcode: string) => {
-    // Buscar el producto por código de barras
-    const product = products.find(
-      (p) => p.codigoBarras && p.codigoBarras.includes(barcode.trim())
+    // Buscar el producto por código de barras - primero búsqueda exacta, luego parcial
+    let product = products.find(
+      (p) => p.codigoBarras && p.codigoBarras.trim() === barcode.trim()
     );
+
+    // Si no encuentra exacta, intenta búsqueda parcial
+    if (!product) {
+      product = products.find(
+        (p) => p.codigoBarras && p.codigoBarras.includes(barcode.trim())
+      );
+    }
+
+    // Si no encuentra por barras, intenta por código
+    if (!product) {
+      product = products.find(
+        (p) => p.codigo && p.codigo.trim() === barcode.trim()
+      );
+    }
 
     if (product) {
       // Agregar al carrito por unidad automáticamente

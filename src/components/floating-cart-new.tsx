@@ -64,8 +64,44 @@ export function FloatingCart() {
 
   const handleBarcodeScan = async () => {
     if (barcodeInput.trim()) {
-      await scanBarcode(barcodeInput.trim());
-      setBarcodeInput('');
+      const barcode = barcodeInput.trim();
+      
+      // Buscar en productos locales primero
+      try {
+        const response = await fetch(`/api/products?limit=100`);
+        if (response.ok) {
+          const products = await response.json();
+          
+          // Búsqueda exacta por código de barras
+          let product = products.find((p: Product) => 
+            p.codigoBarras && p.codigoBarras.trim() === barcode
+          );
+          
+          // Si no encuentra exacta, búsqueda parcial
+          if (!product) {
+            product = products.find((p: Product) => 
+              p.codigoBarras && p.codigoBarras.includes(barcode)
+            );
+          }
+          
+          // Si no encuentra por barras, busca por código
+          if (!product) {
+            product = products.find((p: Product) => 
+              p.codigo && p.codigo.trim() === barcode
+            );
+          }
+          
+          if (product && product.activo && product.stock > 0) {
+            addToCart(product, 'unidad');
+            setBarcodeInput('');
+          } else {
+            alert(`Producto con código ${barcode} no encontrado o sin stock`);
+          }
+        }
+      } catch (error) {
+        console.error('Error al procesar código de barras:', error);
+        alert('Error al procesar código de barras');
+      }
     }
   };
 
@@ -174,7 +210,7 @@ export function FloatingCart() {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-1 sm:p-2 md:p-4">
+    <div className="fixed inset-0 backdrop-blur-md bg-black/20 z-50 flex items-center justify-center p-1 sm:p-2 md:p-4">
       <Card className="w-full h-full sm:h-[98vh] md:h-[95vh] lg:h-[85vh] max-w-full sm:max-w-lg md:max-w-3xl lg:max-w-5xl overflow-hidden flex flex-col">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 sm:pb-3 border-b px-3 sm:px-4 md:px-5 py-2 sm:py-3">
           <CardTitle className="flex items-center gap-1 sm:gap-2 text-sm sm:text-base md:text-lg">

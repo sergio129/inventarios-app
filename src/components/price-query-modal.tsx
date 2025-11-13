@@ -89,10 +89,24 @@ export function PriceQueryModal({ isOpen, onClose }: PriceQueryModalProps) {
 
     const processBarcode = (barcode: string) => {
       if (barcode.trim()) {
-        // Buscar el producto con este código de barras
-        const foundProduct = products.find(
-          (p) => p.codigoBarras && p.codigoBarras.includes(barcode.trim())
+        // Buscar el producto con este código de barras - primero exacta, luego parcial
+        let foundProduct = products.find(
+          (p) => p.codigoBarras && p.codigoBarras.trim() === barcode.trim()
         );
+
+        // Si no encuentra exacta, intenta búsqueda parcial
+        if (!foundProduct) {
+          foundProduct = products.find(
+            (p) => p.codigoBarras && p.codigoBarras.includes(barcode.trim())
+          );
+        }
+
+        // Si no encuentra por barras, intenta por código
+        if (!foundProduct) {
+          foundProduct = products.find(
+            (p) => p.codigo && p.codigo.trim() === barcode.trim()
+          );
+        }
 
         if (foundProduct) {
           setSelectedProduct(foundProduct);
