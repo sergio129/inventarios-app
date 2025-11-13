@@ -145,7 +145,7 @@ SaleSchema.index({ 'cliente.nombre': 1 });
 // Método para calcular totales
 SaleSchema.methods.calcularTotales = function(this: ISale) {
   this.subtotal = this.items.reduce((sum: number, item: ISaleItem) => sum + item.precioTotal, 0);
-  this.total = this.subtotal - this.descuento + this.impuesto;
+  this.total = this.subtotal - (this.subtotal * this.descuento / 100) + this.impuesto;
 };
 
 // Método para verificar si puede ser cancelada
@@ -169,7 +169,7 @@ interface VentaParcial {
 // Función auxiliar para calcular totales
 function calcularTotales(venta: VentaParcial) {
   venta.subtotal = venta.items.reduce((sum: number, item: ItemVenta) => sum + item.precioTotal, 0);
-  venta.total = venta.subtotal - venta.descuento + venta.impuesto;
+  venta.total = venta.subtotal - (venta.subtotal * venta.descuento / 100) + venta.impuesto;
 }
 
 // Pre-save middleware para calcular totales
