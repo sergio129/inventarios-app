@@ -386,7 +386,7 @@ export default function SalesPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
           {/* Panel de Productos */}
           <div className="lg:col-span-2 space-y-6">
             {/* Búsqueda de Productos */}
@@ -473,7 +473,7 @@ export default function SalesPage() {
           </div>
 
           {/* Panel del Carrito y Checkout */}
-          <div className="space-y-6">
+          <div className="lg:col-span-1 space-y-6 min-h-fit">
             {/* Carrito de Compras */}
             <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
               <CardHeader className="pb-4">

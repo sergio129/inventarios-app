@@ -286,7 +286,7 @@ export function FloatingCart() {
 
   return (
     <div className="fixed inset-0 backdrop-blur-xl bg-gradient-to-br from-black/40 via-black/20 to-black/10 z-50 flex items-center justify-center p-1 sm:p-2 md:p-4">
-      <Card className="w-full h-full sm:h-[98vh] md:h-[95vh] lg:h-[90vh] max-w-full sm:max-w-lg md:max-w-3xl lg:max-w-6xl overflow-hidden flex flex-col shadow-2xl border-0 bg-white">
+      <Card className="w-full h-full sm:h-[98vh] md:h-[95vh] lg:h-[85vh] max-w-full sm:max-w-lg md:max-w-3xl lg:max-w-5xl overflow-hidden flex flex-col shadow-2xl border-white/10 bg-white/95 backdrop-blur-sm">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 sm:pb-3 border-b px-3 sm:px-4 md:px-5 py-2 sm:py-3">
           <CardTitle className="flex items-center gap-1 sm:gap-2 text-sm sm:text-base md:text-lg">
             <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
