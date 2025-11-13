@@ -13,7 +13,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tag, Plus, Search, Edit, Trash2, ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { FloatingCart } from '@/components/floating-cart-new';
 
 interface Category {
   _id: string;
@@ -209,7 +208,6 @@ export default function CategoriesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <FloatingCart />
       <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">

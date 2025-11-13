@@ -10,7 +10,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Search, Package, Plus, Edit, TrendingUp, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import { FloatingCart } from '@/components/floating-cart-new';
 import ProductHistory from '@/components/product-history';
 import { validarPreciosCoherentes } from '@/lib/validation-service';
 
@@ -369,7 +368,6 @@ export default function InventoryManagement() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <FloatingCart />
       <div className="container mx-auto px-4 py-8">
         {/* Header con navegación - Moderno */}
         <div className="flex items-center justify-between mb-8">
