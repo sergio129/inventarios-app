@@ -260,12 +260,12 @@ export default function SalesPage() {
       const response = await fetch(`/api/sales/${saleId}`);
       if (response.ok) {
         const sale = await response.json();
-        // Agregar propiedades faltantes para el componente Invoice
+        // Usar los datos reales de la venta de la base de datos
         const invoiceSale = {
           ...sale,
-          subtotal: sale.total, // Asumir que el subtotal es igual al total si no hay descuento
-          descuento: 0,
-          impuesto: 0,
+          subtotal: sale.subtotal,
+          descuento: sale.descuento || 0,
+          impuesto: sale.impuesto || 0,
           fechaVenta: new Date(sale.fechaCreacion),
           fechaCreacion: new Date(sale.fechaCreacion),
           vendedor: {
