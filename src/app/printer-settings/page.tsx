@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Printer, Save, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Printer, Save, AlertCircle, Eye } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
@@ -103,8 +103,18 @@ ${'-'.repeat(48)}
               Volver a Ventas
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">Configuración de Impresora</h1>
-          <p className="text-gray-600 mt-2">Configura tu impresora térmica para recibos</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Configuración de Impresora</h1>
+              <p className="text-gray-600 mt-2">Configura tu impresora térmica para recibos</p>
+            </div>
+            <Link href="/thermal-preview">
+              <Button variant="outline" className="flex items-center gap-2">
+                <Eye className="h-4 w-4" />
+                Vista Previa
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Main Content */}

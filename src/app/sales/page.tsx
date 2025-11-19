@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ShoppingCart, Search, ArrowLeft, Receipt, Minus, Package, User, Percent, RotateCcw, Eye } from 'lucide-react';
+import { ShoppingCart, Search, ArrowLeft, Receipt, Minus, Package, User, Percent, RotateCcw, Eye, Printer, Settings } from 'lucide-react';
 import { Invoice } from '@/components/invoice';
 import { QuickClientInput } from '@/components/quick-client-input';
 import { ReturnsComponent } from '@/components/returns-component';
@@ -420,7 +420,7 @@ export default function SalesPage() {
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 flex-wrap">
               <Button
                 onClick={() => setShowPriceQuery(true)}
                 variant="secondary"
@@ -428,6 +428,22 @@ export default function SalesPage() {
               >
                 <Eye className="h-4 w-4" />
                 Consultar Precios
+              </Button>
+              <Button
+                onClick={() => router.push('/thermal-preview')}
+                variant="secondary"
+                className="flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white transition-all duration-200 shadow-sm"
+              >
+                <Printer className="h-4 w-4" />
+                Vista Recibo
+              </Button>
+              <Button
+                onClick={() => router.push('/printer-settings')}
+                variant="secondary"
+                className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white transition-all duration-200 shadow-sm"
+              >
+                <Settings className="h-4 w-4" />
+                Impresora
               </Button>
               <Button
                 onClick={() => router.push('/dashboard')}
