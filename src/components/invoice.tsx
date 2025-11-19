@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Printer, Download, X } from 'lucide-react';
 import { generateInvoicePDF, printInvoice } from '@/lib/invoice-utils';
+import { printThermalReceipt } from '@/lib/thermal-printer';
 import { toast } from 'sonner';
 
 interface Sale {
@@ -45,6 +46,22 @@ interface InvoiceProps {
 }
 
 export function Invoice({ sale, onClose, onPrint, onDownload }: InvoiceProps) {
+  const [isPrinting, setIsPrinting] = useState(false);
+
+  const handleThermalPrint = async () => {
+    try {
+      setIsPrinting(true);
+      toast.loading('Enviando a impresora térmica...', { id: 'thermal-print' });
+      await printThermalReceipt(sale as any, 80);
+      toast.success('Recibo enviado a la impresora', { id: 'thermal-print' });
+    } catch (error) {
+      console.error('Error en impresión térmica:', error);
+      toast.error('Error al enviar a la impresora térmica', { id: 'thermal-print' });
+    } finally {
+      setIsPrinting(false);
+    }
+  };
+
   const handlePrint = () => {
     if (onPrint) {
       onPrint();
@@ -89,9 +106,17 @@ export function Invoice({ sale, onClose, onPrint, onDownload }: InvoiceProps) {
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-200">
         {/* Header con acciones */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gray-50/50">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gray-50/50 flex-wrap gap-3">
           <h2 className="text-2xl font-bold text-gray-900">Factura #{sale.numeroFactura}</h2>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <Button 
+              onClick={handleThermalPrint} 
+              disabled={isPrinting}
+              className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700"
+            >
+              <Printer className="h-4 w-4" />
+              {isPrinting ? 'Imprimiendo...' : 'Impresora Térmica'}
+            </Button>
             <Button onClick={handlePrint} className="flex items-center gap-2">
               <Printer className="h-4 w-4" />
               Imprimir

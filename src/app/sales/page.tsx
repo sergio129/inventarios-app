@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import { useCart } from '@/lib/cart-context';
 import { formatCurrency } from '@/lib/currency-utils';
 import { calcularDescuentoMaximo, obtenerMensajeDescuentoMaximo } from '@/lib/discount-validator';
+import { printThermalReceipt } from '@/lib/thermal-printer';
 import IProduct from '@/lib/types/product'
 
 interface Sale {
@@ -291,7 +292,20 @@ export default function SalesPage() {
       return;
     }
 
-    await processSale();
+    const newSale = await processSale();
+    
+    // Si la venta fue exitosa, imprimir automáticamente
+    if (newSale) {
+      try {
+        toast.loading('Imprimiendo recibo...', { id: 'auto-print' });
+        await printThermalReceipt(newSale as any, 80);
+        toast.success('Recibo impreso exitosamente', { id: 'auto-print' });
+      } catch (error) {
+        console.error('Error al imprimir automáticamente:', error);
+        toast.info('Venta completada pero no se pudo imprimir', { id: 'auto-print' });
+      }
+    }
+    
     fetchSales();
     fetchProducts(); // Recargar productos para actualizar stock
   };

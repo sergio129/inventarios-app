@@ -42,7 +42,7 @@ interface CartContextType {
   calculateSubtotal: () => number
   calculateTotal: () => number
   scanBarcode: (barcode: string) => Promise<void>
-  processSale: () => Promise<void>
+  processSale: () => Promise<any>
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -336,13 +336,16 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         toast.success('Venta procesada exitosamente')
         clearCart()
         setIsCartOpen(false)
+        return newSale
       } else {
         const error = await response.json()
         toast.error(error.error || 'Error al procesar la venta')
+        return null
       }
     } catch (error) {
       console.error('Error processing sale:', error)
       toast.error('Error de conexion')
+      return null
     }
   }
 

@@ -16,6 +16,7 @@ import { validarPreciosCoherentes } from '@/lib/validation-service';
 interface Product {
   _id: string;
   nombre: string;
+  
   descripcion: string;
   precio: number;
   precioCaja: number;
