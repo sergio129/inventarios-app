@@ -267,7 +267,7 @@ ${'-'.repeat(48)}
               <ul className="list-disc list-inside space-y-1 ml-2">
                 <li>Conecta la impresora al puerto USB de tu computadora</li>
                 <li>Instala los drivers si es necesario</li>
-                <li>Selecciona "Térmica USB" en el tipo de impresora</li>
+                <li>Selecciona &quot;Térmica USB&quot; en el tipo de impresora</li>
                 <li>Haz una prueba de impresión para verificar</li>
               </ul>
             </div>
