@@ -347,9 +347,16 @@ export function FloatingCart() {
                               <Minus className="w-3 h-3" />
                             </Button>
 
-                            <span className="w-10 text-center font-bold text-sm bg-gray-50 rounded px-2 py-1">
-                              {item.cantidad}
-                            </span>
+                            <input
+                              type="number"
+                              min="1"
+                              value={item.cantidad}
+                              onChange={(e) => {
+                                const value = parseInt(e.target.value) || 1;
+                                updateCartItem(item.producto, Math.max(1, value));
+                              }}
+                              className="w-10 text-center font-bold text-sm bg-gray-50 rounded px-2 py-1 border border-gray-200"
+                            />
 
                             <Button
                               variant="outline"

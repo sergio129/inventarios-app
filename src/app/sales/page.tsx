@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ShoppingCart, Search, ArrowLeft, Receipt, Minus, Package, User, Percent, RotateCcw, Eye, Printer, Settings } from 'lucide-react';
+import { ShoppingCart, Search, ArrowLeft, Receipt, Minus, Package, User, Percent, RotateCcw, Eye, Printer, Settings, Plus, X } from 'lucide-react';
 import { Invoice } from '@/components/invoice';
 import { QuickClientInput } from '@/components/quick-client-input';
 import { ReturnsComponent } from '@/components/returns-component';
@@ -65,6 +65,7 @@ export default function SalesPage() {
     setMetodoPago,
     setNotas,
     addToCart,
+    updateCartItem,
     removeFromCart,
     calculateSubtotal,
     calculateTotal,
@@ -559,23 +560,55 @@ export default function SalesPage() {
               <CardContent className="space-y-4">
                 <div className="space-y-3 max-h-64 overflow-y-auto">
                   {cart.map((item) => (
-                    <div key={item.producto} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">{item.nombreProducto}</p>
-                        <p className="text-xs text-gray-600">
-                          {item.cantidad} {item.tipoVenta === 'empaque' ? `caja${item.cantidad !== 1 ? 's' : ''}` : `unidad${item.cantidad !== 1 ? 'es' : ''}`}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-sm">{formatCurrency(item.precioTotal)}</span>
+                    <div key={item.producto} className="p-3 bg-gray-50 rounded-lg space-y-2">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{item.nombreProducto}</p>
+                          <p className="text-xs text-gray-600">
+                            {formatCurrency(item.precioUnitario)} c/u
+                            <span className="text-blue-600 font-medium ml-1">({item.tipoVenta})</span>
+                          </p>
+                        </div>
                         <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => removeFromCart(item.producto)}
                           className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
                         >
-                          <Minus className="h-3 w-3" />
+                          <X className="h-4 w-4" />
                         </Button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => updateCartItem(item.producto, Math.max(1, item.cantidad - 1))}
+                            className="h-7 w-7 p-0"
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <input
+                            type="number"
+                            min="1"
+                            value={item.cantidad}
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value) || 1;
+                              updateCartItem(item.producto, Math.max(1, value));
+                            }}
+                            className="w-14 text-center font-bold text-sm border border-gray-300 rounded px-2 py-1"
+                          />
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => updateCartItem(item.producto, item.cantidad + 1)}
+                            className="h-7 w-7 p-0"
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        <span className="font-semibold text-sm">{formatCurrency(item.precioTotal)}</span>
                       </div>
                     </div>
                   ))}

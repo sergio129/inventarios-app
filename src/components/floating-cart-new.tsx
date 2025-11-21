@@ -446,7 +446,16 @@ export function FloatingCart() {
                           >
                             <Minus className="w-2 h-2 sm:w-3 sm:h-3" />
                           </Button>
-                          <span className="w-6 sm:w-8 text-center text-xs font-bold">{item.cantidad}</span>
+                          <input
+                            type="number"
+                            min="1"
+                            value={item.cantidad}
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value) || 1;
+                              updateCartItem(item.producto, Math.max(1, value));
+                            }}
+                            className="w-10 sm:w-12 text-center text-xs font-bold border border-gray-300 rounded px-1 py-0.5"
+                          />
                           <Button
                             variant="outline"
                             size="sm"
@@ -748,7 +757,16 @@ export function FloatingCart() {
                             >
                               <Minus className="w-3 h-3" />
                             </Button>
-                            <span className="font-bold text-sm min-w-[2ch] text-center">{item.cantidad}</span>
+                            <input
+                              type="number"
+                              min="1"
+                              value={item.cantidad}
+                              onChange={(e) => {
+                                const value = parseInt(e.target.value) || 1;
+                                updateCartItem(item.producto, Math.max(1, value));
+                              }}
+                              className="w-12 text-center font-bold text-sm border border-gray-300 rounded px-1 py-0.5"
+                            />
                             <Button
                               variant="outline"
                               size="sm"
