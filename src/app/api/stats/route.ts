@@ -57,15 +57,16 @@ export async function GET(request: NextRequest) {
       }
     ]);
 
-    // 4. Usuarios activos (que han iniciado sesión recientemente)
+    // 4. Usuarios activos hoy
     const usuariosActivos = await User.countDocuments({
       activo: true,
       fecha_activacion: { $exists: true }
     });
 
-    // 5. Pedidos pendientes
-    const pedidosPendientes = await Sale.countDocuments({
-      estado: 'pendiente'
+    // 5. Pedidos pendientes hoy
+    const pedidosPendientesHoy = await Sale.countDocuments({
+      estado: 'pendiente',
+      fechaCreacion: { $gte: today }
     });
 
     // Calcular porcentajes de cambio
@@ -86,27 +87,25 @@ export async function GET(request: NextRequest) {
       ? ((totalProductos - productosAyer) / productosAyer) * 100
       : (totalProductos > 0 ? 100 : 0);
 
-    // Para usuarios activos, calculamos el cambio semanal
-    const semanaPasada = new Date();
-    semanaPasada.setDate(semanaPasada.getDate() - 7);
-    const usuariosActivosSemanaPasada = await User.countDocuments({
+    // Calcular cambio en usuarios activos (comparar con ayer)
+    const usuariosActivosAyer = await User.countDocuments({
       activo: true,
-      fecha_activacion: { $gte: semanaPasada, $lt: today }
+      fecha_activacion: { $exists: true, $lt: today }
     });
 
-    const usuariosChange = usuariosActivosSemanaPasada > 0
-      ? ((usuariosActivos - usuariosActivosSemanaPasada) / usuariosActivosSemanaPasada) * 100
+    const usuariosChange = usuariosActivosAyer > 0
+      ? ((usuariosActivos - usuariosActivosAyer) / usuariosActivosAyer) * 100
       : (usuariosActivos > 0 ? 100 : 0);
 
-    // Para pedidos pendientes, calculamos el cambio diario
-    const pedidosAyer = await Sale.countDocuments({
+    // Calcular cambio en pedidos pendientes (comparar con ayer)
+    const pedidosPendientesAyer = await Sale.countDocuments({
       estado: 'pendiente',
       fechaCreacion: { $gte: yesterday, $lt: today }
     });
 
-    const pedidosChange = pedidosAyer > 0
-      ? ((pedidosPendientes - pedidosAyer) / pedidosAyer) * 100
-      : (pedidosPendientes > 0 ? 100 : 0);
+    const pedidosChange = pedidosPendientesAyer > 0
+      ? ((pedidosPendientesHoy - pedidosPendientesAyer) / pedidosPendientesAyer) * 100
+      : (pedidosPendientesHoy > 0 ? 100 : 0);
 
     const stats = {
       totalProductos: {
@@ -125,7 +124,7 @@ export async function GET(request: NextRequest) {
         changeType: usuariosChange >= 0 ? 'positive' : 'negative'
       },
       pedidosPendientes: {
-        value: pedidosPendientes.toString(),
+        value: pedidosPendientesHoy.toString(),
         change: Math.round(pedidosChange),
         changeType: pedidosChange >= 0 ? 'positive' : 'negative'
       }
