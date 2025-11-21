@@ -76,8 +76,15 @@ export async function GET(request: NextRequest) {
       ? ((ventasHoyTotal - ventasAyerTotal) / ventasAyerTotal) * 100
       : (ventasHoyTotal > 0 ? 100 : 0);
 
-    // Para productos, necesitamos datos históricos (por simplicidad, usaremos datos simulados)
-    const productosChange = 12; // +12% vs ayer
+    // Calcular cambio en productos (comparar con ayer)
+    const productosAyer = await Product.countDocuments({
+      activo: true,
+      fechaCreacion: { $lt: today }
+    });
+    
+    const productosChange = productosAyer > 0
+      ? ((totalProductos - productosAyer) / productosAyer) * 100
+      : (totalProductos > 0 ? 100 : 0);
 
     // Para usuarios activos, calculamos el cambio semanal
     const semanaPasada = new Date();
