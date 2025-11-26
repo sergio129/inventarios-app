@@ -25,7 +25,7 @@ export default function PrinterSettingsPage() {
     autoprint: true,
     paperWidth: 80,
     printerType: 'usb',
-    printerName: 'POS-5890',
+    printerName: 'POS-5890U-L',
     printerAddress: '192.168.1.100',
     printerPort: 9100
   });

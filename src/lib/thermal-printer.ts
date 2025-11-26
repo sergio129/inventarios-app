@@ -163,6 +163,110 @@ class ThermalPrinter {
   }
 
   /**
+   * Genera el recibo en formato de texto plano (sin comandos ESC/POS)
+   * Compatible con impresoras que no soportan ESC/POS correctamente
+   */
+  generatePlainTextReceipt(sale: PrinterSale): string {
+    const center = (text: string) => {
+      const padding = Math.max(0, Math.floor((this.config.charsPerLine - text.length) / 2));
+      return ' '.repeat(padding) + text;
+    };
+
+    const right = (text: string) => {
+      const padding = Math.max(0, this.config.charsPerLine - text.length);
+      return ' '.repeat(padding) + text;
+    };
+
+    const line = (label: string, value: string) => {
+      const spacing = Math.max(1, this.config.charsPerLine - label.length - value.length);
+      return label + ' '.repeat(spacing) + value;
+    };
+
+    let receipt = '\r\n';
+
+    // Encabezado
+    receipt += center('UNIK RETAIL') + '\r\n';
+    receipt += center('Sistema de Gestion de Inventario') + '\r\n';
+    receipt += center('Factura Electronica') + '\r\n';
+    receipt += '\r\n';
+
+    // Información de la factura
+    receipt += `Factura: ${sale.numeroFactura}\r\n`;
+    receipt += `Fecha: ${new Date(sale.fechaVenta).toLocaleDateString('es-CO')}\r\n`;
+    receipt += `Hora: ${new Date(sale.fechaVenta).toLocaleTimeString('es-CO')}\r\n`;
+    receipt += '\r\n';
+
+    // Información del cliente
+    if (sale.cliente?.nombre) {
+      receipt += `Cliente: ${sale.cliente.nombre}\r\n`;
+      if (sale.cliente.cedula) {
+        receipt += `Cedula: ${sale.cliente.cedula}\r\n`;
+      }
+      if (sale.cliente.telefono) {
+        receipt += `Telefono: ${sale.cliente.telefono}\r\n`;
+      }
+      receipt += '\r\n';
+    }
+
+    // Separador
+    receipt += '-'.repeat(this.config.charsPerLine) + '\r\n';
+
+    // Encabezado de productos
+    receipt += 'Descripcion\r\n';
+    receipt += 'Cant.      Precio    Total\r\n';
+    receipt += '-'.repeat(this.config.charsPerLine) + '\r\n';
+
+    // Productos
+    for (const item of sale.items) {
+      const maxNameLength = this.config.charsPerLine - 2;
+      const shortName = item.nombreProducto.substring(0, maxNameLength);
+      receipt += `${shortName}\r\n`;
+      
+      const qtyStr = `x${item.cantidad}`;
+      const priceStr = `$${item.precioUnitario.toLocaleString('es-CO')}`;
+      const totalStr = `$${item.precioTotal.toLocaleString('es-CO')}`;
+      
+      receipt += line(qtyStr, priceStr) + '\r\n';
+      receipt += right(totalStr) + '\r\n';
+    }
+
+    // Separador final
+    receipt += '-'.repeat(this.config.charsPerLine) + '\r\n';
+
+    // Totales
+    receipt += line('Subtotal:', `$${sale.subtotal.toLocaleString('es-CO')}`) + '\r\n';
+
+    if (sale.descuento > 0) {
+      const descuentoMonto = (sale.subtotal * sale.descuento) / 100;
+      receipt += line(`Descuento (${sale.descuento}%):`, `-$${descuentoMonto.toLocaleString('es-CO')}`) + '\r\n';
+    }
+
+    if (sale.impuesto > 0) {
+      receipt += line('Impuesto:', `$${sale.impuesto.toLocaleString('es-CO')}`) + '\r\n';
+    }
+
+    receipt += line('TOTAL:', `$${sale.total.toLocaleString('es-CO')}`) + '\r\n';
+    receipt += '\r\n';
+
+    // Método de pago
+    receipt += center(`Metodo de Pago: ${sale.metodoPago.toUpperCase()}`) + '\r\n';
+    receipt += '\r\n';
+
+    // Notas
+    if (sale.notas) {
+      receipt += `Notas: ${sale.notas}\r\n`;
+      receipt += '\r\n';
+    }
+
+    // Pie de página
+    receipt += center('Gracias por su compra') + '\r\n';
+    receipt += center('Vuelva pronto!') + '\r\n';
+    receipt += '\r\n\r\n\r\n\r\n';
+
+    return receipt;
+  }
+
+  /**
    * Genera el recibo completo en formato ESC/POS
    */
   generateReceipt(sale: PrinterSale): string {
@@ -267,20 +371,18 @@ class ThermalPrinter {
    * Envía el recibo a la impresora por defecto del navegador
    * Nota: Requiere que la impresora esté configurada en el SO
    */
-  async printReceipt(sale: PrinterSale): Promise<void> {
-    const receiptData = this.generateReceipt(sale);
-
-    // Crear un Blob con los datos ESC/POS
-    const blob = new Blob([receiptData], { type: 'application/octet-stream' });
-    const url = URL.createObjectURL(blob);
+  async printReceipt(sale: PrinterSale, usePlainText: boolean = true): Promise<void> {
+    // Usar texto plano por defecto para mejor compatibilidad
+    const receiptData = usePlainText 
+      ? this.generatePlainTextReceipt(sale)
+      : this.generateReceipt(sale);
 
     try {
-      // Intenta enviar directamente a la impresora térmica
-      // Esto funciona mejor con la API WebUSB o una app específica
+      // Enviar a la impresora térmica
       const response = await fetch('/api/print/thermal', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/octet-stream'
+          'Content-Type': 'text/plain; charset=utf-8'
         },
         body: receiptData
       });
@@ -290,10 +392,7 @@ class ThermalPrinter {
       }
     } catch (error) {
       console.error('Error en impresión térmica:', error);
-      // Fallback: Imprimir como PDF
       throw error;
-    } finally {
-      URL.revokeObjectURL(url);
     }
   }
 
@@ -316,11 +415,11 @@ class ThermalPrinter {
 }
 
 /**
- * Función auxiliar para imprimir directamente
+ * Función auxiliar para imprimir directamente (usa texto plano por defecto)
  */
-export async function printThermalReceipt(sale: PrinterSale, paperWidth: 58 | 80 = 80): Promise<void> {
+export async function printThermalReceipt(sale: PrinterSale, paperWidth: 58 | 80 = 80, usePlainText: boolean = true): Promise<void> {
   const printer = new ThermalPrinter({ paperWidth });
-  await printer.printReceipt(sale);
+  await printer.printReceipt(sale, usePlainText);
 }
 
 /**
