@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
+import { ThermalPrinter } from '@/lib/thermal-printer';
 
 /**
- * API endpoint para imprimir recibos en impresora térmica POS-5890U-L
- * Recibe datos ESC/POS y los envía a la impresora USB
+ * API endpoint para generar contenido de recibos térmicos
+ * El cliente usará este contenido para imprimir localmente
  */
 export async function POST(request: NextRequest) {
   try {
@@ -14,12 +15,49 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    const sale = await request.json();
+
+    console.log('📄 Generando recibo térmico para factura:', sale.numeroFactura);
+
+    // Generar contenido del recibo en texto plano
+    const printer = new ThermalPrinter({ paperWidth: 58 });
+    const receiptContent = printer.generatePlainTextReceipt(sale);
+
+    return NextResponse.json({
+      success: true,
+      content: receiptContent,
+      message: 'Recibo generado correctamente'
+    });
+
+  } catch (error) {
+    console.error('❌ Error generando recibo:', error);
+    return NextResponse.json(
+      {
+        error: 'Error al generar recibo',
+        details: error instanceof Error ? error.message : 'Error desconocido'
+      },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * Endpoint legacy para Windows local (mantener compatibilidad)
+ */
+export async function PUT(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+
     const body = await request.text();
 
-    console.log('📄 Solicitud de impresión térmica recibida');
-    console.log('📊 Tamaño de datos:', body.length, 'bytes');
+    console.log('📄 Impresión RAW Windows');
+    console.log('📊 Tamaño:', body.length, 'bytes');
 
-    // Enviar RAW directo a impresora térmica sin formato de Windows
+    // Solo funciona en Windows local
     if (process.platform === 'win32') {
       const fs = require('fs');
       const path = require('path');

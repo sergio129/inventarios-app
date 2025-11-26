@@ -381,32 +381,101 @@ class ThermalPrinter {
   }
 
   /**
-   * Envía el recibo a la impresora por defecto del navegador
-   * Nota: Requiere que la impresora esté configurada en el SO
+   * Envía el recibo a la impresora local del navegador
+   * Funciona en cliente (navegador), no en servidor
    */
   async printReceipt(sale: PrinterSale, usePlainText: boolean = true): Promise<void> {
-    // Usar texto plano por defecto para mejor compatibilidad
-    const receiptData = usePlainText 
-      ? this.generatePlainTextReceipt(sale)
-      : this.generateReceipt(sale);
-
     try {
-      // Enviar a la impresora térmica
-      const response = await fetch('/api/print/thermal', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'text/plain; charset=utf-8'
-        },
-        body: receiptData
-      });
+      // Verificar que estamos en el cliente
+      if (typeof window === 'undefined') {
+        throw new Error('printReceipt solo funciona en el navegador');
+      }
 
-      if (!response.ok) {
-        throw new Error('Error al enviar a la impresora');
+      // Obtener configuración local
+      const configStr = localStorage.getItem('printerConfig');
+      const config = configStr ? JSON.parse(configStr) : { printerType: 'windows' };
+
+      // Generar contenido
+      const receiptData = usePlainText 
+        ? this.generatePlainTextReceipt(sale)
+        : this.generateReceipt(sale);
+
+      // Para impresoras Windows locales, usar ventana de impresión
+      if (config.printerType === 'windows' || config.printerType === 'usb') {
+        await this.printToLocalPrinter(receiptData);
+      } else {
+        throw new Error('Tipo de impresora no soportado');
       }
     } catch (error) {
       console.error('Error en impresión térmica:', error);
       throw error;
     }
+  }
+
+  /**
+   * Imprime usando la API del navegador (para impresoras locales)
+   */
+  private async printToLocalPrinter(content: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        // Crear iframe oculto para imprimir
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+
+        const iframeDoc = iframe.contentWindow?.document;
+        if (!iframeDoc) {
+          throw new Error('No se pudo acceder al iframe');
+        }
+
+        // Escribir contenido con formato para impresora térmica
+        iframeDoc.open();
+        iframeDoc.write(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <title>Recibo</title>
+              <style>
+                @page {
+                  size: 58mm auto;
+                  margin: 0;
+                }
+                body {
+                  font-family: 'Courier New', monospace;
+                  font-size: 9pt;
+                  margin: 0;
+                  padding: 2mm;
+                  width: 58mm;
+                  white-space: pre-wrap;
+                  word-break: break-word;
+                }
+              </style>
+            </head>
+            <body>${content.replace(/\n/g, '<br>').replace(/ /g, '&nbsp;')}</body>
+          </html>
+        `);
+        iframeDoc.close();
+
+        // Esperar a que cargue e imprimir
+        iframe.contentWindow?.addEventListener('load', () => {
+          try {
+            iframe.contentWindow?.print();
+            
+            // Limpiar después de imprimir
+            setTimeout(() => {
+              document.body.removeChild(iframe);
+              resolve();
+            }, 1000);
+          } catch (error) {
+            document.body.removeChild(iframe);
+            reject(error);
+          }
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 
   /**
