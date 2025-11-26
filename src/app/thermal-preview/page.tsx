@@ -68,17 +68,19 @@ const exampleSale: PrinterSale = {
 };
 
 export default function ThermalPreviewPage() {
-  const [paperWidth, setPaperWidth] = useState<'58' | '80'>('80');
+  const [paperWidth, setPaperWidth] = useState<'58' | '80'>('58');
   const [previewHTML, setPreviewHTML] = useState('');
 
   useEffect(() => {
     const printer = new ThermalPrinter({ paperWidth: parseInt(paperWidth) as 58 | 80 });
-    const receiptData = printer.generateReceipt(exampleSale);
+    // Usar el mismo método que se usa para imprimir (texto plano)
+    const receiptData = printer.generatePlainTextReceipt(exampleSale);
     
     // Convertir a HTML para vista previa
     const escaped = receiptData
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
+      .replace(/\r\n/g, '<br>')
       .replace(/\n/g, '<br>')
       .replace(/ /g, '&nbsp;');
 

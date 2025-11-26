@@ -52,7 +52,7 @@ export function Invoice({ sale, onClose, onPrint, onDownload }: InvoiceProps) {
     try {
       setIsPrinting(true);
       toast.loading('Enviando a impresora térmica...', { id: 'thermal-print' });
-      await printThermalReceipt(sale as any, 80);
+      await printThermalReceipt(sale as any, 58);
       toast.success('Recibo enviado a la impresora', { id: 'thermal-print' });
     } catch (error) {
       console.error('Error en impresión térmica:', error);

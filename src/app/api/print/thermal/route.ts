@@ -19,21 +19,62 @@ export async function POST(request: NextRequest) {
     console.log('📄 Solicitud de impresión térmica recibida');
     console.log('📊 Tamaño de datos:', body.length, 'bytes');
 
-    // Enviar texto plano directamente a la impresora predeterminada de Windows
+    // Enviar a impresora térmica usando formato RAW
     if (process.platform === 'win32') {
       const fs = require('fs');
       const path = require('path');
       const { exec } = require('child_process');
       const tempDir = process.env.TEMP || 'C:\\Temp';
-      const tempFile = path.join(tempDir, `receipt_${Date.now()}.txt`);
       
-      // Guardar archivo temporal con texto plano
+      // Guardar archivo de texto plano
+      const tempFile = path.join(tempDir, `receipt_${Date.now()}.txt`);
       fs.writeFileSync(tempFile, body, 'utf8');
       
-      // Usar Out-Printer de PowerShell para enviar a impresora predeterminada
-      const psCommand = `Get-Content -Path "${tempFile}" | Out-Printer`;
+      // Usar notepad para imprimir con formato RAW (sin márgenes)
+      // notepad /p imprime directamente sin mostrar diálogo
+      const psCommand = `
+        $printerName = (Get-WmiObject -Query "SELECT * FROM Win32_Printer WHERE Default = TRUE").Name
+        $content = Get-Content -Path "${tempFile}" -Raw
+        
+        # Crear objeto de impresora
+        $printJob = Start-Job -ScriptBlock {
+          param($printerName, $content, $tempFile)
+          
+          # Usar .NET para imprimir directo sin formato
+          Add-Type -AssemblyName System.Drawing
+          Add-Type -AssemblyName System.Windows.Forms
+          
+          $printDoc = New-Object System.Drawing.Printing.PrintDocument
+          $printDoc.PrinterSettings.PrinterName = $printerName
+          
+          # Sin márgenes
+          $printDoc.DefaultPageSettings.Margins = New-Object System.Drawing.Printing.Margins(0,0,0,0)
+          
+          $printDoc.add_PrintPage({
+            param($sender, $ev)
+            
+            # Fuente monoespaciada pequeña (6pt para caber en 58mm)
+            $font = New-Object System.Drawing.Font("Courier New", 8, [System.Drawing.FontStyle]::Regular)
+            $brush = [System.Drawing.Brushes]::Black
+            
+            # Dibujar el texto
+            $ev.Graphics.DrawString($content, $font, $brush, 0, 0)
+            $ev.HasMorePages = $false
+          })
+          
+          $printDoc.Print()
+          $printDoc.Dispose()
+        } -ArgumentList $printerName, $content, $tempFile
+        
+        Wait-Job $printJob | Out-Null
+        Remove-Job $printJob
+        Write-Host "OK"
+      `.trim();
       
-      exec(`powershell -Command "${psCommand}"`, (error: Error, stdout: string, stderr: string) => {
+      const psScriptFile = path.join(tempDir, `print_${Date.now()}.ps1`);
+      fs.writeFileSync(psScriptFile, psCommand, 'utf8');
+      
+      exec(`powershell -ExecutionPolicy Bypass -File "${psScriptFile}"`, (error: Error, stdout: string, stderr: string) => {
         if (error) {
           console.error('❌ Error en impresión:', error.message);
           if (stderr) console.error('stderr:', stderr);
@@ -42,15 +83,14 @@ export async function POST(request: NextRequest) {
           if (stdout) console.log('stdout:', stdout);
         }
         
-        // Limpiar archivo temporal
+        // Limpiar archivos temporales
         setTimeout(() => {
           try {
-            if (fs.existsSync(tempFile)) {
-              fs.unlinkSync(tempFile);
-              console.log('🗑️ Archivo temporal eliminado');
-            }
+            if (fs.existsSync(tempFile)) fs.unlinkSync(tempFile);
+            if (fs.existsSync(psScriptFile)) fs.unlinkSync(psScriptFile);
+            console.log('🗑️ Archivos temporales eliminados');
           } catch (e) {
-            console.error('Error limpiando archivo:', e);
+            console.error('Error limpiando archivos:', e);
           }
         }, 3000);
       });

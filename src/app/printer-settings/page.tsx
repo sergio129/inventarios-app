@@ -23,7 +23,7 @@ interface PrinterConfig {
 export default function PrinterSettingsPage() {
   const [config, setConfig] = useState<PrinterConfig>({
     autoprint: true,
-    paperWidth: 80,
+    paperWidth: 58,
     printerType: 'usb',
     printerName: 'POS-5890U-L',
     printerAddress: '192.168.1.100',

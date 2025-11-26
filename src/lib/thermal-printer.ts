@@ -165,105 +165,99 @@ class ThermalPrinter {
   /**
    * Genera el recibo en formato de texto plano (sin comandos ESC/POS)
    * Compatible con impresoras que no soportan ESC/POS correctamente
+   * Optimizado para 58mm - cada producto en UNA sola línea
    */
   generatePlainTextReceipt(sale: PrinterSale): string {
+    const width = this.config.charsPerLine;
+    
     const center = (text: string) => {
-      const padding = Math.max(0, Math.floor((this.config.charsPerLine - text.length) / 2));
-      return ' '.repeat(padding) + text;
-    };
-
-    const right = (text: string) => {
-      const padding = Math.max(0, this.config.charsPerLine - text.length);
+      const padding = Math.max(0, Math.floor((width - text.length) / 2));
       return ' '.repeat(padding) + text;
     };
 
     const line = (label: string, value: string) => {
-      const spacing = Math.max(1, this.config.charsPerLine - label.length - value.length);
-      return label + ' '.repeat(spacing) + value;
+      const maxLabel = width - value.length - 1;
+      const truncLabel = label.length > maxLabel ? label.substring(0, maxLabel) : label;
+      const spacing = Math.max(1, width - truncLabel.length - value.length);
+      return truncLabel + ' '.repeat(spacing) + value;
     };
 
-    let receipt = '\r\n';
+    const sep = () => '='.repeat(width);
 
-    // Encabezado
-    receipt += center('UNIK RETAIL') + '\r\n';
-    receipt += center('Sistema de Gestion de Inventario') + '\r\n';
-    receipt += center('Factura Electronica') + '\r\n';
-    receipt += '\r\n';
+    let r = '\r\n';
 
-    // Información de la factura
-    receipt += `Factura: ${sale.numeroFactura}\r\n`;
-    receipt += `Fecha: ${new Date(sale.fechaVenta).toLocaleDateString('es-CO')}\r\n`;
-    receipt += `Hora: ${new Date(sale.fechaVenta).toLocaleTimeString('es-CO')}\r\n`;
-    receipt += '\r\n';
-
-    // Información del cliente
+    // Encabezado compacto
+    r += center('UNIK RETAIL') + '\r\n';
+    r += center('Gestion Inventario') + '\r\n';
+    r += sep() + '\r\n';
+    
+    // Info básica en una línea cada una
+    r += `No: ${sale.numeroFactura}\r\n`;
+    const f = new Date(sale.fechaVenta);
+    r += `${f.toLocaleDateString('es-CO')} ${f.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}\r\n`;
+    
+    // Cliente si existe
     if (sale.cliente?.nombre) {
-      receipt += `Cliente: ${sale.cliente.nombre}\r\n`;
+      const nomCorto = sale.cliente.nombre.substring(0, width - 5);
+      r += `Cli: ${nomCorto}\r\n`;
       if (sale.cliente.cedula) {
-        receipt += `Cedula: ${sale.cliente.cedula}\r\n`;
+        r += `CC: ${sale.cliente.cedula}\r\n`;
       }
-      if (sale.cliente.telefono) {
-        receipt += `Telefono: ${sale.cliente.telefono}\r\n`;
-      }
-      receipt += '\r\n';
     }
+    
+    r += sep() + '\r\n';
 
-    // Separador
-    receipt += '-'.repeat(this.config.charsPerLine) + '\r\n';
-
-    // Encabezado de productos
-    receipt += 'Descripcion\r\n';
-    receipt += 'Cant.      Precio    Total\r\n';
-    receipt += '-'.repeat(this.config.charsPerLine) + '\r\n';
-
-    // Productos
+    // Productos - CADA UNO EN UNA SOLA LÍNEA
+    // Formato: NombreCorto Cant Precio
     for (const item of sale.items) {
-      const maxNameLength = this.config.charsPerLine - 2;
-      const shortName = item.nombreProducto.substring(0, maxNameLength);
-      receipt += `${shortName}\r\n`;
+      const cant = `${item.cantidad}x`;
+      const precio = `$${(item.precioTotal / 1000).toFixed(0)}k`;
       
-      const qtyStr = `x${item.cantidad}`;
-      const priceStr = `$${item.precioUnitario.toLocaleString('es-CO')}`;
-      const totalStr = `$${item.precioTotal.toLocaleString('es-CO')}`;
+      // Calcular espacio disponible para nombre
+      const espacioInfo = cant.length + precio.length + 2; // +2 para espacios
+      const maxNom = width - espacioInfo;
       
-      receipt += line(qtyStr, priceStr) + '\r\n';
-      receipt += right(totalStr) + '\r\n';
+      let nom = item.nombreProducto;
+      if (nom.length > maxNom) {
+        nom = nom.substring(0, maxNom - 2) + '..';
+      }
+      
+      // Armar línea: "Nombre 2x $10k"
+      const espacioRestante = width - nom.length - espacioInfo;
+      r += nom + ' '.repeat(espacioRestante + 1) + cant + ' ' + precio + '\r\n';
     }
 
-    // Separador final
-    receipt += '-'.repeat(this.config.charsPerLine) + '\r\n';
+    r += sep() + '\r\n';
 
-    // Totales
-    receipt += line('Subtotal:', `$${sale.subtotal.toLocaleString('es-CO')}`) + '\r\n';
+    // Totales compactos
+    const formatMoney = (val: number) => `$${(val / 1000).toFixed(1)}k`;
+    
+    r += line('Subtotal:', formatMoney(sale.subtotal)) + '\r\n';
 
     if (sale.descuento > 0) {
-      const descuentoMonto = (sale.subtotal * sale.descuento) / 100;
-      receipt += line(`Descuento (${sale.descuento}%):`, `-$${descuentoMonto.toLocaleString('es-CO')}`) + '\r\n';
+      const descMonto = (sale.subtotal * sale.descuento) / 100;
+      r += line(`Desc ${sale.descuento}%:`, `-${formatMoney(descMonto)}`) + '\r\n';
     }
 
     if (sale.impuesto > 0) {
-      receipt += line('Impuesto:', `$${sale.impuesto.toLocaleString('es-CO')}`) + '\r\n';
+      r += line('Impuesto:', formatMoney(sale.impuesto)) + '\r\n';
     }
 
-    receipt += line('TOTAL:', `$${sale.total.toLocaleString('es-CO')}`) + '\r\n';
-    receipt += '\r\n';
-
-    // Método de pago
-    receipt += center(`Metodo de Pago: ${sale.metodoPago.toUpperCase()}`) + '\r\n';
-    receipt += '\r\n';
-
-    // Notas
+    r += sep() + '\r\n';
+    r += line('TOTAL:', formatMoney(sale.total)) + '\r\n';
+    r += sep() + '\r\n';
+    r += center(`Pago: ${sale.metodoPago.toUpperCase()}`) + '\r\n';
+    r += '\r\n';
+    
     if (sale.notas) {
-      receipt += `Notas: ${sale.notas}\r\n`;
-      receipt += '\r\n';
+      r += `Nota: ${sale.notas}\r\n\r\n`;
     }
+    
+    r += center('Gracias por su compra') + '\r\n';
+    r += center('Vuelva pronto!') + '\r\n';
+    r += '\r\n\r\n';
 
-    // Pie de página
-    receipt += center('Gracias por su compra') + '\r\n';
-    receipt += center('Vuelva pronto!') + '\r\n';
-    receipt += '\r\n\r\n\r\n\r\n';
-
-    return receipt;
+    return r;
   }
 
   /**
@@ -416,8 +410,9 @@ class ThermalPrinter {
 
 /**
  * Función auxiliar para imprimir directamente (usa texto plano por defecto)
+ * Ancho predeterminado: 58mm (32 caracteres)
  */
-export async function printThermalReceipt(sale: PrinterSale, paperWidth: 58 | 80 = 80, usePlainText: boolean = true): Promise<void> {
+export async function printThermalReceipt(sale: PrinterSale, paperWidth: 58 | 80 = 58, usePlainText: boolean = true): Promise<void> {
   const printer = new ThermalPrinter({ paperWidth });
   await printer.printReceipt(sale, usePlainText);
 }

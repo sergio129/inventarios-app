@@ -299,7 +299,7 @@ export default function SalesPage() {
     if (newSale) {
       try {
         toast.loading('Imprimiendo recibo...', { id: 'auto-print' });
-        await printThermalReceipt(newSale as any, 80);
+        await printThermalReceipt(newSale as any, 58);
         toast.success('Recibo impreso exitosamente', { id: 'auto-print' });
       } catch (error) {
         console.error('Error al imprimir automáticamente:', error);
