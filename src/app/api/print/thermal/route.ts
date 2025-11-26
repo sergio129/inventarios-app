@@ -19,67 +19,114 @@ export async function POST(request: NextRequest) {
     console.log('📄 Solicitud de impresión térmica recibida');
     console.log('📊 Tamaño de datos:', body.length, 'bytes');
 
-    // Enviar a impresora térmica usando formato RAW
+    // Enviar RAW directo a impresora térmica sin formato de Windows
     if (process.platform === 'win32') {
       const fs = require('fs');
       const path = require('path');
       const { exec } = require('child_process');
       const tempDir = process.env.TEMP || 'C:\\Temp';
-      
-      // Guardar archivo de texto plano
       const tempFile = path.join(tempDir, `receipt_${Date.now()}.txt`);
+      
+      // Guardar contenido
       fs.writeFileSync(tempFile, body, 'utf8');
       
-      // Usar notepad para imprimir con formato RAW (sin márgenes)
-      // notepad /p imprime directamente sin mostrar diálogo
-      const psCommand = `
-        $printerName = (Get-WmiObject -Query "SELECT * FROM Win32_Printer WHERE Default = TRUE").Name
-        $content = Get-Content -Path "${tempFile}" -Raw
-        
-        # Crear objeto de impresora
-        $printJob = Start-Job -ScriptBlock {
-          param($printerName, $content, $tempFile)
-          
-          # Usar .NET para imprimir directo sin formato
-          Add-Type -AssemblyName System.Drawing
-          Add-Type -AssemblyName System.Windows.Forms
-          
-          $printDoc = New-Object System.Drawing.Printing.PrintDocument
-          $printDoc.PrinterSettings.PrinterName = $printerName
-          
-          # Sin márgenes
-          $printDoc.DefaultPageSettings.Margins = New-Object System.Drawing.Printing.Margins(0,0,0,0)
-          
-          $printDoc.add_PrintPage({
-            param($sender, $ev)
+      // Script PowerShell para enviar datos RAW sin formato
+      const psScript = `
+Add-Type -TypeDefinition @"
+using System;
+using System.IO;
+using System.Runtime.InteropServices;
+
+public class RawPrinter {
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public class DOCINFOA {
+        [MarshalAs(UnmanagedType.LPStr)] public string pDocName;
+        [MarshalAs(UnmanagedType.LPStr)] public string pOutputFile;
+        [MarshalAs(UnmanagedType.LPStr)] public string pDataType;
+    }
+
+    [DllImport("winspool.Drv", EntryPoint = "OpenPrinterA", SetLastError = true, CharSet = CharSet.Ansi, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
+    public static extern bool OpenPrinter([MarshalAs(UnmanagedType.LPStr)] string szPrinter, out IntPtr hPrinter, IntPtr pd);
+
+    [DllImport("winspool.Drv", EntryPoint = "ClosePrinter", SetLastError = true, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
+    public static extern bool ClosePrinter(IntPtr hPrinter);
+
+    [DllImport("winspool.Drv", EntryPoint = "StartDocPrinterA", SetLastError = true, CharSet = CharSet.Ansi, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
+    public static extern bool StartDocPrinter(IntPtr hPrinter, Int32 level, [In, MarshalAs(UnmanagedType.LPStruct)] DOCINFOA di);
+
+    [DllImport("winspool.Drv", EntryPoint = "EndDocPrinter", SetLastError = true, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
+    public static extern bool EndDocPrinter(IntPtr hPrinter);
+
+    [DllImport("winspool.Drv", EntryPoint = "StartPagePrinter", SetLastError = true, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
+    public static extern bool StartPagePrinter(IntPtr hPrinter);
+
+    [DllImport("winspool.Drv", EntryPoint = "EndPagePrinter", SetLastError = true, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
+    public static extern bool EndPagePrinter(IntPtr hPrinter);
+
+    [DllImport("winspool.Drv", EntryPoint = "WritePrinter", SetLastError = true, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
+    public static extern bool WritePrinter(IntPtr hPrinter, IntPtr pBytes, Int32 dwCount, out Int32 dwWritten);
+
+    public static bool SendStringToPrinter(string printerName, string text) {
+        IntPtr pUnmanagedBytes = IntPtr.Zero;
+        try {
+            byte[] bytes = System.Text.Encoding.Default.GetBytes(text);
+            pUnmanagedBytes = Marshal.AllocCoTaskMem(bytes.Length);
+            Marshal.Copy(bytes, 0, pUnmanagedBytes, bytes.Length);
             
-            # Fuente monoespaciada pequeña (6pt para caber en 58mm)
-            $font = New-Object System.Drawing.Font("Courier New", 8, [System.Drawing.FontStyle]::Regular)
-            $brush = [System.Drawing.Brushes]::Black
+            IntPtr hPrinter;
+            DOCINFOA di = new DOCINFOA();
+            di.pDocName = "Recibo";
+            di.pDataType = "RAW";
             
-            # Dibujar el texto
-            $ev.Graphics.DrawString($content, $font, $brush, 0, 0)
-            $ev.HasMorePages = $false
-          })
-          
-          $printDoc.Print()
-          $printDoc.Dispose()
-        } -ArgumentList $printerName, $content, $tempFile
-        
-        Wait-Job $printJob | Out-Null
-        Remove-Job $printJob
+            if (OpenPrinter(printerName, out hPrinter, IntPtr.Zero)) {
+                if (StartDocPrinter(hPrinter, 1, di)) {
+                    if (StartPagePrinter(hPrinter)) {
+                        int dwWritten;
+                        WritePrinter(hPrinter, pUnmanagedBytes, bytes.Length, out dwWritten);
+                        EndPagePrinter(hPrinter);
+                    }
+                    EndDocPrinter(hPrinter);
+                }
+                ClosePrinter(hPrinter);
+                return true;
+            }
+            return false;
+        } finally {
+            if (pUnmanagedBytes != IntPtr.Zero) {
+                Marshal.FreeCoTaskMem(pUnmanagedBytes);
+            }
+        }
+    }
+}
+"@
+
+try {
+    $printerName = (Get-WmiObject -Query "SELECT * FROM Win32_Printer WHERE Default = TRUE").Name
+    $content = Get-Content -Path "${tempFile}" -Raw -Encoding UTF8
+    
+    $result = [RawPrinter]::SendStringToPrinter($printerName, $content)
+    
+    if ($result) {
         Write-Host "OK"
-      `.trim();
+    } else {
+        Write-Error "Error enviando a impresora"
+        exit 1
+    }
+} catch {
+    Write-Error $_.Exception.Message
+    exit 1
+}
+`.trim();
       
       const psScriptFile = path.join(tempDir, `print_${Date.now()}.ps1`);
-      fs.writeFileSync(psScriptFile, psCommand, 'utf8');
+      fs.writeFileSync(psScriptFile, psScript, 'utf8');
       
       exec(`powershell -ExecutionPolicy Bypass -File "${psScriptFile}"`, (error: Error, stdout: string, stderr: string) => {
         if (error) {
-          console.error('❌ Error en impresión:', error.message);
+          console.error('❌ Error en impresión RAW:', error.message);
           if (stderr) console.error('stderr:', stderr);
         } else {
-          console.log('✅ Recibo enviado a impresora');
+          console.log('✅ Recibo enviado RAW a impresora térmica');
           if (stdout) console.log('stdout:', stdout);
         }
         
@@ -98,7 +145,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: true,
-          message: 'Recibo enviado a impresora',
+          message: 'Recibo enviado RAW a impresora térmica',
           bytesEnviados: body.length
         },
         { status: 200 }
