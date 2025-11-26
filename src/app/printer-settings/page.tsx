@@ -14,7 +14,8 @@ import { toast } from 'sonner';
 interface PrinterConfig {
   autoprint: boolean;
   paperWidth: 58 | 80;
-  printerType: 'thermal' | 'network' | 'usb';
+  printerType: 'usb' | 'windows' | 'network';
+  printerName: string; // Nombre de impresora en Windows
   printerAddress?: string;
   printerPort?: number;
 }
@@ -23,7 +24,8 @@ export default function PrinterSettingsPage() {
   const [config, setConfig] = useState<PrinterConfig>({
     autoprint: true,
     paperWidth: 80,
-    printerType: 'thermal',
+    printerType: 'usb',
+    printerName: 'POS-5890',
     printerAddress: '192.168.1.100',
     printerPort: 9100
   });
@@ -105,8 +107,8 @@ ${'-'.repeat(48)}
           </Link>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Configuración de Impresora</h1>
-              <p className="text-gray-600 mt-2">Configura tu impresora térmica para recibos</p>
+              <h1 className="text-3xl font-bold text-gray-900">Impresora POS-5890U-L</h1>
+              <p className="text-gray-600 mt-2">Configuración de impresora térmica de recibos</p>
             </div>
             <Link href="/thermal-preview">
               <Button variant="outline" className="flex items-center gap-2">
@@ -160,17 +162,17 @@ ${'-'.repeat(48)}
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="58">58mm (32 caracteres)</SelectItem>
-                  <SelectItem value="80">80mm (48 caracteres)</SelectItem>
+                  <SelectItem value="80">80mm (48 caracteres) - Recomendado</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-sm text-gray-500">
-                Selecciona el ancho de papel de tu impresora térmica
+                POS-5890U-L soporta papel de 80mm de ancho
               </p>
             </div>
 
             {/* Printer Type Selection */}
             <div className="space-y-2">
-              <Label htmlFor="printer-type">Tipo de Impresora</Label>
+              <Label htmlFor="printer-type">Método de Conexión</Label>
               <Select 
                 value={config.printerType} 
                 onValueChange={(value) =>
@@ -181,15 +183,33 @@ ${'-'.repeat(48)}
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="thermal">Térmica USB</SelectItem>
-                  <SelectItem value="network">Red (LPR)</SelectItem>
-                  <SelectItem value="usb">USB Directo</SelectItem>
+                  <SelectItem value="usb">USB Directo (Recomendado)</SelectItem>
+                  <SelectItem value="windows">Cola de Impresión Windows</SelectItem>
+                  <SelectItem value="network">Red TCP/IP</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-sm text-gray-500">
-                Selecciona cómo está conectada tu impresora
+                Selecciona cómo está conectada tu impresora POS-5890U-L
               </p>
             </div>
+
+            {/* Windows Printer Name */}
+            {config.printerType === 'windows' && (
+              <div className="space-y-2">
+                <Label htmlFor="printer-name">Nombre de Impresora en Windows</Label>
+                <Input
+                  id="printer-name"
+                  placeholder="POS-5890"
+                  value={config.printerName}
+                  onChange={(e) =>
+                    setConfig({ ...config, printerName: e.target.value })
+                  }
+                />
+                <p className="text-sm text-gray-500">
+                  Busca el nombre exacto en Configuración {'>'} Impresoras y escáneres
+                </p>
+              </div>
+            )}
 
             {/* Network Printer Options */}
             {config.printerType === 'network' && (
@@ -222,15 +242,19 @@ ${'-'.repeat(48)}
             )}
 
             {/* Info Box */}
-            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg flex gap-3">
-              <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-amber-800">
-                <p className="font-semibold mb-1">Compatibilidad</p>
-                <p>
-                  Esta aplicación soporta impresoras térmicas ESC/POS. 
-                  Asegúrate de tener tu impresora correctamente conectada y configurada 
-                  en tu sistema operativo.
-                </p>
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-blue-800">
+                  <p className="font-semibold mb-2">📋 Información POS-5890U-L</p>
+                  <ul className="space-y-1 ml-4 list-disc">
+                    <li>Impresora térmica de 80mm</li>
+                    <li>Compatible con comandos ESC/POS</li>
+                    <li>Conexión USB</li>
+                    <li>Velocidad: 200mm/s</li>
+                    <li>Corte automático de papel</li>
+                  </ul>
+                </div>
               </div>
             </div>
 
@@ -263,22 +287,43 @@ ${'-'.repeat(48)}
           </CardHeader>
           <CardContent className="space-y-4 text-sm text-gray-600">
             <div>
-              <p className="font-semibold text-gray-900 mb-2">¿Cómo conectar mi impresora térmica?</p>
+              <p className="font-semibold text-gray-900 mb-2">🔌 ¿Cómo conectar mi POS-5890U-L?</p>
+              <ol className="list-decimal list-inside space-y-1 ml-2">
+                <li>Conecta el cable USB al puerto de tu computadora</li>
+                <li>Enciende la impresora (LED verde encendido)</li>
+                <li>Windows detectará automáticamente la impresora</li>
+                <li>Instala el driver si Windows lo solicita</li>
+                <li>Selecciona "USB Directo" en el método de conexión</li>
+                <li>Haz una prueba de impresión</li>
+              </ol>
+            </div>
+            <div>
+              <p className="font-semibold text-gray-900 mb-2">🖨️ Cargar papel térmico</p>
+              <ol className="list-decimal list-inside space-y-1 ml-2">
+                <li>Abre la tapa superior de la impresora</li>
+                <li>Inserta el rollo de papel térmico (80mm)</li>
+                <li>El papel debe salir por la parte frontal</li>
+                <li>Cierra la tapa hasta escuchar un clic</li>
+                <li>La impresora alimentará el papel automáticamente</li>
+              </ol>
+            </div>
+            <div>
+              <p className="font-semibold text-gray-900 mb-2">❌ ¿Por qué no imprime?</p>
               <ul className="list-disc list-inside space-y-1 ml-2">
-                <li>Conecta la impresora al puerto USB de tu computadora</li>
-                <li>Instala los drivers si es necesario</li>
-                <li>Selecciona &quot;Térmica USB&quot; en el tipo de impresora</li>
-                <li>Haz una prueba de impresión para verificar</li>
+                <li>Verifica que el LED esté verde (no rojo parpadeante)</li>
+                <li>Asegúrate de tener papel térmico cargado</li>
+                <li>Revisa que el cable USB esté bien conectado</li>
+                <li>Reinicia la impresora (apagar y encender)</li>
+                <li>Verifica los drivers en "Dispositivos e impresoras"</li>
+                <li>Prueba con otro puerto USB</li>
               </ul>
             </div>
             <div>
-              <p className="font-semibold text-gray-900 mb-2">¿Por qué no imprime?</p>
-              <ul className="list-disc list-inside space-y-1 ml-2">
-                <li>Verifica que la impresora esté encendida y conectada</li>
-                <li>Asegúrate de tener papel en la impresora</li>
-                <li>Prueba enviando una página de prueba</li>
-                <li>Revisa los logs del navegador (F12) para errores</li>
-              </ul>
+              <p className="font-semibold text-gray-900 mb-2">⚙️ Drivers POS-5890U-L</p>
+              <p className="ml-2">
+                Si Windows no detecta la impresora automáticamente, descarga los drivers desde el sitio del fabricante.
+                La impresora es compatible con drivers ESC/POS genéricos.
+              </p>
             </div>
           </CardContent>
         </Card>
