@@ -170,14 +170,30 @@ class ThermalPrinter {
   generatePlainTextReceipt(sale: PrinterSale): string {
     const width = this.config.charsPerLine;
     
+    // Función para limpiar acentos y caracteres especiales
+    const cleanText = (text: string) => {
+      return text
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Quitar acentos
+        .replace(/[^\x00-\x7F]/g, '') // Solo caracteres ASCII
+        .toUpperCase();
+    };
+    
+    // Formatear dinero con centavos
+    const formatMoney = (val: number) => {
+      return `$${val.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    };
+    
     const center = (text: string) => {
-      const padding = Math.max(0, Math.floor((width - text.length) / 2));
-      return ' '.repeat(padding) + text;
+      const cleaned = cleanText(text);
+      const padding = Math.max(0, Math.floor((width - cleaned.length) / 2));
+      return ' '.repeat(padding) + cleaned;
     };
 
     const line = (label: string, value: string) => {
+      const cleanLabel = cleanText(label);
       const maxLabel = width - value.length - 1;
-      const truncLabel = label.length > maxLabel ? label.substring(0, maxLabel) : label;
+      const truncLabel = cleanLabel.length > maxLabel ? cleanLabel.substring(0, maxLabel) : cleanLabel;
       const spacing = Math.max(1, width - truncLabel.length - value.length);
       return truncLabel + ' '.repeat(spacing) + value;
     };
@@ -191,14 +207,15 @@ class ThermalPrinter {
     r += center('Gestion Inventario') + '\r\n';
     r += sep() + '\r\n';
     
-    // Info básica en una línea cada una
+    // Info básica
     r += `No: ${sale.numeroFactura}\r\n`;
     const f = new Date(sale.fechaVenta);
     r += `${f.toLocaleDateString('es-CO')} ${f.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}\r\n`;
     
     // Cliente si existe
     if (sale.cliente?.nombre) {
-      const nomCorto = sale.cliente.nombre.substring(0, width - 5);
+      const nomLimpio = cleanText(sale.cliente.nombre);
+      const nomCorto = nomLimpio.substring(0, width - 5);
       r += `Cli: ${nomCorto}\r\n`;
       if (sale.cliente.cedula) {
         r += `CC: ${sale.cliente.cedula}\r\n`;
@@ -207,50 +224,52 @@ class ThermalPrinter {
     
     r += sep() + '\r\n';
 
-    // Productos - CADA UNO EN UNA SOLA LÍNEA
-    // Formato: NombreCorto Cant Precio
+    // Productos - Formato compacto
+    // "NombreCorto Cant $Precio"
     for (const item of sale.items) {
       const cant = `${item.cantidad}x`;
-      const precio = `$${(item.precioTotal / 1000).toFixed(0)}k`;
+      const precio = formatMoney(item.precioTotal);
       
-      // Calcular espacio disponible para nombre
-      const espacioInfo = cant.length + precio.length + 2; // +2 para espacios
+      // Espacio necesario para cantidad y precio (con espacio extra)
+      const espacioInfo = cant.length + precio.length + 2;
       const maxNom = width - espacioInfo;
       
-      let nom = item.nombreProducto;
+      // Limpiar y acortar nombre de producto
+      let nom = cleanText(item.nombreProducto);
+      
+      // Acortar mucho más para dejar espacio al precio
       if (nom.length > maxNom) {
-        nom = nom.substring(0, maxNom - 2) + '..';
+        nom = nom.substring(0, maxNom);
       }
       
-      // Armar línea: "Nombre 2x $10k"
-      const espacioRestante = width - nom.length - espacioInfo;
-      r += nom + ' '.repeat(espacioRestante + 1) + cant + ' ' + precio + '\r\n';
+      // Calcular espacios para alinear precio a la derecha
+      const espacios = width - nom.length - cant.length - precio.length - 1;
+      r += nom + ' ' + cant + ' '.repeat(Math.max(1, espacios)) + precio + '\r\n';
     }
 
     r += sep() + '\r\n';
 
-    // Totales compactos
-    const formatMoney = (val: number) => `$${(val / 1000).toFixed(1)}k`;
-    
-    r += line('Subtotal:', formatMoney(sale.subtotal)) + '\r\n';
+    // Totales con valores exactos
+    r += line('SUBTOTAL:', formatMoney(sale.subtotal)) + '\r\n';
 
     if (sale.descuento > 0) {
       const descMonto = (sale.subtotal * sale.descuento) / 100;
-      r += line(`Desc ${sale.descuento}%:`, `-${formatMoney(descMonto)}`) + '\r\n';
+      r += line(`DESC ${sale.descuento}%:`, `-${formatMoney(descMonto)}`) + '\r\n';
     }
 
     if (sale.impuesto > 0) {
-      r += line('Impuesto:', formatMoney(sale.impuesto)) + '\r\n';
+      r += line('IMPUESTO:', formatMoney(sale.impuesto)) + '\r\n';
     }
 
     r += sep() + '\r\n';
     r += line('TOTAL:', formatMoney(sale.total)) + '\r\n';
     r += sep() + '\r\n';
-    r += center(`Pago: ${sale.metodoPago.toUpperCase()}`) + '\r\n';
+    r += center(`PAGO: ${sale.metodoPago}`) + '\r\n';
     r += '\r\n';
     
     if (sale.notas) {
-      r += `Nota: ${sale.notas}\r\n\r\n`;
+      const notaLimpia = cleanText(sale.notas);
+      r += `Nota: ${notaLimpia}\r\n\r\n`;
     }
     
     r += center('Gracias por su compra') + '\r\n';
