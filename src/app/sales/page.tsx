@@ -49,6 +49,8 @@ interface Sale {
   notas?: string;
   fechaVenta: Date;
   fechaCreacion: Date;
+  tieneDevoluciones?: boolean;
+  cantidadDevoluciones?: number;
 }
 
 export default function SalesPage() {

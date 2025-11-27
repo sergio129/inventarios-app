@@ -44,6 +44,8 @@ interface Sale {
   metodoPago: string;
   estado: 'pendiente' | 'completada' | 'cancelada' | 'devuelta';
   fechaCreacion: Date;
+  tieneDevoluciones?: boolean;
+  cantidadDevoluciones?: number;
 }
 
 interface Return {
@@ -71,10 +73,8 @@ interface ReturnComponentProps {
 }
 
 export function ReturnsComponent({ salesData = [] }: ReturnComponentProps) {
-  // Filtrar ventas devueltas desde el inicio
-  const [sales, setSales] = useState<Sale[]>(
-    salesData.filter(sale => sale.estado !== 'devuelta')
-  );
+  // Mantener todas las ventas, se desabilitarán visualmente las que tengan devoluciones
+  const [sales, setSales] = useState<Sale[]>(salesData);
   const [returns, setReturns] = useState<Return[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredSales, setFilteredSales] = useState<Sale[]>([]);
@@ -100,7 +100,7 @@ export function ReturnsComponent({ salesData = [] }: ReturnComponentProps) {
 
   const fetchSales = async () => {
     try {
-      const response = await fetch('/api/sales');
+      const response = await fetch('/api/sales?checkReturns=true');
       if (response.ok) {
         const data = await response.json();
         setSales(data);
@@ -125,8 +125,8 @@ export function ReturnsComponent({ salesData = [] }: ReturnComponentProps) {
   const filterSales = () => {
     let filtered = sales;
 
-    // Excluir ventas que ya fueron devueltas
-    filtered = filtered.filter(sale => sale.estado !== 'devuelta');
+    // NO excluir ventas devueltas - solo las desabilitaremos visualmente
+    // para que el usuario vea que ya fueron procesadas
 
     if (searchTerm) {
       filtered = filtered.filter(
@@ -258,14 +258,17 @@ export function ReturnsComponent({ salesData = [] }: ReturnComponentProps) {
             {filteredSales.length > 0 ? (
               filteredSales.map((sale) => {
                 const isReturned = sale.estado === 'devuelta';
+                const hasReturns = sale.tieneDevoluciones || false;
+                const isDisabled = isReturned || hasReturns;
+                
                 return (
                   <Button
                     key={sale._id}
-                    onClick={() => !isReturned && setSelectedSale(sale)}
+                    onClick={() => !isDisabled && setSelectedSale(sale)}
                     variant={selectedSale?._id === sale._id ? 'default' : 'outline'}
-                    disabled={isReturned}
+                    disabled={isDisabled}
                     className={`w-full justify-start text-left h-auto p-3 ${
-                      isReturned
+                      isDisabled
                         ? 'opacity-50 cursor-not-allowed bg-gray-100'
                         : selectedSale?._id === sale._id
                         ? 'bg-blue-600 hover:bg-blue-700'
@@ -273,13 +276,18 @@ export function ReturnsComponent({ salesData = [] }: ReturnComponentProps) {
                     }`}
                   >
                     <div className="flex-1">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-semibold">
                           {sale.numeroFactura} - {sale.cliente?.nombre || 'Cliente General'}
                         </span>
                         {isReturned && (
                           <Badge variant="destructive" className="text-xs">
-                            DEVUELTA
+                            DEVUELTA COMPLETA
+                          </Badge>
+                        )}
+                        {hasReturns && !isReturned && (
+                          <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-300">
+                            {sale.cantidadDevoluciones} DEV. PROCESADA{sale.cantidadDevoluciones! > 1 ? 'S' : ''}
                           </Badge>
                         )}
                       </div>

@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const includeReturned = searchParams.get('includeReturned') === 'true';
+    const checkReturns = searchParams.get('checkReturns') === 'true';
 
     // Por defecto, excluir ventas devueltas (para el selector de devoluciones)
     const query = includeReturned ? {} : { estado: { $ne: 'devuelta' } };
@@ -27,6 +28,29 @@ export async function GET(request: NextRequest) {
     const sales = await Sale.find(query)
       .populate('vendedor', 'name email')
       .sort({ fechaCreacion: -1 });
+
+    // Si se solicita, agregar información de devoluciones existentes
+    if (checkReturns) {
+      const Return = (await import('@/lib/models/Return')).default;
+      
+      const salesWithReturns = await Promise.all(
+        sales.map(async (sale) => {
+          const saleObj = sale.toObject();
+          // Buscar devoluciones asociadas a esta venta
+          const returns = await Return.find({ 
+            ventaId: sale._id.toString() 
+          });
+          
+          return {
+            ...saleObj,
+            tieneDevoluciones: returns.length > 0,
+            cantidadDevoluciones: returns.length
+          };
+        })
+      );
+      
+      return NextResponse.json(salesWithReturns);
+    }
 
     return NextResponse.json(sales);
 
