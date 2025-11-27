@@ -567,7 +567,7 @@ export default function SalesPage() {
                         <div className="flex-1">
                           <p className="font-medium text-sm">{item.nombreProducto}</p>
                           <p className="text-xs text-gray-600">
-                            {formatCurrency(item.precioUnitario)} c/u
+                            {formatCurrency(item.precioUnitario)} {item.tipoVenta === 'empaque' ? 'c/empaque' : 'c/u'}
                             <span className="text-blue-600 font-medium ml-1">({item.tipoVenta})</span>
                           </p>
                         </div>
