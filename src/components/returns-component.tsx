@@ -52,17 +52,25 @@ interface Return {
   _id: string;
   numeroFactura: string;
   venta: string;
+  ventaId?: string;
   cliente?: {
     nombre: string;
     cedula?: string;
   };
   productosDevueltos: Array<{
     nombreProducto: string;
-    cantidad: number;
-    razon: string;
+    cantidad?: number;
+    cantidadDevuelta?: number;
+    precioUnitario?: number;
+    precioTotal?: number;
+    razon?: string;
+    motivo?: string;
   }>;
-  montoDevuelto: number;
-  estado: 'pendiente' | 'aprobada' | 'rechazada';
+  montoDevuelto?: number;
+  montoReembolso?: number;
+  subtotal?: number;
+  total?: number;
+  estado: 'pendiente' | 'aprobada' | 'rechazada' | 'procesada';
   razonDevolucion: string;
   notas?: string;
   fechaCreacion: Date;
@@ -484,12 +492,12 @@ export function ReturnsComponent({ salesData = [] }: ReturnComponentProps) {
                       <TableCell>
                         <div className="text-sm">
                           {ret.productosDevueltos.map((p, idx) => (
-                            <div key={idx}>{p.nombreProducto} ({p.cantidad})</div>
+                            <div key={idx}>{p.nombreProducto} ({p.cantidadDevuelta || p.cantidad || 0})</div>
                           ))}
                         </div>
                       </TableCell>
                       <TableCell className="font-semibold">
-                        {formatCurrency(ret.montoDevuelto)}
+                        {formatCurrency(ret.montoReembolso || ret.total || 0)}
                       </TableCell>
                       <TableCell className="text-sm">
                         {ret.razonDevolucion}
