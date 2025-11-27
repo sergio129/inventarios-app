@@ -122,7 +122,8 @@ export function ReturnsComponent({ salesData = [] }: ReturnComponentProps) {
       const response = await fetch('/api/returns');
       if (response.ok) {
         const data = await response.json();
-        setReturns(data.returns || []);
+        // El API devuelve directamente el array de devoluciones
+        setReturns(Array.isArray(data) ? data : []);
       }
     } catch (error) {
       console.error('Error fetching returns:', error);
