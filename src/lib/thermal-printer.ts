@@ -210,7 +210,9 @@ class ThermalPrinter {
     // Info básica
     r += `No: ${sale.numeroFactura}\r\n`;
     const f = new Date(sale.fechaVenta);
-    r += `${f.toLocaleDateString('es-CO')} ${f.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}\r\n`;
+    const fecha = f.toLocaleDateString('es-CO');
+    const hora = f.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true }).replace(/\s*\.\s*/g, ' ');
+    r += `${fecha} ${hora}\r\n`;
     
     // Cliente si existe
     if (sale.cliente?.nombre) {
@@ -300,8 +302,10 @@ class ThermalPrinter {
     // Información de la factura
     receipt += this.setAlign(0); // Izquierda
     receipt += `Factura: ${sale.numeroFactura}\n`;
-    receipt += `Fecha: ${new Date(sale.fechaVenta).toLocaleDateString('es-CO')}\n`;
-    receipt += `Hora: ${new Date(sale.fechaVenta).toLocaleTimeString('es-CO')}\n`;
+    const fecha = new Date(sale.fechaVenta);
+    receipt += `Fecha: ${fecha.toLocaleDateString('es-CO')}\n`;
+    const hora = fecha.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true }).replace(/\s*\.\s*/g, ' ');
+    receipt += `Hora: ${hora}\n`;
     receipt += this.emptyLine();
 
     // Información del cliente
