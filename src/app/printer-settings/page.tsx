@@ -62,32 +62,44 @@ export default function PrinterSettingsPage() {
     try {
       toast.loading('Enviando prueba de impresión...', { id: 'test-print' });
       
-      const testData = `
-${' '.repeat(15)}PRUEBA DE IMPRESORA
-${' '.repeat(10)}Sistema de Gestión de Inventario
-
-Fecha: ${new Date().toLocaleDateString('es-CO')}
-Hora: ${new Date().toLocaleTimeString('es-CO')}
-
-${'-'.repeat(48)}
-
-          ¡Impresora funcionando correctamente!
-
-${'-'.repeat(48)}
-
-      `;
+      // Crear venta de prueba
+      const testSale = {
+        numeroFactura: 'PRUEBA-TEST',
+        fechaVenta: new Date(),
+        cliente: {
+          nombre: 'CLIENTE DE PRUEBA',
+          cedula: '1234567890'
+        },
+        items: [
+          {
+            nombreProducto: 'PRODUCTO DE PRUEBA',
+            cantidad: 1,
+            precioUnitario: 10000,
+            precioTotal: 10000
+          }
+        ],
+        subtotal: 10000,
+        descuento: 0,
+        impuesto: 0,
+        total: 10000,
+        metodoPago: 'EFECTIVO',
+        notas: 'Esto es una prueba de impresion'
+      };
 
       const response = await fetch('/api/print/thermal', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/octet-stream'
+          'Content-Type': 'application/json'
         },
-        body: testData
+        body: JSON.stringify(testSale)
       });
 
       if (response.ok) {
+        const result = await response.json();
         toast.success('Prueba de impresión enviada', { id: 'test-print' });
       } else {
+        const error = await response.json();
+        console.error('Error de impresión:', error);
         toast.error('Error al enviar prueba de impresión', { id: 'test-print' });
       }
     } catch (error) {
