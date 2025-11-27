@@ -203,8 +203,9 @@ class ThermalPrinter {
     let r = '\r\n';
 
     // Encabezado compacto
-    r += center('UNIK RETAIL') + '\r\n';
-    r += center('Gestion Inventario') + '\r\n';
+    r += center('UNIK') + '\r\n';
+    r += center('SALSAMENTARIA Y DESECHABLES') + '\r\n';
+    r += center('NIT: 5096823-0') + '\r\n';
     r += sep() + '\r\n';
     
     // Info básica
@@ -293,10 +294,10 @@ class ThermalPrinter {
     // Encabezado
     receipt += this.setAlign(1); // Centrado
     receipt += this.setBold(true);
-    receipt += this.alignCenter('UNIK RETAIL') + '\n';
+    receipt += this.alignCenter('UNIK') + '\n';
+    receipt += this.alignCenter('SALSAMENTARIA Y DESECHABLES') + '\n';
     receipt += this.setBold(false);
-    receipt += this.alignCenter('Sistema de Gestión de Inventario') + '\n';
-    receipt += this.alignCenter('Factura Electrónica') + '\n';
+    receipt += this.alignCenter('NIT: 5096823-0') + '\n';
     receipt += this.emptyLine();
 
     // Información de la factura
