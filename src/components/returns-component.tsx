@@ -38,6 +38,7 @@ interface Sale {
   items: Array<{
     nombreProducto: string;
     cantidad: number;
+    tipoVenta?: 'unidad' | 'empaque';
     precioUnitario: number;
     precioTotal: number;
   }>;
@@ -71,6 +72,7 @@ interface Return {
     nombreProducto: string;
     cantidad?: number;
     cantidadDevuelta?: number;
+    tipoVenta?: 'unidad' | 'empaque';
     precioUnitario?: number;
     precioTotal?: number;
     razon?: string;
@@ -224,6 +226,7 @@ export function ReturnsComponent({ salesData = [] }: ReturnComponentProps) {
             nombreProducto: item.nombreProducto,
             cantidad: item.cantidad,
             cantidadDevuelta: item.cantidad,
+            tipoVenta: item.tipoVenta || 'unidad', // ⭐ Incluir tipo de venta
             precioUnitario: item.precioUnitario,
             precioTotal: item.precioTotal,
             razon: returnData.razonDevolucion,
