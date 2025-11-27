@@ -23,6 +23,7 @@ interface PrinterSale {
   items: Array<{
     nombreProducto: string;
     cantidad: number;
+    tipoVenta?: 'unidad' | 'empaque';
     precioUnitario: number;
     precioTotal: number;
   }>;
@@ -117,19 +118,21 @@ class ThermalPrinter {
   }
 
   /**
-   * Genera línea de producto con cantidad, precio y total alineados
+   * Genera línea de producto con cantidad, tipo, precio y total alineados
    */
   private productLine(
     name: string,
     quantity: number,
+    tipoVenta: 'unidad' | 'empaque' | undefined,
     unitPrice: number,
     total: number
   ): string {
     const maxNameLength = this.config.charsPerLine - 15;
     const shortName = name.substring(0, maxNameLength);
+    const tipo = tipoVenta === 'empaque' ? 'Cja' : 'Und';
 
     const line1 = `${shortName}\n`;
-    const qtyStr = `x${quantity}`;
+    const qtyStr = `x${quantity} ${tipo}`;
     const priceStr = `$${unitPrice.toFixed(0)}`;
     const totalStr = `$${total.toFixed(0)}`;
 
@@ -229,13 +232,14 @@ class ThermalPrinter {
     r += sep() + '\r\n';
 
     // Productos - Formato compacto
-    // "NombreCorto Cant $Precio"
+    // "NombreCorto Cant Tipo $Precio"
     for (const item of sale.items) {
+      const tipoAbrev = item.tipoVenta === 'empaque' ? 'Cja' : 'Und';
       const cant = `${item.cantidad}x`;
       const precio = formatMoney(item.precioTotal);
       
-      // Espacio necesario para cantidad y precio (con espacio extra)
-      const espacioInfo = cant.length + precio.length + 2;
+      // Espacio necesario para cantidad, tipo y precio
+      const espacioInfo = cant.length + tipoAbrev.length + precio.length + 3;
       const maxNom = width - espacioInfo;
       
       // Limpiar y acortar nombre de producto
@@ -247,8 +251,8 @@ class ThermalPrinter {
       }
       
       // Calcular espacios para alinear precio a la derecha
-      const espacios = width - nom.length - cant.length - precio.length - 1;
-      r += nom + ' ' + cant + ' '.repeat(Math.max(1, espacios)) + precio + '\r\n';
+      const espacios = width - nom.length - cant.length - tipoAbrev.length - precio.length - 2;
+      r += nom + ' ' + cant + ' ' + tipoAbrev + ' '.repeat(Math.max(1, espacios)) + precio + '\r\n';
     }
 
     r += sep() + '\r\n';
@@ -339,6 +343,7 @@ class ThermalPrinter {
       receipt += this.productLine(
         item.nombreProducto,
         item.cantidad,
+        item.tipoVenta,
         item.precioUnitario,
         item.precioTotal
       );

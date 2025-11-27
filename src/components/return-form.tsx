@@ -35,6 +35,7 @@ interface ReturnItem {
   nombreProducto: string;
   cantidadOriginal: number;
   cantidadDevuelta: number;
+  tipoVenta?: 'unidad' | 'empaque';
   precioUnitario: number;
   precioTotal: number;
   motivo: string;
@@ -88,6 +89,7 @@ export function ReturnForm({
       nombreProducto: saleItem.nombreProducto,
       cantidadOriginal: saleItem.cantidad,
       cantidadDevuelta: 1,
+      tipoVenta: saleItem.tipoVenta || 'unidad', // ⭐ Copiar el tipo de venta original
       precioUnitario: saleItem.precioUnitario || saleItem.precio,
       precioTotal: saleItem.precioUnitario || saleItem.precio,
       motivo: 'Cambio de parecer',
