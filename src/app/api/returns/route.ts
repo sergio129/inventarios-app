@@ -149,6 +149,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Verificar si es una devolución completa (todos los productos)
+    const todosLosProductosDevueltos = productosDevueltos.length === sale.items.length &&
+      productosDevueltos.every((prodDevuelto: any) => {
+        const itemOriginal = sale.items.find(
+          (item: any) => item.nombreProducto === prodDevuelto.nombreProducto
+        );
+        return itemOriginal && prodDevuelto.cantidad === itemOriginal.cantidad;
+      });
+
+    // Si es devolución completa, marcar la venta como devuelta
+    if (todosLosProductosDevueltos) {
+      sale.estado = 'devuelta';
+      await sale.save();
+      console.log(`✓ Venta ${numeroFactura} marcada como devuelta (devolución completa)`);
+    }
+
     // Actualizar estadísticas del cliente
     if (cliente && cliente.cedula) {
       try {

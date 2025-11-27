@@ -18,7 +18,13 @@ export async function GET(request: NextRequest) {
 
     await dbConnect();
 
-    const sales = await Sale.find()
+    const { searchParams } = new URL(request.url);
+    const includeReturned = searchParams.get('includeReturned') === 'true';
+
+    // Por defecto, excluir ventas devueltas (para el selector de devoluciones)
+    const query = includeReturned ? {} : { estado: { $ne: 'devuelta' } };
+
+    const sales = await Sale.find(query)
       .populate('vendedor', 'name email')
       .sort({ fechaCreacion: -1 });
 

@@ -42,6 +42,7 @@ interface Sale {
   }>;
   total: number;
   metodoPago: string;
+  estado: 'pendiente' | 'completada' | 'cancelada' | 'devuelta';
   fechaCreacion: Date;
 }
 
@@ -70,7 +71,10 @@ interface ReturnComponentProps {
 }
 
 export function ReturnsComponent({ salesData = [] }: ReturnComponentProps) {
-  const [sales, setSales] = useState<Sale[]>(salesData);
+  // Filtrar ventas devueltas desde el inicio
+  const [sales, setSales] = useState<Sale[]>(
+    salesData.filter(sale => sale.estado !== 'devuelta')
+  );
   const [returns, setReturns] = useState<Return[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredSales, setFilteredSales] = useState<Sale[]>([]);
@@ -120,6 +124,9 @@ export function ReturnsComponent({ salesData = [] }: ReturnComponentProps) {
 
   const filterSales = () => {
     let filtered = sales;
+
+    // Excluir ventas que ya fueron devueltas
+    filtered = filtered.filter(sale => sale.estado !== 'devuelta');
 
     if (searchTerm) {
       filtered = filtered.filter(
@@ -249,27 +256,40 @@ export function ReturnsComponent({ salesData = [] }: ReturnComponentProps) {
           {/* Listado de Ventas */}
           <div className="space-y-2 max-h-64 overflow-y-auto">
             {filteredSales.length > 0 ? (
-              filteredSales.map((sale) => (
-                <Button
-                  key={sale._id}
-                  onClick={() => setSelectedSale(sale)}
-                  variant={selectedSale?._id === sale._id ? 'default' : 'outline'}
-                  className={`w-full justify-start text-left h-auto p-3 ${
-                    selectedSale?._id === sale._id
-                      ? 'bg-blue-600 hover:bg-blue-700'
-                      : 'hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex-1">
-                    <div className="font-semibold">
-                      {sale.numeroFactura} - {sale.cliente?.nombre || 'Cliente General'}
+              filteredSales.map((sale) => {
+                const isReturned = sale.estado === 'devuelta';
+                return (
+                  <Button
+                    key={sale._id}
+                    onClick={() => !isReturned && setSelectedSale(sale)}
+                    variant={selectedSale?._id === sale._id ? 'default' : 'outline'}
+                    disabled={isReturned}
+                    className={`w-full justify-start text-left h-auto p-3 ${
+                      isReturned
+                        ? 'opacity-50 cursor-not-allowed bg-gray-100'
+                        : selectedSale?._id === sale._id
+                        ? 'bg-blue-600 hover:bg-blue-700'
+                        : 'hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">
+                          {sale.numeroFactura} - {sale.cliente?.nombre || 'Cliente General'}
+                        </span>
+                        {isReturned && (
+                          <Badge variant="destructive" className="text-xs">
+                            DEVUELTA
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="text-xs opacity-75 mt-1">
+                        {sale.items.length} productos • {formatCurrency(sale.total)}
+                      </div>
                     </div>
-                    <div className="text-xs opacity-75 mt-1">
-                      {sale.items.length} productos • {formatCurrency(sale.total)}
-                    </div>
-                  </div>
-                </Button>
-              ))
+                  </Button>
+                );
+              })
             ) : (
               <div className="text-center py-6 text-gray-500">
                 <Search className="h-8 w-8 mx-auto mb-2 opacity-50" />

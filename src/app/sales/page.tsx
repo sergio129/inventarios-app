@@ -41,7 +41,7 @@ interface Sale {
   impuesto: number;
   total: number;
   metodoPago: string;
-  estado: string;
+  estado: 'pendiente' | 'completada' | 'cancelada' | 'devuelta';
   vendedor?: {
     name: string;
     email: string;
