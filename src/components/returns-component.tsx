@@ -178,9 +178,12 @@ export function ReturnsComponent({ salesData = [] }: ReturnComponentProps) {
           ventaId: selectedSale._id,
           numeroFactura: selectedSale.numeroFactura,
           cliente: selectedSale.cliente,
-          productosDevueltos: selectedProducts.map((item, idx) => ({
+          productosDevueltos: selectedProducts.map((item) => ({
             nombreProducto: item.nombreProducto,
             cantidad: item.cantidad,
+            cantidadDevuelta: item.cantidad,
+            precioUnitario: item.precioUnitario,
+            precioTotal: item.precioTotal,
             razon: returnData.razonDevolucion,
           })),
           montoDevuelto,

@@ -103,17 +103,40 @@ export async function POST(request: NextRequest) {
     // Generar número de devolución
     const numeroDevolucion = generateReturnNumber();
 
-    // Crear registro de devolución
+    // Calcular totales correctamente
+    let subtotal = 0;
+    const productosFormateados = productosDevueltos.map((prod: any) => {
+      const cantidad = prod.cantidadDevuelta || prod.cantidad || 0;
+      const precioUnitario = prod.precioUnitario || 0;
+      const precioTotal = cantidad * precioUnitario;
+      subtotal += precioTotal;
+      
+      return {
+        productoId: prod.productoId,
+        nombreProducto: prod.nombreProducto,
+        cantidadOriginal: prod.cantidadOriginal || cantidad,
+        cantidadDevuelta: cantidad,
+        precioUnitario: precioUnitario,
+        precioTotal: precioTotal,
+        motivo: prod.motivo || prod.razon || razonDevolucion || 'No especificado'
+      };
+    });
+
+    const total = subtotal;
+
+    // Crear registro de devolución con estado 'procesada' ya que se procesa automáticamente
     const returnRecord = new Return({
       numeroDevolucion,
       numeroFactura,
       ventaId: ventaIdFinal,
       cliente,
-      productosDevueltos,
-      montoDevuelto: montoDevuelto || 0,
+      productosDevueltos: productosFormateados,
+      subtotal,
+      total,
+      montoReembolso: total,
       razonDevolucion: razonDevolucion || 'no_especificada',
       notas: notas || '',
-      estado: 'pendiente',
+      estado: 'procesada', // Cambiar a procesada ya que se ejecuta automáticamente
       fechaCreacion: new Date(),
     });
 
