@@ -108,6 +108,11 @@ const ReturnSchema = new Schema<IReturn>(
       type: String,
       default: 'No especificado',
     },
+    razonDevolucion: {
+      type: String,
+      required: true,
+      default: 'no_especificada',
+    },
     notas: String,
     vendedor: {
       type: Schema.Types.ObjectId,

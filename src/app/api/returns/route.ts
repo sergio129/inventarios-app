@@ -78,6 +78,13 @@ export async function POST(request: NextRequest) {
       notas,
     } = await request.json();
 
+    // Log para debugging
+    console.log('📋 Datos recibidos para devolución:', {
+      razonDevolucion,
+      numeroFactura,
+      productosCount: productosDevueltos?.length
+    });
+
     // Aceptar tanto "venta" como "ventaId" para compatibilidad
     const ventaIdFinal = venta || ventaId;
 
