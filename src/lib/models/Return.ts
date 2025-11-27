@@ -65,6 +65,11 @@ const ReturnSchema = new Schema<IReturn>(
         nombreProducto: String,
         cantidadOriginal: Number,
         cantidadDevuelta: Number,
+        tipoVenta: {
+          type: String,
+          enum: ['unidad', 'empaque'],
+          default: 'unidad',
+        },
         precioUnitario: Number,
         precioTotal: Number,
         motivo: String,

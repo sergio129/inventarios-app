@@ -123,6 +123,7 @@ export async function POST(request: NextRequest) {
         nombreProducto: prod.nombreProducto,
         cantidadOriginal: prod.cantidadOriginal || cantidad,
         cantidadDevuelta: cantidad,
+        tipoVenta: prod.tipoVenta || 'unidad', // Importante: guardar el tipo de venta
         precioUnitario: precioUnitario,
         precioTotal: precioTotal,
         motivo: prod.motivo || prod.razon || razonDevolucion || 'No especificado'
@@ -158,12 +159,20 @@ export async function POST(request: NextRequest) {
         });
 
         if (product) {
-          // Restaurar el stock sumando la cantidad devuelta
-          product.stock += productoDevuelto.cantidad;
+          // Calcular las unidades reales a devolver según el tipo de venta
+          const tipoVenta = productoDevuelto.tipoVenta || 'unidad';
+          const cantidadDevuelta = productoDevuelto.cantidadDevuelta || productoDevuelto.cantidad || 0;
+          
+          const unidadesADevolver = tipoVenta === 'empaque'
+            ? cantidadDevuelta * (product.unidadesPorEmpaque || product.unidadesPorCaja || 1)
+            : cantidadDevuelta;
+
+          // Restaurar el stock sumando las unidades reales
+          product.stock += unidadesADevolver;
           await product.save();
 
           console.log(
-            `✓ Stock restaurado para "${productoDevuelto.nombreProducto}": +${productoDevuelto.cantidad} (nuevo stock: ${product.stock})`
+            `✓ Stock restaurado para "${productoDevuelto.nombreProducto}": +${unidadesADevolver} unidades (${cantidadDevuelta} ${tipoVenta}) → Nuevo stock: ${product.stock}`
           );
         } else {
           console.warn(

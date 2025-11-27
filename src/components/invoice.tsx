@@ -22,6 +22,7 @@ interface Sale {
     cantidad: number;
     precioUnitario: number;
     precioTotal: number;
+    tipoVenta?: 'unidad' | 'empaque';
   }>;
   subtotal: number;
   descuento: number;
@@ -181,6 +182,7 @@ export function Invoice({ sale, onClose, onPrint, onDownload }: InvoiceProps) {
                 <thead>
                   <tr className="border-b">
                     <th className="text-left py-2 px-3 font-medium">Producto</th>
+                    <th className="text-center py-2 px-3 font-medium">Tipo</th>
                     <th className="text-center py-2 px-3 font-medium">Cant.</th>
                     <th className="text-right py-2 px-3 font-medium">Precio Unit.</th>
                     <th className="text-right py-2 px-3 font-medium">Total</th>
@@ -190,6 +192,11 @@ export function Invoice({ sale, onClose, onPrint, onDownload }: InvoiceProps) {
                   {sale.items.map((item, index) => (
                     <tr key={index} className="border-b">
                       <td className="py-3 px-3">{item.nombreProducto}</td>
+                      <td className="text-center py-3 px-3">
+                        <span className="text-xs font-medium text-blue-600">
+                          {item.tipoVenta === 'empaque' ? 'Caja' : 'Unidad'}
+                        </span>
+                      </td>
                       <td className="text-center py-3 px-3">{item.cantidad}</td>
                       <td className="text-right py-3 px-3">{formatCurrency(item.precioUnitario)}</td>
                       <td className="text-right py-3 px-3 font-medium">{formatCurrency(item.precioTotal)}</td>
