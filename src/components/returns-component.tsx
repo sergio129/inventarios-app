@@ -23,7 +23,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { RotateCcw, Search, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { RotateCcw, Search, AlertCircle, CheckCircle, Clock, Receipt } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/currency-utils';
 
@@ -33,6 +33,7 @@ interface Sale {
   cliente?: {
     nombre: string;
     cedula?: string;
+    telefono?: string;
   };
   items: Array<{
     nombreProducto: string;
@@ -40,9 +41,18 @@ interface Sale {
     precioUnitario: number;
     precioTotal: number;
   }>;
+  subtotal: number;
+  descuento: number;
+  impuesto: number;
   total: number;
   metodoPago: string;
   estado: 'pendiente' | 'completada' | 'cancelada' | 'devuelta';
+  vendedor?: {
+    name: string;
+    email: string;
+  };
+  notas?: string;
+  fechaVenta: Date;
   fechaCreacion: Date;
   tieneDevoluciones?: boolean;
   cantidadDevoluciones?: number;
@@ -94,6 +104,11 @@ export function ReturnsComponent({ salesData = [] }: ReturnComponentProps) {
     razonDevolucion: '',
     notas: '',
   });
+  
+  // Estados para el modal de factura
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [invoiceSale, setInvoiceSale] = useState<Sale | null>(null);
+  const [loadingInvoice, setLoadingInvoice] = useState(false);
 
   useEffect(() => {
     if (salesData.length === 0) {
@@ -135,6 +150,25 @@ export function ReturnsComponent({ salesData = [] }: ReturnComponentProps) {
       }
     } catch (error) {
       console.error('Error fetching returns:', error);
+    }
+  };
+
+  const fetchSaleDetails = async (ventaId: string) => {
+    setLoadingInvoice(true);
+    try {
+      const response = await fetch(`/api/sales/${ventaId}`);
+      if (response.ok) {
+        const sale = await response.json();
+        setInvoiceSale(sale);
+        setShowInvoiceModal(true);
+      } else {
+        toast.error('No se pudo cargar la información de la factura');
+      }
+    } catch (error) {
+      console.error('Error fetching sale details:', error);
+      toast.error('Error al cargar la factura');
+    } finally {
+      setLoadingInvoice(false);
     }
   };
 
@@ -493,7 +527,13 @@ export function ReturnsComponent({ salesData = [] }: ReturnComponentProps) {
                   returns.map((ret) => (
                     <TableRow key={ret._id}>
                       <TableCell className="font-medium">
-                        {ret.numeroFactura}
+                        <button
+                          onClick={() => ret.ventaId && fetchSaleDetails(ret.ventaId)}
+                          className="text-blue-600 hover:text-blue-800 hover:underline font-medium cursor-pointer transition-colors"
+                          disabled={loadingInvoice || !ret.ventaId}
+                        >
+                          {ret.numeroFactura}
+                        </button>
                       </TableCell>
                       <TableCell>
                         {ret.cliente?.nombre || 'Cliente General'}
@@ -545,6 +585,131 @@ export function ReturnsComponent({ salesData = [] }: ReturnComponentProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Modal de Factura Original */}
+      {showInvoiceModal && invoiceSale && (
+        <Dialog open={showInvoiceModal} onOpenChange={setShowInvoiceModal}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-xl">
+                <Receipt className="h-6 w-6 text-blue-600" />
+                Factura Original - {invoiceSale.numeroFactura}
+              </DialogTitle>
+              <DialogDescription>
+                Detalles de la venta original
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 mt-4">
+              {/* Información del Cliente */}
+              <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                <h3 className="font-semibold text-blue-900 mb-2">Cliente</h3>
+                <div className="text-sm">
+                  <p className="font-medium">{invoiceSale.cliente?.nombre || 'Cliente General'}</p>
+                  {invoiceSale.cliente?.cedula && (
+                    <p className="text-gray-600">Cédula: {invoiceSale.cliente.cedula}</p>
+                  )}
+                  {invoiceSale.cliente?.telefono && (
+                    <p className="text-gray-600">Teléfono: {invoiceSale.cliente.telefono}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Productos */}
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-3">Productos Vendidos</h3>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Producto</TableHead>
+                      <TableHead className="text-right">Cantidad</TableHead>
+                      <TableHead className="text-right">Precio Unit.</TableHead>
+                      <TableHead className="text-right">Total</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {invoiceSale.items.map((item, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell className="font-medium">{item.nombreProducto}</TableCell>
+                        <TableCell className="text-right">{item.cantidad}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(item.precioUnitario)}</TableCell>
+                        <TableCell className="text-right font-semibold">{formatCurrency(item.precioTotal)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Totales */}
+              <div className="border-t pt-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Subtotal:</span>
+                  <span className="font-medium">{formatCurrency(invoiceSale.subtotal)}</span>
+                </div>
+                {invoiceSale.descuento > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Descuento:</span>
+                    <span className="text-red-600 font-medium">-{formatCurrency(invoiceSale.descuento)}</span>
+                  </div>
+                )}
+                {invoiceSale.impuesto > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Impuesto:</span>
+                    <span className="font-medium">{formatCurrency(invoiceSale.impuesto)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-lg font-bold border-t pt-2">
+                  <span>Total:</span>
+                  <span className="text-green-600">{formatCurrency(invoiceSale.total)}</span>
+                </div>
+              </div>
+
+              {/* Información adicional */}
+              <div className="bg-gray-50 p-4 rounded space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Método de pago:</span>
+                  <Badge variant="outline" className="capitalize">
+                    {invoiceSale.metodoPago}
+                  </Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Estado:</span>
+                  <Badge 
+                    variant={invoiceSale.estado === 'devuelta' ? 'destructive' : 'default'}
+                    className="capitalize"
+                  >
+                    {invoiceSale.estado}
+                  </Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Fecha de venta:</span>
+                  <span className="font-medium">
+                    {new Date(invoiceSale.fechaVenta).toLocaleDateString('es-CO', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </span>
+                </div>
+                {invoiceSale.notas && (
+                  <div>
+                    <span className="text-gray-600">Notas:</span>
+                    <p className="mt-1 text-gray-800">{invoiceSale.notas}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end mt-4">
+              <Button onClick={() => setShowInvoiceModal(false)} variant="outline">
+                Cerrar
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
