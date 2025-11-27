@@ -135,8 +135,9 @@ export function Invoice({ sale, onClose, onPrint, onDownload }: InvoiceProps) {
         <div id="invoice-content" className="p-6 space-y-6">
           {/* Información de la empresa */}
           <div className="text-center border-b pb-4">
-            <h1 className="text-3xl font-bold text-orange-600">Unik Retail</h1>
-            <p className="text-gray-600">Sistema de Gestión de Inventario</p>
+            <h1 className="text-3xl font-bold text-orange-600">UNIK</h1>
+            <h2 className="text-xl font-semibold text-gray-700">SALSAMENTARIA Y DESECHABLES</h2>
+            <p className="text-sm text-gray-600 mt-2">NIT: 5096823-0</p>
             <p className="text-sm text-gray-500">Factura Electrónica</p>
           </div>
 
