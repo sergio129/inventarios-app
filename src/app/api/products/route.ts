@@ -108,12 +108,15 @@ export async function POST(request: NextRequest) {
       precioCompraCaja: precioCompraCaja || null,
       stockCajas,
       unidadesPorCaja,
+      unidadesPorEmpaque: unidadesPorCaja, // Sincronizar ambos campos
       stockUnidadesSueltas,
       stock: stockTotal,
       stockMinimo,
       categoria,
       activo: true,
-      tipoVenta: 'ambos' // Por defecto permite venta por unidad y caja
+      tipoVenta: 'ambos', // Por defecto permite venta por unidad y caja
+      precioPorUnidad: precio, // Precio unitario
+      precioPorEmpaque: precioCaja || (precio * unidadesPorCaja) // Precio por caja completa
     };
 
     // Solo agregar campos opcionales si tienen valor

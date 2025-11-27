@@ -68,11 +68,13 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
   const getPrecioProducto = (product: IProduct, tipo: 'unidad' | 'empaque'): number => {
-    if (tipo === 'unidad' && product.precioPorUnidad) {
-      return product.precioPorUnidad;
+    if (tipo === 'unidad') {
+      // Prioridad: precioPorUnidad > precio
+      return product.precioPorUnidad || product.precio;
     }
-    if (tipo === 'empaque' && product.precioPorEmpaque) {
-      return product.precioPorEmpaque;
+    if (tipo === 'empaque') {
+      // Prioridad: precioPorEmpaque > precioCaja > precio * unidadesPorEmpaque
+      return product.precioPorEmpaque || (product as any).precioCaja || (product.precio * (product.unidadesPorEmpaque || 1));
     }
     return product.precio; // Precio por defecto
   };

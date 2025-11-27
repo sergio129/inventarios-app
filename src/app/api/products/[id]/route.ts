@@ -66,6 +66,19 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const updateObj: any = { ...updateData, fechaActualizacion: new Date() };
     const unsetObj: any = {};
 
+    // Sincronizar precios: si se actualiza precio o precioCaja, actualizar también precioPorUnidad/precioPorEmpaque
+    if (updateData.precio !== undefined) {
+      updateObj.precioPorUnidad = updateData.precio;
+    }
+    if (updateData.precioCaja !== undefined) {
+      const unidadesPorEmpaque = updateData.unidadesPorCaja || existingProduct.unidadesPorCaja || existingProduct.unidadesPorEmpaque || 1;
+      updateObj.precioPorEmpaque = updateData.precioCaja || (updateData.precio * unidadesPorEmpaque);
+    }
+    // Sincronizar unidadesPorEmpaque con unidadesPorCaja
+    if (updateData.unidadesPorCaja !== undefined) {
+      updateObj.unidadesPorEmpaque = updateData.unidadesPorCaja;
+    }
+
     // Si el campo viene vacío, marcarlo para remover del documento
     if (updateData.codigo === '') {
       unsetObj.codigo = '';
