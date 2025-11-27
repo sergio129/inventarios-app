@@ -10,9 +10,9 @@ export interface IReturn extends Document {
   numeroDevolucion: string;
   ventaId?: string;
   numeroFactura: string;
-  cliente: {
-    cedula: string;
-    nombre: string;
+  cliente?: {
+    cedula?: string;
+    nombre?: string;
   };
   productosDevueltos: IReturnItem[];
   subtotal: number;
@@ -52,7 +52,7 @@ const ReturnSchema = new Schema<IReturn>(
     cliente: {
       cedula: {
         type: String,
-        required: true,
+        required: false, // No obligatorio - algunas ventas no tienen cliente
         lowercase: true,
         trim: true,
         index: true,

@@ -205,6 +205,7 @@ class ThermalPrinter {
     // Encabezado compacto
     r += center('UNIK') + '\r\n';
     r += center('SALSAMENTARIA Y DESECHABLES') + '\r\n';
+     r += center('SAN BERNARDO DEL VIENTO') + '\r\n';
     r += center('NIT: 5096823-0') + '\r\n';
     r += sep() + '\r\n';
     
