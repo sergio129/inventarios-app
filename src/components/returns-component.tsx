@@ -98,6 +98,13 @@ export function ReturnsComponent({ salesData = [] }: ReturnComponentProps) {
     filterSales();
   }, [sales, searchTerm, statusFilter]);
 
+  // Actualizar sales cuando cambien las props salesData
+  useEffect(() => {
+    if (salesData.length > 0) {
+      setSales(salesData);
+    }
+  }, [salesData]);
+
   const fetchSales = async () => {
     try {
       const response = await fetch('/api/sales?checkReturns=true');
@@ -185,7 +192,11 @@ export function ReturnsComponent({ salesData = [] }: ReturnComponentProps) {
         toast.success('Devolución registrada exitosamente');
         setSelectedSale(null);
         setReturnData({ selectedItems: [], razonDevolucion: '', notas: '' });
-        fetchReturns();
+        // Recargar tanto las devoluciones como las ventas para actualizar los badges
+        await Promise.all([
+          fetchReturns(),
+          fetchSales()
+        ]);
       } else {
         toast.error('Error al registrar la devolución');
       }

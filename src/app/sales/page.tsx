@@ -111,7 +111,7 @@ export default function SalesPage() {
 
   const fetchSales = async () => {
     try {
-      const response = await fetch('/api/sales');
+      const response = await fetch('/api/sales?checkReturns=true');
       if (response.ok) {
         const data = await response.json();
         setSales(data);
