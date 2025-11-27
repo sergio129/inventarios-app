@@ -223,6 +223,7 @@ export function ReturnsComponent({ salesData = [] }: ReturnComponentProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'aprobada':
+      case 'procesada':
         return 'bg-green-100 text-green-800';
       case 'pendiente':
         return 'bg-yellow-100 text-yellow-800';
@@ -236,6 +237,7 @@ export function ReturnsComponent({ salesData = [] }: ReturnComponentProps) {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'aprobada':
+      case 'procesada':
         return <CheckCircle className="h-4 w-4 text-green-600" />;
       case 'pendiente':
         return <Clock className="h-4 w-4 text-yellow-600" />;
@@ -244,6 +246,18 @@ export function ReturnsComponent({ salesData = [] }: ReturnComponentProps) {
       default:
         return null;
     }
+  };
+
+  const formatRazon = (razon: string) => {
+    const razones: { [key: string]: string } = {
+      'defectuoso': 'Producto defectuoso',
+      'vencido': 'Producto vencido',
+      'error_pedido': 'Error en el pedido',
+      'no_requerido': 'Ya no se requiere',
+      'otro': 'Otro',
+      'no_especificada': 'No especificada'
+    };
+    return razones[razon] || razon;
   };
 
   return (
@@ -500,7 +514,7 @@ export function ReturnsComponent({ salesData = [] }: ReturnComponentProps) {
                         {formatCurrency(ret.montoReembolso || ret.total || 0)}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {ret.razonDevolucion}
+                        {ret.razonDevolucion ? formatRazon(ret.razonDevolucion) : '-'}
                       </TableCell>
                       <TableCell>
                         <Badge
