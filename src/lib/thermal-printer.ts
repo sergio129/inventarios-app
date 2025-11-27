@@ -382,7 +382,7 @@ class ThermalPrinter {
 
   /**
    * Envía el recibo a la impresora local del navegador
-   * Intenta impresión silenciosa automática
+   * Intenta impresión silenciosa automática usando servidor local
    */
   async printReceipt(sale: PrinterSale, usePlainText: boolean = true): Promise<void> {
     try {
@@ -393,23 +393,26 @@ class ThermalPrinter {
 
       // Obtener configuración local
       const configStr = localStorage.getItem('printerConfig');
-      const config = configStr ? JSON.parse(configStr) : { printerType: 'windows', autoprint: true };
+      const config = configStr ? JSON.parse(configStr) : { 
+        printerType: 'windows', 
+        autoprint: true,
+        printServerUrl: 'http://localhost:3001'
+      };
 
       // Generar contenido
       const receiptData = usePlainText 
         ? this.generatePlainTextReceipt(sale)
         : this.generateReceipt(sale);
 
-      // Intentar impresión automática si está habilitada
-      if (config.autoprint) {
-        // Si estamos en localhost, intentar API RAW del servidor
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-          try {
-            await this.printViaServerAPI(receiptData);
-            return; // Éxito con impresión RAW
-          } catch (error) {
-            console.warn('Impresión RAW falló, usando método alternativo:', error);
-          }
+      // Intentar impresión automática vía servidor local
+      if (config.autoprint && config.printServerUrl) {
+        try {
+          await this.printViaLocalServer(receiptData, config.printServerUrl, config.printerName);
+          console.log('✅ Impresión exitosa vía servidor local');
+          return; // Éxito con impresión directa
+        } catch (error) {
+          console.warn('⚠️ Servidor local no disponible, usando método alternativo:', error);
+          // Continuar con fallback
         }
       }
 
@@ -423,18 +426,42 @@ class ThermalPrinter {
   }
 
   /**
-   * Imprime vía API del servidor (solo funciona en localhost)
+   * Imprime vía servidor local de impresión (funciona desde Vercel)
    */
-  private async printViaServerAPI(content: string): Promise<void> {
-    const response = await fetch('/api/print/thermal', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-      body: content
+  private async printViaLocalServer(
+    content: string, 
+    serverUrl: string,
+    printerName?: string
+  ): Promise<void> {
+    // Verificar que el servidor esté disponible
+    const healthCheck = await fetch(`${serverUrl}/health`, {
+      method: 'GET',
+      signal: AbortSignal.timeout(2000) // Timeout de 2 segundos
+    });
+
+    if (!healthCheck.ok) {
+      throw new Error('Servidor de impresión no disponible');
+    }
+
+    // Enviar trabajo de impresión
+    const response = await fetch(`${serverUrl}/print`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        content,
+        printerName: printerName || null
+      }),
+      signal: AbortSignal.timeout(5000)
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || 'Error en impresión RAW');
+      throw new Error(error.error || 'Error en impresión');
+    }
+
+    const result = await response.json();
+    if (!result.success) {
+      throw new Error(result.error || 'Error desconocido');
     }
   }
 

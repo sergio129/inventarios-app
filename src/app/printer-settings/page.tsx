@@ -18,6 +18,7 @@ interface PrinterConfig {
   printerName: string; // Nombre de impresora en Windows
   printerAddress?: string;
   printerPort?: number;
+  printServerUrl?: string; // URL del servidor local de impresión
 }
 
 export default function PrinterSettingsPage() {
@@ -27,7 +28,8 @@ export default function PrinterSettingsPage() {
     printerType: 'usb',
     printerName: 'POS-5890U-L',
     printerAddress: '192.168.1.100',
-    printerPort: 9100
+    printerPort: 9100,
+    printServerUrl: 'http://localhost:3001'
   });
   const [isSaving, setIsSaving] = useState(false);
 
@@ -240,6 +242,30 @@ ${'-'.repeat(48)}
                 </div>
               </>
             )}
+
+            {/* Servidor Local de Impresión */}
+            <div className="space-y-2 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Settings className="h-4 w-4 text-green-600" />
+                <Label htmlFor="print-server" className="text-base font-semibold text-green-900">
+                  Servidor Local de Impresión (Recomendado)
+                </Label>
+              </div>
+              <p className="text-sm text-green-700 mb-3">
+                Para imprimir automáticamente desde Vercel, ejecuta el servidor local en tu PC
+              </p>
+              <Input
+                id="print-server"
+                placeholder="http://localhost:3001"
+                value={config.printServerUrl || ''}
+                onChange={(e) =>
+                  setConfig({ ...config, printServerUrl: e.target.value })
+                }
+              />
+              <p className="text-xs text-green-600 mt-2">
+                💡 Comando: <code className="bg-green-100 px-2 py-1 rounded">node print-server.js</code>
+              </p>
+            </div>
 
             {/* Info Box */}
             <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
