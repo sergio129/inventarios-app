@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Printer, Save, AlertCircle, Eye } from 'lucide-react';
+import { ArrowLeft, Printer, Save, AlertCircle, Eye, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
