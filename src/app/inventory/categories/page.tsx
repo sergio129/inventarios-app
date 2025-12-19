@@ -252,7 +252,7 @@ export default function CategoriesPage() {
                   id="create-nombre"
                   value={createForm.nombre}
                   onChange={(e) => setCreateForm({ ...createForm, nombre: e.target.value })}
-                  placeholder="Ej: Analgésicos, Antibióticos"
+                  placeholder="Ej: vasos, Pitillos, platos, etc."
                   className="border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-indigo-500 bg-gray-50 hover:bg-white transition-all"
                 />
               </div>
