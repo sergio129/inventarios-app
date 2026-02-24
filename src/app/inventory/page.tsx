@@ -56,6 +56,8 @@ export default function InventoryPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [selectedProductDetails, setSelectedProductDetails] = useState<Product | null>(null);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [isCategoryComboboxOpen, setIsCategoryComboboxOpen] = useState(false);
   const [categorySearchTerm, setCategorySearchTerm] = useState('');
   const [createForm, setCreateForm] = useState({
@@ -1082,6 +1084,7 @@ export default function InventoryPage() {
                     <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden lg:table-cell">Código de Barras</TableHead>
                     <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm">Stock</TableHead>
                     <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden sm:table-cell">Precio</TableHead>
+                    <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden md:table-cell">Margen %</TableHead>
                     <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden sm:table-cell">Estado</TableHead>
                     <TableHead className="font-semibold text-gray-900 py-4 px-2 md:px-6 text-xs md:text-sm">Acciones</TableHead>
                   </TableRow>
@@ -1097,8 +1100,11 @@ export default function InventoryPage() {
                         className="border-b border-gray-100/50 hover:bg-gradient-to-r hover:from-blue-50/30 hover:to-purple-50/30 transition-all duration-200 group text-xs md:text-sm"
                       >
                         <TableCell className="py-3 md:py-4 px-3 md:px-6">
-                          <div className="space-y-1">
-                            <div className="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors duration-200">
+                          <div className="space-y-1 cursor-pointer" onClick={() => {
+                            setSelectedProductDetails(product);
+                            setIsDetailsDialogOpen(true);
+                          }}>
+                            <div className="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors duration-200 hover:underline">
                               {product.nombre}
                             </div>
                             <div className="text-xs text-gray-500 max-w-xs truncate">
@@ -1155,6 +1161,16 @@ export default function InventoryPage() {
                             </div>
                             <div className="text-xs text-red-600 font-semibold pt-1 border-t border-gray-300">
                               Mín: ${calcularPrecioMinimo(product.precio, product.precioCompra).toLocaleString()}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-3 md:py-4 px-3 md:px-6 hidden md:table-cell">
+                          <div className="space-y-1">
+                            <div className="font-bold text-green-600 text-sm">
+                              {product.margenGananciaUnidad ? product.margenGananciaUnidad.toFixed(2) : '0.00'}%
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Unidad
                             </div>
                           </div>
                         </TableCell>
@@ -1220,6 +1236,162 @@ export default function InventoryPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Detalles del Producto Dialog */}
+      <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 -m-6 mb-6 p-6 rounded-t-xl">
+            <DialogTitle className="text-2xl font-bold text-gray-900">
+              {selectedProductDetails?.nombre}
+            </DialogTitle>
+            <DialogDescription className="text-gray-600">
+              {selectedProductDetails?.descripcion}
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedProductDetails && (
+            <div className="space-y-6">
+              {/* Información Básica */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-semibold text-gray-600">Categoría</Label>
+                  <Badge className="mt-2 bg-blue-100 text-blue-800 border-blue-200">
+                    {selectedProductDetails.categoria}
+                  </Badge>
+                </div>
+                <div>
+                  <Label className="text-sm font-semibold text-gray-600">Marca</Label>
+                  <p className="mt-2 text-sm font-medium text-gray-900">
+                    {selectedProductDetails.marca || '-'}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-semibold text-gray-600">Código</Label>
+                  <p className="mt-2 font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                    {selectedProductDetails.codigo || '-'}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-semibold text-gray-600">Código de Barras</Label>
+                  <p className="mt-2 font-mono text-sm bg-gray-100 px-2 py-1 rounded truncate">
+                    {selectedProductDetails.codigoBarras || '-'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Stock */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <Label className="text-sm font-semibold text-gray-700 block mb-3">Información de Stock</Label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div>
+                    <p className="text-xs text-gray-600">Total</p>
+                    <p className="text-2xl font-bold text-blue-600">{selectedProductDetails.stock}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600">Cajas</p>
+                    <p className="text-lg font-semibold text-gray-900">{selectedProductDetails.stockCajas}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600">Unidades/Caja</p>
+                    <p className="text-lg font-semibold text-gray-900">{selectedProductDetails.unidadesPorCaja}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600">Sueltas</p>
+                    <p className="text-lg font-semibold text-gray-900">{selectedProductDetails.stockUnidadesSueltas}</p>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-600 mt-3">Stock Mínimo: {selectedProductDetails.stockMinimo}</p>
+              </div>
+
+              {/* Precios */}
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold text-gray-700">Precios</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-gray-600">Precio Venta (Unidad)</p>
+                    <p className="text-xl font-bold text-green-600">
+                      ${selectedProductDetails.precio.toLocaleString()}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-600">Precio Compra (Unidad)</p>
+                    <p className="text-lg font-semibold text-gray-900">
+                      ${selectedProductDetails.precioCompra.toLocaleString()}
+                    </p>
+                  </div>
+                  {selectedProductDetails.precioCaja && (
+                    <>
+                      <div>
+                        <p className="text-xs text-gray-600">Precio Venta (Caja)</p>
+                        <p className="text-lg font-semibold text-green-600">
+                          ${selectedProductDetails.precioCaja.toLocaleString()}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600">Precio Compra (Caja)</p>
+                        <p className="text-lg font-semibold text-gray-900">
+                          ${selectedProductDetails.precioCompraCaja?.toLocaleString() || '-'}
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Márgenes */}
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <Label className="text-sm font-semibold text-gray-700 block mb-3">Márgenes de Ganancia</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-xs text-gray-600">Margen Unidad</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      {selectedProductDetails.margenGananciaUnidad?.toFixed(2) || '0.00'}%
+                    </p>
+                  </div>
+                  {selectedProductDetails.margenGananciaCaja && (
+                    <div>
+                      <p className="text-xs text-gray-600">Margen Caja</p>
+                      <p className="text-2xl font-bold text-green-600">
+                        {selectedProductDetails.margenGananciaCaja.toFixed(2)}%
+                      </p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-xs text-gray-600">Precio Mínimo</p>
+                    <p className="text-lg font-semibold text-red-600">
+                      ${calcularPrecioMinimo(
+                        selectedProductDetails.precio,
+                        selectedProductDetails.precioCompra
+                      ).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Estado */}
+              <div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg">
+                <Label className="text-sm font-semibold text-gray-700">Estado</Label>
+                <Badge
+                  variant={selectedProductDetails.activo ? 'default' : 'destructive'}
+                  className={selectedProductDetails.activo ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200'}
+                >
+                  {selectedProductDetails.activo ? 'Activo' : 'Inactivo'}
+                </Badge>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="mt-6">
+            <Button
+              variant="outline"
+              onClick={() => setIsDetailsDialogOpen(false)}
+              className="border-gray-300 text-gray-700 hover:bg-gray-100"
+            >
+              Cerrar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
