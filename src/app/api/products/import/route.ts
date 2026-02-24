@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Preparar datos del producto
-        const productData = {
+        const productData: any = {
           nombre: row.Nombre.toString().trim(),
           descripcion: row.Descripción ? row.Descripción.toString().trim() : '',
           categoria: row.Categoría.toString().trim(),
