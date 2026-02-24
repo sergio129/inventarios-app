@@ -127,6 +127,10 @@ export async function POST(request: NextRequest) {
           activo: row.Activo ? row.Activo.toString().toLowerCase() === 'sí' : true
         };
 
+        // Calcular el stock total (cajas * unidades por caja + unidades sueltas)
+        const stockTotal = (productData.stockCajas * productData.unidadesPorCaja) + productData.stockUnidadesSueltas;
+        productData['stock'] = stockTotal;
+
         // Buscar por código o nombre
         const existingProduct = productData.codigo
           ? await Product.findOne({ codigo: productData.codigo })
