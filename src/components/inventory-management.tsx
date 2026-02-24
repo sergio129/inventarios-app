@@ -12,6 +12,7 @@ import { Search, Package, Plus, Edit, TrendingUp, ArrowLeft } from 'lucide-react
 import { toast } from 'sonner';
 import ProductHistory from '@/components/product-history';
 import { validarPreciosCoherentes } from '@/lib/validation-service';
+import { calcularPrecioMinimo } from '@/lib/discount-validator';
 
 interface Product {
   _id: string;
@@ -604,6 +605,16 @@ export default function InventoryManagement() {
                         {product.precioCaja > 0 && (
                           <div className="text-gray-500 text-xs">${product.precioCaja.toLocaleString()} (caja)</div>
                         )}
+                        <div className="mt-2 pt-2 border-t border-gray-300">
+                          <div className="text-xs text-red-600 font-semibold">
+                            Mín: ${calcularPrecioMinimo(product.precio, product.precioCompra).toLocaleString()}
+                          </div>
+                          {product.precioCaja > 0 && (
+                            <div className="text-xs text-red-500">
+                              Mín (caja): ${calcularPrecioMinimo(product.precioCaja, product.precioCompraCaja).toLocaleString()}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell className="py-4 px-4">
@@ -860,6 +871,11 @@ export default function InventoryManagement() {
                       placeholder="0.00"
                       className="text-right"
                     />
+                    {updateForm.precioCaja && parseFloat(updateForm.precioCaja) > 0 && (
+                      <div className="text-xs text-red-600 font-semibold mt-1 p-2 bg-red-50 rounded border border-red-200">
+                        💡 Precio Mínimo: ${calcularPrecioMinimo(parseFloat(updateForm.precioCaja), parseFloat(updateForm.precioCompraCaja) || 0).toLocaleString()}
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="update-precio" className="text-sm font-medium text-gray-700">
@@ -879,6 +895,11 @@ export default function InventoryManagement() {
                       placeholder="0.00"
                       className="text-right"
                     />
+                    {updateForm.precio && parseFloat(updateForm.precio) > 0 && (
+                      <div className="text-xs text-red-600 font-semibold mt-1 p-2 bg-red-50 rounded border border-red-200">
+                        💡 Precio Mínimo: ${calcularPrecioMinimo(parseFloat(updateForm.precio), parseFloat(updateForm.precioCompra) || 0).toLocaleString()}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

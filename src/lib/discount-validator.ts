@@ -89,3 +89,24 @@ export function obtenerMensajeDescuentoMaximo(
   const descuentoMaximoEnDinero = (subtotal * descuentoMaximo) / 100;
   return `Descuento máximo permitido: ${descuentoMaximo.toFixed(2)}% ($${descuentoMaximoEnDinero.toFixed(2)})`;
 }
+
+/**
+ * Calcula el precio mínimo que se puede vender un producto
+ * Basado en el descuento máximo permitido (50% de la ganancia)
+ * Fórmula: Precio Mínimo = (Precio Venta + Precio Compra) / 2
+ * 
+ * @param precioVenta - Precio de venta actual del producto
+ * @param precioCompra - Precio de compra del producto
+ * @returns Precio mínimo permitido para vender el producto
+ */
+export function calcularPrecioMinimo(precioVenta: number, precioCompra: number): number {
+  if (precioVenta <= 0 || precioCompra <= 0) {
+    return 0;
+  }
+  
+  // El precio mínimo es el punto medio entre el precio de compra y el precio de venta
+  // Esto asegura que el descuento máximo (50% de la ganancia) traiga el precio a este punto
+  const precioMinimo = (precioVenta + precioCompra) / 2;
+  
+  return Math.round(precioMinimo * 100) / 100;
+}

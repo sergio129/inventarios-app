@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Package, Plus, Search, ArrowLeft, AlertTriangle, CheckCircle, Tag, Pill, Edit, Trash2, Check, ChevronsUpDown, ShoppingCart, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCart } from '@/lib/cart-context';
+import { calcularPrecioMinimo } from '@/lib/discount-validator';
 import ImportExportManager from '@/components/import-export-manager';
 
 interface Product {
@@ -1151,6 +1152,9 @@ export default function InventoryPage() {
                             </div>
                             <div className="text-xs text-gray-500 hidden md:block">
                               C: ${product.precioCompra.toLocaleString()}
+                            </div>
+                            <div className="text-xs text-red-600 font-semibold pt-1 border-t border-gray-300">
+                              Mín: ${calcularPrecioMinimo(product.precio, product.precioCompra).toLocaleString()}
                             </div>
                           </div>
                         </TableCell>
