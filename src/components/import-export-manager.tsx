@@ -18,6 +18,7 @@ export default function ImportExportManager({ onImportSuccess, isAdmin = false }
   const [importResults, setImportResults] = useState<any>(null);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [isResultsDialogOpen, setIsResultsDialogOpen] = useState(false);
+  const [importProgress, setImportProgress] = useState(0);
 
   // Solo mostrar si es admin
   if (!isAdmin) {
@@ -65,41 +66,92 @@ export default function ImportExportManager({ onImportSuccess, isAdmin = false }
 
     try {
       setIsImporting(true);
+      setImportProgress(0);
+      
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('/api/products/import', {
+      // Usar fetch con streaming para SSE
+      const response = await fetch('/api/products/import-stream', {
         method: 'POST',
         body: formData
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || 'Error al importar inventario');
+        throw new Error('Error al importar inventario');
       }
 
-      setImportErrors(data.errors || []);
-      setImportResults(data);
-      setIsResultsDialogOpen(true);
+      if (!response.body) {
+        throw new Error('No se recibió respuesta del servidor');
+      }
 
-      if (data.successCount.created > 0 || data.successCount.updated > 0) {
-        toast.success(data.message);
-        if (onImportSuccess) {
-          onImportSuccess();
+      // Leer el stream como eventos SSE
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines[lines.length - 1]; // Guardar línea incompleta
+
+        for (let i = 0; i < lines.length - 1; i++) {
+          const line = lines[i].trim();
+
+          if (line.startsWith('event:')) {
+            const eventType = line.replace('event:', '').trim();
+            const dataLine = lines[++i]?.trim() || '';
+
+            if (dataLine.startsWith('data:')) {
+              const eventData = dataLine.replace('data:', '').trim();
+
+              try {
+                const data = JSON.parse(eventData);
+
+                if (eventType === 'start') {
+                  setImportProgress(0);
+                } else if (eventType === 'progress') {
+                  setImportProgress(Math.min(data.progress, 99));
+                } else if (eventType === 'complete') {
+                  setImportProgress(100);
+                  setImportErrors(data.errors || []);
+                  setImportResults(data);
+                  setIsResultsDialogOpen(true);
+
+                  if (data.successCount.created > 0 || data.successCount.updated > 0) {
+                    toast.success(data.message);
+                    if (onImportSuccess) {
+                      onImportSuccess();
+                    }
+                  }
+
+                  if (data.errors && data.errors.length > 0) {
+                    toast.warning(`Importación completada con ${data.errors.length} errores`);
+                  }
+
+                  setIsImportDialogOpen(false);
+                } else if (eventType === 'error') {
+                  toast.error(data.error || 'Error al importar inventario');
+                  setImportProgress(0);
+                }
+              } catch (parseError) {
+                console.error('Error al parsear evento SSE:', parseError, eventData);
+              }
+            }
+          }
         }
       }
 
-      if (data.errors && data.errors.length > 0) {
-        toast.warning(`Importación completada con ${data.errors.length} errores`);
-      }
-
-      setIsImportDialogOpen(false);
+      setIsImporting(false);
     } catch (error) {
       console.error('Error al importar:', error);
       toast.error((error as Error).message || 'Error al importar el inventario');
-    } finally {
       setIsImporting(false);
+      setImportProgress(0);
     }
   };
 
@@ -117,7 +169,20 @@ export default function ImportExportManager({ onImportSuccess, isAdmin = false }
       </Button>
 
       {/* Botón Importar */}
-      <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+      <Dialog 
+        open={isImportDialogOpen} 
+        onOpenChange={(open) => {
+          if (!open) {
+            // Resetear cuando se cierre el diálogo
+            setImportProgress(0);
+            if (!isImporting) {
+              setIsImportDialogOpen(false);
+            }
+          } else {
+            setIsImportDialogOpen(open);
+          }
+        }}
+      >
         <DialogTrigger asChild>
           <Button
             className="bg-purple-600 hover:bg-purple-700 flex items-center gap-2"
@@ -136,6 +201,25 @@ export default function ImportExportManager({ onImportSuccess, isAdmin = false }
           </DialogHeader>
 
           <div className="space-y-4">
+            {/* Barra de Progreso */}
+            {isImporting && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-700 font-medium">Importando archivo...</span>
+                  <span className="text-gray-600 font-semibold">{importProgress}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-sm">
+                  <div
+                    className="bg-linear-to-r from-blue-500 to-purple-600 h-full rounded-full transition-all duration-300 ease-out shadow-lg"
+                    style={{ width: `${importProgress}%` }}
+                  />
+                </div>
+                <p className="text-xs text-gray-500 text-center">
+                  {importProgress < 50 ? 'Cargando archivo...' : 'Procesando productos...'}
+                </p>
+              </div>
+            )}
+
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <div className="flex gap-2">
                 <AlertCircle className="h-4 w-4 text-yellow-700 flex-shrink-0 mt-0.5" />
@@ -161,7 +245,7 @@ export default function ImportExportManager({ onImportSuccess, isAdmin = false }
               />
               <label
                 htmlFor="excel-file-input"
-                className="cursor-pointer block"
+                className={`cursor-pointer block ${isImporting ? 'opacity-50 pointer-events-none' : ''}`}
               >
                 <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
                 <p className="text-sm font-medium">
@@ -175,7 +259,12 @@ export default function ImportExportManager({ onImportSuccess, isAdmin = false }
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setIsImportDialogOpen(false)}
+              onClick={() => {
+                setIsImportDialogOpen(false);
+                setTimeout(() => setImportProgress(0), 300);
+                setIsImporting(false);
+              }}
+              disabled={isImporting}
             >
               Cancelar
             </Button>
