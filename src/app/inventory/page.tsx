@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { useCart } from '@/lib/cart-context';
 import { calcularPrecioMinimo } from '@/lib/discount-validator';
 import ImportExportManager from '@/components/import-export-manager';
+import Pagination from '@/components/pagination';
 
 interface Product {
   _id: string;
@@ -45,6 +46,7 @@ interface Product {
 export default function InventoryPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { addToCart } = useCart();
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -60,6 +62,10 @@ export default function InventoryPage() {
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [isCategoryComboboxOpen, setIsCategoryComboboxOpen] = useState(false);
   const [categorySearchTerm, setCategorySearchTerm] = useState('');
+  
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page') || '1'));
+  const [itemsPerPage, setItemsPerPage] = useState(parseInt(searchParams.get('limit') || '20'));
   const [createForm, setCreateForm] = useState({
     nombre: '',
     descripcion: '',
@@ -236,11 +242,44 @@ export default function InventoryPage() {
     }
 
     setFilteredProducts(filtered);
-  }, [products, searchTerm, categoryFilter, normalizeText]);
+    // Reset to page 1 when filters change
+    setCurrentPage(1);
+    updateUrl(1, itemsPerPage);
+  }, [products, searchTerm, categoryFilter, normalizeText, itemsPerPage]);
+
+  // Actualizar URL con parámetros de paginación
+  const updateUrl = useCallback((page: number, limit: number) => {
+    const params = new URLSearchParams();
+    params.set('page', page.toString());
+    params.set('limit', limit.toString());
+    router.push(`?${params.toString()}`, { scroll: false });
+  }, [router]);
+
+  // Manejar cambio de página
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    updateUrl(page, itemsPerPage);
+    // Scroll al inicio de la tabla
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Manejar cambio de items por página
+  const handleItemsPerPageChange = (newLimit: number) => {
+    setItemsPerPage(newLimit);
+    setCurrentPage(1);
+    updateUrl(1, newLimit);
+  };
 
   useEffect(() => {
     filterProducts();
   }, [products, searchTerm, categoryFilter, filterProducts]);
+
+  // Calcular productos paginados
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredProducts.slice(startIndex, endIndex);
+  }, [filteredProducts, currentPage, itemsPerPage]);
 
   const createProduct = async () => {
     // Validación del lado del cliente
@@ -1067,7 +1106,7 @@ export default function InventoryPage() {
               <div>
                 <CardTitle className="text-xl font-bold text-gray-900">Productos ({filteredProducts.length})</CardTitle>
                 <CardDescription className="text-gray-600">
-                  Lista completa de productos en inventario con información detallada
+                  Mostrando {paginatedProducts.length} de {filteredProducts.length} productos • Página {currentPage}
                 </CardDescription>
               </div>
             </div>
@@ -1090,7 +1129,7 @@ export default function InventoryPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredProducts.map((product: Product) => {
+                  {paginatedProducts.map((product: Product) => {
                     const stockStatus = getStockStatus(product);
                     const StatusIcon = stockStatus.icon;
 
@@ -1232,6 +1271,15 @@ export default function InventoryPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Componente de Paginación */}
+        <Pagination
+          currentPage={currentPage}
+          itemsPerPage={itemsPerPage}
+          totalItems={filteredProducts.length}
+          onPageChange={handlePageChange}
+          onItemsPerPageChange={handleItemsPerPageChange}
+        />
       </div>
 
       {/* Detalles del Producto Dialog */}

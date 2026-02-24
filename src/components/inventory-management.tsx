@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useMemo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import ProductHistory from '@/components/product-history';
 import { validarPreciosCoherentes } from '@/lib/validation-service';
 import { calcularPrecioMinimo } from '@/lib/discount-validator';
+import Pagination from '@/components/pagination';
 
 interface Product {
   _id: string;
@@ -61,6 +62,7 @@ interface Filters {
 
 export default function InventoryManagement() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,6 +71,11 @@ export default function InventoryManagement() {
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
   const [lowStockAlertOpen, setLowStockAlertOpen] = useState(false);
   const [lowStockProducts, setLowStockProducts] = useState<Product[]>([]);
+  
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page') || '1'));
+  const [itemsPerPage, setItemsPerPage] = useState(parseInt(searchParams.get('limit') || '20'));
+  
   const [filters, setFilters] = useState<Filters>({
     stockMin: '',
     stockMax: '',
@@ -161,7 +168,40 @@ export default function InventoryManagement() {
     });
 
     setFilteredProducts(filtered);
+    // Reset to page 1 when filters change
+    setCurrentPage(1);
   }, [products, searchTerm, filters]);
+
+  // Actualizar URL con parámetros de paginación
+  const updateUrl = (page: number, limit: number) => {
+    const params = new URLSearchParams();
+    params.set('page', page.toString());
+    params.set('limit', limit.toString());
+    // Aquí usamos window.history para evitar duplicación con router.push
+    window.history.replaceState({}, '', `?${params.toString()}`);
+  };
+
+  // Manejar cambio de página
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    updateUrl(page, itemsPerPage);
+    // Scroll al inicio de la página
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Manejar cambio de items por página
+  const handleItemsPerPageChange = (newLimit: number) => {
+    setItemsPerPage(newLimit);
+    setCurrentPage(1);
+    updateUrl(1, newLimit);
+  };
+
+  // Calcular productos paginados
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredProducts.slice(startIndex, endIndex);
+  }, [filteredProducts, currentPage, itemsPerPage]);
 
   // Actualizar formulario cuando cambia selectedProduct
   useEffect(() => {
@@ -574,7 +614,7 @@ export default function InventoryManagement() {
             Productos ({filteredProducts.length})
           </CardTitle>
           <CardDescription className="text-gray-600 mt-1">
-            Selecciona un producto para actualizar su inventario y precios
+            Mostrando {paginatedProducts.length} de {filteredProducts.length} productos • Página {currentPage}
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
@@ -592,7 +632,7 @@ export default function InventoryManagement() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredProducts.map((product) => (
+                {paginatedProducts.map((product) => (
                   <TableRow key={product._id} className="border-b border-gray-100 hover:bg-blue-50 transition-colors">
                     <TableCell className="font-bold text-gray-900 py-4 px-4">{product.nombre}</TableCell>
                     <TableCell className="font-mono text-sm text-indigo-600 py-4 px-4 bg-gray-50">{product.codigo}</TableCell>
@@ -651,6 +691,15 @@ export default function InventoryManagement() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Componente de Paginación */}
+      <Pagination
+        currentPage={currentPage}
+        itemsPerPage={itemsPerPage}
+        totalItems={filteredProducts.length}
+        onPageChange={handlePageChange}
+        onItemsPerPageChange={handleItemsPerPageChange}
+      />
 
       {/* Modal de actualización de inventario */}
       <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
