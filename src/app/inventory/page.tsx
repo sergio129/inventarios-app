@@ -1084,7 +1084,7 @@ export default function InventoryPage() {
                     <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden lg:table-cell">Código de Barras</TableHead>
                     <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm">Stock</TableHead>
                     <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden sm:table-cell">Precio</TableHead>
-                    <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden md:table-cell">Margen %</TableHead>
+                    <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden md:table-cell">💰 Ganancia</TableHead>
                     <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden sm:table-cell">Estado</TableHead>
                     <TableHead className="font-semibold text-gray-900 py-4 px-2 md:px-6 text-xs md:text-sm">Acciones</TableHead>
                   </TableRow>
@@ -1165,12 +1165,9 @@ export default function InventoryPage() {
                           </div>
                         </TableCell>
                         <TableCell className="py-3 md:py-4 px-3 md:px-6 hidden md:table-cell">
-                          <div className="space-y-1">
-                            <div className="font-bold text-green-600 text-sm">
+                          <div className="bg-green-50 border border-green-200 rounded-lg p-2">
+                            <div className="font-bold text-green-700 text-sm">
                               {product.margenGananciaUnidad ? product.margenGananciaUnidad.toFixed(2) : '0.00'}%
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              Unidad
                             </div>
                           </div>
                         </TableCell>
@@ -1239,12 +1236,13 @@ export default function InventoryPage() {
 
       {/* Detalles del Producto Dialog */}
       <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 -m-6 mb-6 p-6 rounded-t-xl">
-            <DialogTitle className="text-2xl font-bold text-gray-900">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto bg-white">
+          <DialogHeader className="bg-linear-to-r from-blue-600 to-blue-700 -m-6 mb-6 p-6 rounded-t-xl shadow-lg">
+            <DialogTitle className="text-2xl font-bold text-white flex items-center gap-2">
+              <span className="text-3xl">📦</span>
               {selectedProductDetails?.nombre}
             </DialogTitle>
-            <DialogDescription className="text-gray-600">
+            <DialogDescription className="text-blue-100 text-sm mt-2">
               {selectedProductDetails?.descripcion}
             </DialogDescription>
           </DialogHeader>
