@@ -88,6 +88,7 @@ export default function InventoryManagement() {
     margenGananciaUnidad: '',
     margenGananciaCaja: ''
   });
+  const [lastEditedPriceField, setLastEditedPriceField] = useState<'precio' | 'margen' | null>(null);
 
   useEffect(() => {
     fetchProducts();
@@ -232,6 +233,7 @@ export default function InventoryManagement() {
       margenGananciaUnidad: precioCompra > 0 ? (((precio - precioCompra) / precioCompra) * 100).toFixed(2) : '0',
       margenGananciaCaja: precioCompraCaja > 0 ? (((precioCaja - precioCompraCaja) / precioCompraCaja) * 100).toFixed(2) : '0'
     });
+    setLastEditedPriceField(null);
     setIsUpdateDialogOpen(true);
   };
 
@@ -333,6 +335,9 @@ export default function InventoryManagement() {
   };
 
   const updatePriceFromMargin = (type: 'unidad' | 'caja') => {
+    // Solo calcular si el último campo editado fue el margen
+    if (lastEditedPriceField !== 'margen') return;
+    
     const margin = parseFloat(type === 'unidad' ? updateForm.margenGananciaUnidad : updateForm.margenGananciaCaja) || 0;
     const costPrice = parseFloat(type === 'unidad' ? updateForm.precioCompra : updateForm.precioCompraCaja) || 0;
 
@@ -343,10 +348,14 @@ export default function InventoryManagement() {
       } else {
         setUpdateForm({ ...updateForm, precioCaja: newPrice.toFixed(2) });
       }
+      setLastEditedPriceField(null);
     }
   };
 
   const updateMarginFromPrice = (type: 'unidad' | 'caja') => {
+    // Solo calcular si el último campo editado fue el precio
+    if (lastEditedPriceField !== 'precio') return;
+    
     const sellingPrice = parseFloat(type === 'unidad' ? updateForm.precio : updateForm.precioCaja) || 0;
     const costPrice = parseFloat(type === 'unidad' ? updateForm.precioCompra : updateForm.precioCompraCaja) || 0;
 
@@ -357,6 +366,7 @@ export default function InventoryManagement() {
       } else {
         setUpdateForm({ ...updateForm, margenGananciaCaja: newMargin.toFixed(2) });
       }
+      setLastEditedPriceField(null);
     }
   };
 
@@ -771,13 +781,12 @@ export default function InventoryManagement() {
                     </Label>
                     <Input
                       id="update-precioCompraCaja"
-                      type="text"
+                      type="number"
+                      step="0.01"
+                      min="0"
                       value={updateForm.precioCompraCaja}
                       onChange={(e) => {
-                        const value = e.target.value;
-                        if (/^\d*\.?\d*$/.test(value)) {
-                          setUpdateForm({ ...updateForm, precioCompraCaja: value });
-                        }
+                        setUpdateForm({ ...updateForm, precioCompraCaja: e.target.value });
                       }}
                       placeholder="0.00"
                       className="text-right"
@@ -789,13 +798,12 @@ export default function InventoryManagement() {
                     </Label>
                     <Input
                       id="update-precioCompra"
-                      type="text"
+                      type="number"
+                      step="0.01"
+                      min="0"
                       value={updateForm.precioCompra}
                       onChange={(e) => {
-                        const value = e.target.value;
-                        if (/^\d*\.?\d*$/.test(value)) {
-                          setUpdateForm({ ...updateForm, precioCompra: value });
-                        }
+                        setUpdateForm({ ...updateForm, precioCompra: e.target.value });
                       }}
                       placeholder="0.00"
                       className="text-right"
@@ -814,13 +822,12 @@ export default function InventoryManagement() {
                     </Label>
                     <Input
                       id="update-margenGananciaCaja"
-                      type="text"
+                      type="number"
+                      step="0.01"
                       value={updateForm.margenGananciaCaja}
                       onChange={(e) => {
-                        const value = e.target.value;
-                        if (/^\d*\.?\d*$/.test(value)) {
-                          setUpdateForm({ ...updateForm, margenGananciaCaja: value });
-                        }
+                        setUpdateForm({ ...updateForm, margenGananciaCaja: e.target.value });
+                        setLastEditedPriceField('margen');
                       }}
                       onBlur={() => updatePriceFromMargin('caja')}
                       placeholder="0.00"
@@ -833,13 +840,12 @@ export default function InventoryManagement() {
                     </Label>
                     <Input
                       id="update-margenGananciaUnidad"
-                      type="text"
+                      type="number"
+                      step="0.01"
                       value={updateForm.margenGananciaUnidad}
                       onChange={(e) => {
-                        const value = e.target.value;
-                        if (/^\d*\.?\d*$/.test(value)) {
-                          setUpdateForm({ ...updateForm, margenGananciaUnidad: value });
-                        }
+                        setUpdateForm({ ...updateForm, margenGananciaUnidad: e.target.value });
+                        setLastEditedPriceField('margen');
                       }}
                       onBlur={() => updatePriceFromMargin('unidad')}
                       placeholder="0.00"
@@ -859,15 +865,15 @@ export default function InventoryManagement() {
                     </Label>
                     <Input
                       id="update-precioCaja"
-                      type="text"
+                      type="number"
+                      step="0.01"
+                      min="0"
                       value={updateForm.precioCaja}
                       onChange={(e) => {
-                        const value = e.target.value;
-                        if (/^\d*\.?\d*$/.test(value)) {
-                          setUpdateForm({ ...updateForm, precioCaja: value });
-                          updateMarginFromPrice('caja');
-                        }
+                        setUpdateForm({ ...updateForm, precioCaja: e.target.value });
+                        setLastEditedPriceField('precio');
                       }}
+                      onBlur={() => updateMarginFromPrice('caja')}
                       placeholder="0.00"
                       className="text-right"
                     />
@@ -883,15 +889,15 @@ export default function InventoryManagement() {
                     </Label>
                     <Input
                       id="update-precio"
-                      type="text"
+                      type="number"
+                      step="0.01"
+                      min="0"
                       value={updateForm.precio}
                       onChange={(e) => {
-                        const value = e.target.value;
-                        if (/^\d*\.?\d*$/.test(value)) {
-                          setUpdateForm({ ...updateForm, precio: value });
-                          updateMarginFromPrice('unidad');
-                        }
+                        setUpdateForm({ ...updateForm, precio: e.target.value });
+                        setLastEditedPriceField('precio');
                       }}
+                      onBlur={() => updateMarginFromPrice('unidad')}
                       placeholder="0.00"
                       className="text-right"
                     />

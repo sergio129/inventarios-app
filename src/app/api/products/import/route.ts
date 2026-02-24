@@ -131,6 +131,22 @@ export async function POST(request: NextRequest) {
         const stockTotal = (productData.stockCajas * productData.unidadesPorCaja) + productData.stockUnidadesSueltas;
         productData['stock'] = stockTotal;
 
+        // Calcular margen desde precios si no viene en el archivo o es 0
+        if ((productData.margenGananciaUnidad === undefined || productData.margenGananciaUnidad === 0) && productData.precioCompra > 0 && productData.precio > 0) {
+          productData.margenGananciaUnidad = ((productData.precio - productData.precioCompra) / productData.precioCompra) * 100;
+        }
+        if ((productData.margenGananciaCaja === undefined || productData.margenGananciaCaja === 0) && productData.precioCompraCaja && productData.precioCaja && productData.precioCompraCaja > 0) {
+          productData.margenGananciaCaja = ((productData.precioCaja - productData.precioCompraCaja) / productData.precioCompraCaja) * 100;
+        }
+
+        // Calcular precio de venta desde margen si no viene en el archivo
+        if ((!productData.precio || productData.precio === 0) && (productData.margenGananciaUnidad && productData.margenGananciaUnidad > 0) && productData.precioCompra > 0) {
+          productData.precio = productData.precioCompra * (1 + productData.margenGananciaUnidad / 100);
+        }
+        if ((!productData.precioCaja || productData.precioCaja === 0) && (productData.margenGananciaCaja && productData.margenGananciaCaja > 0) && productData.precioCompraCaja && productData.precioCompraCaja > 0) {
+          productData.precioCaja = productData.precioCompraCaja * (1 + productData.margenGananciaCaja / 100);
+        }
+
         // Buscar por código o nombre
         const existingProduct = productData.codigo
           ? await Product.findOne({ codigo: productData.codigo })
