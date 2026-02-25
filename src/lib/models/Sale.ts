@@ -136,7 +136,7 @@ const SaleSchema: Schema = new Schema({
 });
 
 // Índices para mejorar rendimiento
-SaleSchema.index({ numeroFactura: 1 });
+// numeroFactura ya tiene índice único por unique: true
 SaleSchema.index({ estado: 1 });
 SaleSchema.index({ fechaVenta: -1 });
 SaleSchema.index({ vendedor: 1 });
