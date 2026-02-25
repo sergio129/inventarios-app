@@ -621,67 +621,61 @@ export default function InventoryManagement() {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-gradient-to-r from-gray-50 to-gray-100 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-150 border-b-2 border-gray-300">
-                  <TableHead className="font-bold text-gray-700 py-4 px-4">Producto</TableHead>
-                  <TableHead className="font-bold text-gray-700 py-4 px-4">Código</TableHead>
-                  <TableHead className="font-bold text-gray-700 py-4 px-4">Categoría</TableHead>
-                  <TableHead className="font-bold text-gray-700 py-4 px-4">📦 Stock Actual</TableHead>
-                  <TableHead className="font-bold text-gray-700 py-4 px-4">💰 Precio Venta</TableHead>
-                  <TableHead className="font-bold text-gray-700 py-4 px-4">💳 Precio Compra</TableHead>
-                  <TableHead className="text-right font-bold text-gray-700 py-4 px-4">Acciones</TableHead>
+                <TableRow className="bg-linear-to-r from-blue-50 to-indigo-50 border-b-2 border-blue-200">
+                  <TableHead className="font-bold text-gray-900 py-4 px-4 text-sm">Producto</TableHead>
+                  <TableHead className="font-bold text-gray-900 py-4 px-4 text-sm">Código</TableHead>
+                  <TableHead className="font-bold text-gray-900 py-4 px-4 text-sm">Categoría</TableHead>
+                  <TableHead className="font-bold text-gray-900 py-4 px-4 text-sm text-center">📦 Stock</TableHead>
+                  <TableHead className="font-bold text-gray-900 py-4 px-4 text-sm text-center">💰 Precio Venta</TableHead>
+                  <TableHead className="font-bold text-gray-900 py-4 px-4 text-sm text-center">💳 Precio Compra</TableHead>
+                  <TableHead className="font-bold text-gray-900 py-4 px-4 text-sm text-center">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginatedProducts.map((product) => (
-                  <TableRow key={product._id} className="border-b border-gray-100 hover:bg-blue-50 transition-colors">
-                    <TableCell className="font-bold text-gray-900 py-4 px-4">{product.nombre}</TableCell>
-                    <TableCell className="font-mono text-sm text-indigo-600 py-4 px-4 bg-gray-50">{product.codigo}</TableCell>
+                  <TableRow key={product._id} className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors duration-200">
+                    <TableCell className="font-semibold text-gray-900 py-4 px-4">{product.nombre}</TableCell>
+                    <TableCell className="font-mono text-sm text-indigo-600 py-4 px-4 bg-gray-50 rounded">{product.codigo}</TableCell>
                     <TableCell className="text-gray-700 py-4 px-4">
                       <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold">
                         {product.categoria}
                       </span>
                     </TableCell>
-                    <TableCell className="py-4 px-4">
-                      <div className="text-sm">
-                        <div className="font-bold text-lg text-green-600">{product.stock} total</div>
-                        <div className="text-gray-500 text-xs">
-                          {product.stockCajas} cajas × {product.unidadesPorCaja} + {product.stockUnidadesSueltas} sueltas
+                    <TableCell className="py-3 px-4 text-center">
+                      <div className="flex flex-col items-center justify-center gap-0.5">
+                        <div className="font-bold text-base text-green-600">{product.stock}</div>
+                        <div className="text-xs text-gray-400">
+                          {product.stockCajas}c+{product.stockUnidadesSueltas}u
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="py-4 px-4">
-                      <div className="text-sm">
-                        <div className="font-bold text-green-600">${product.precio.toLocaleString()}</div>
+                    <TableCell className="py-3 px-4 min-w-[140px]">
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="font-bold text-green-600 text-sm">${product.precio.toLocaleString()}</div>
                         {product.precioCaja > 0 && (
-                          <div className="text-gray-500 text-xs">${product.precioCaja.toLocaleString()} (caja)</div>
+                          <div className="text-xs text-gray-600 whitespace-nowrap">${product.precioCaja.toLocaleString()} caja</div>
                         )}
-                        <div className="mt-2 pt-2 border-t border-gray-300">
-                          <div className="text-xs text-red-600 font-semibold">
-                            Mín: ${calcularPrecioMinimo(product.precio, product.precioCompra).toLocaleString()}
-                          </div>
-                          {product.precioCaja > 0 && (
-                            <div className="text-xs text-red-500">
-                              Mín (caja): ${calcularPrecioMinimo(product.precioCaja, product.precioCompraCaja).toLocaleString()}
-                            </div>
-                          )}
+                        <div className="text-xs text-red-600 font-semibold pt-1 border-t border-gray-200 w-full text-center">
+                          Mín: ${calcularPrecioMinimo(product.precio, product.precioCompra).toLocaleString()}
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="py-4 px-4">
-                      <div className="text-sm">
-                        <div className="font-bold text-orange-600">${product.precioCompra.toLocaleString()}</div>
+                    <TableCell className="py-3 px-4 min-w-[130px]">
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="font-bold text-orange-600 text-sm">${product.precioCompra.toLocaleString()}</div>
                         {product.precioCompraCaja > 0 && (
-                          <div className="text-gray-500 text-xs">${product.precioCompraCaja.toLocaleString()} (caja)</div>
+                          <div className="text-xs text-gray-600 whitespace-nowrap">${product.precioCompraCaja.toLocaleString()} caja</div>
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="text-right py-4 px-4">
+                    <TableCell className="py-3 px-4 flex items-center justify-center">
                       <Button
                         onClick={() => openUpdateDialog(product)}
-                        className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold rounded-lg flex items-center gap-2 px-4 py-2 transition-all"
+                        className="bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-lg px-4 py-2 transition-all hover:shadow-lg h-8 flex items-center gap-2"
                       >
                         <Edit className="h-4 w-4" />
-                        Actualizar
+                        <span className="hidden sm:inline">Actualizar</span>
+                        <span className="sm:hidden">✎</span>
                       </Button>
                     </TableCell>
                   </TableRow>

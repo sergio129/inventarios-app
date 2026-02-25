@@ -1312,17 +1312,19 @@ export function InventoryContent() {
                           </div>
                         </TableCell>
                         <TableCell className="py-4 px-2 md:px-6">
-                          <div className="flex flex-col gap-1 md:flex-row md:gap-2">
+                          <div className="flex justify-center items-center gap-2">
                             <Button
                               onClick={() => handleAddToCart(product)}
                               variant="outline"
                               size="sm"
-                              className="flex items-center gap-1 border-green-200 text-green-700 hover:border-green-300 hover:bg-green-50 transition-all duration-200 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 whitespace-nowrap"
+                              className="h-8 w-8 p-0 border-green-200 text-green-700 hover:border-green-300 hover:bg-green-50 transition-all duration-200 rounded-lg flex items-center justify-center group relative"
                               disabled={product.stock <= 0}
+                              title="Agregar al carrito"
                             >
-                              <ShoppingCart className="h-3 md:h-4 w-3 md:w-4" />
-                              <span className="hidden md:inline">Agregar</span>
-                              <span className="md:hidden">+</span>
+                              <ShoppingCart className="h-4 w-4" />
+                              <span className="absolute bottom-full mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                                Agregar
+                              </span>
                             </Button>
                             {(session?.user as { role?: string })?.role === 'admin' && (
                               <>
@@ -1330,21 +1332,25 @@ export function InventoryContent() {
                                   onClick={() => openEditDialog(product)}
                                   variant="outline"
                                   size="sm"
-                                  className="flex items-center gap-1 border-blue-200 text-blue-700 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 whitespace-nowrap"
+                                  className="h-8 w-8 p-0 border-blue-200 text-blue-700 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 rounded-lg flex items-center justify-center group relative"
+                                  title="Editar producto"
                                 >
-                                  <Edit className="h-3 md:h-4 w-3 md:w-4" />
-                                  <span className="hidden md:inline">Editar</span>
-                                  <span className="md:hidden">✎</span>
+                                  <Edit className="h-4 w-4" />
+                                  <span className="absolute bottom-full mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                                    Editar
+                                  </span>
                                 </Button>
                                 <Button
                                   onClick={() => openDeleteDialog(product)}
                                   variant="outline"
                                   size="sm"
-                                  className="flex items-center gap-1 border-red-200 text-red-700 hover:border-red-300 hover:bg-red-50 transition-all duration-200 text-xs md:text-sm px-2 md:px-3 py-1 md:py-2 whitespace-nowrap"
+                                  className="h-8 w-8 p-0 border-red-200 text-red-700 hover:border-red-300 hover:bg-red-50 transition-all duration-200 rounded-lg flex items-center justify-center group relative"
+                                  title="Eliminar producto"
                                 >
-                                  <Trash2 className="h-3 md:h-4 w-3 md:w-4" />
-                                  <span className="hidden md:inline">Eliminar</span>
-                                  <span className="md:hidden">✕</span>
+                                  <Trash2 className="h-4 w-4" />
+                                  <span className="absolute bottom-full mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+                                    Eliminar
+                                  </span>
                                 </Button>
                               </>
                             )}
