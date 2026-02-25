@@ -6,8 +6,9 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { BarChart3, ArrowLeft, TrendingUp, Package, ShoppingCart, Users, DollarSign, Download } from 'lucide-react';
+import { BarChart3, ArrowLeft, TrendingUp, Package, ShoppingCart, Users, DollarSign, Download, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { exportToExcel, formatSalesForExport } from '@/lib/excel-utils';
 
@@ -38,6 +39,46 @@ export default function ReportsPage() {
   const [salesStats, setSalesStats] = useState<SalesStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('day');
+  
+  // Estados para filtro de fechas
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [dateError, setDateError] = useState('');
+
+  // Calcular fecha máxima permitida (hace 30 días desde hoy)
+  const getMaxStartDate = () => {
+    const today = new Date();
+    const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+    return thirtyDaysAgo.toISOString().split('T')[0];
+  };
+
+  // Validar rango de fechas
+  const validateDateRange = (start: string, end: string) => {
+    if (!start || !end) {
+      setDateError('');
+      return true;
+    }
+
+    const startDateObj = new Date(start);
+    const endDateObj = new Date(end);
+    const today = new Date();
+    const maxStartDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    // Validar que la fecha de inicio no sea más antigua de 30 días
+    if (startDateObj < maxStartDate) {
+      setDateError('⚠️ El rango de consulta no puede ser mayor a 30 días. Máximo desde ' + getMaxStartDate());
+      return false;
+    }
+
+    // Validar que la fecha de inicio no sea mayor que la de fin
+    if (startDateObj > endDateObj) {
+      setDateError('⚠️ La fecha de inicio no puede ser mayor que la fecha de fin');
+      return false;
+    }
+
+    setDateError('');
+    return true;
+  };
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -49,7 +90,7 @@ export default function ReportsPage() {
 
     fetchStats();
     fetchSalesStats();
-  }, [session, status, router, period]);
+  }, [session, status, router, period, startDate, endDate]);
 
   const fetchStats = async () => {
     try {
@@ -67,8 +108,24 @@ export default function ReportsPage() {
 
   const fetchSalesStats = async () => {
     try {
-      console.log('🔄 Fetching sales stats for period:', period);
-      const response = await fetch(`/api/sales-stats?period=${period}`);
+      // Validar fechas antes de hacer la consulta
+      if (startDate && endDate && !validateDateRange(startDate, endDate)) {
+        setSalesStats(null);
+        return;
+      }
+
+      let url = `/api/sales-stats?period=${period}`;
+      
+      // Agregar parámetros de fecha si existen
+      if (startDate) {
+        url += `&startDate=${startDate}`;
+      }
+      if (endDate) {
+        url += `&endDate=${endDate}`;
+      }
+
+      console.log('🔄 Fetching sales stats:', url);
+      const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
         console.log('✅ Sales stats received:', data);
@@ -118,41 +175,111 @@ export default function ReportsPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-              <BarChart3 className="h-8 w-8 text-blue-600" />
-              Reportes y Estadísticas
-            </h1>
-            <p className="text-gray-600 mt-1">Análisis de ventas y rendimiento</p>
+        <div className="flex flex-col gap-4 mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+                <BarChart3 className="h-8 w-8 text-blue-600" />
+                Reportes y Estadísticas
+              </h1>
+              <p className="text-gray-600 mt-1">Análisis de ventas y rendimiento</p>
+            </div>
+            <div className="flex gap-3 flex-wrap">
+              <Select value={period} onValueChange={setPeriod}>
+                <SelectTrigger className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="day">Por Día</SelectItem>
+                  <SelectItem value="week">Por Semana</SelectItem>
+                  <SelectItem value="month">Por Mes</SelectItem>
+                  <SelectItem value="year">Por Año</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                onClick={handleExportToExcel}
+                className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Descargar Excel
+              </Button>
+              <Button
+                onClick={() => router.push('/dashboard')}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Volver
+              </Button>
+            </div>
           </div>
-          <div className="flex gap-3 flex-wrap">
-            <Select value={period} onValueChange={setPeriod}>
-              <SelectTrigger className="w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="day">Por Día</SelectItem>
-                <SelectItem value="week">Por Semana</SelectItem>
-                <SelectItem value="month">Por Mes</SelectItem>
-                <SelectItem value="year">Por Año</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              onClick={handleExportToExcel}
-              className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
-            >
-              <Download className="h-4 w-4" />
-              Descargar Excel
-            </Button>
-            <Button
-              onClick={() => router.push('/dashboard')}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Volver
-            </Button>
+
+          {/* Filtro de Fechas - Compacto */}
+          <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 mb-6">
+            <div className="flex flex-col sm:flex-row gap-2.5 items-end flex-wrap">
+              <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">📅 Filtrar:</span>
+              
+              {/* Desde */}
+              <div className="flex items-end gap-1.5">
+                <label className="text-xs text-gray-500">Desde:</label>
+                <Input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => {
+                    setStartDate(e.target.value);
+                    validateDateRange(e.target.value, endDate);
+                  }}
+                  max={new Date().toISOString().split('T')[0]}
+                  className="bg-white border-blue-200 focus:border-blue-400 focus:ring-blue-200 h-8 text-xs w-32"
+                />
+              </div>
+
+              {/* Hasta */}
+              <div className="flex items-end gap-1.5">
+                <label className="text-xs text-gray-500">Hasta:</label>
+                <Input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => {
+                    setEndDate(e.target.value);
+                    validateDateRange(startDate, e.target.value);
+                  }}
+                  max={new Date().toISOString().split('T')[0]}
+                  className="bg-white border-blue-200 focus:border-blue-400 focus:ring-blue-200 h-8 text-xs w-32"
+                />
+              </div>
+
+              {/* Botón Limpiar */}
+              {(startDate || endDate) && (
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setStartDate('');
+                    setEndDate('');
+                    setDateError('');
+                  }}
+                  className="h-8 text-xs font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 px-2"
+                >
+                  ✕
+                </Button>
+              )}
+
+              <span className="text-xs text-gray-500 ml-auto hidden sm:inline">(Máx. 30 días)</span>
+            </div>
+
+            {/* Mensaje de error o éxito */}
+            {dateError && (
+              <div className="mt-2 p-1.5 bg-amber-50 border border-amber-200 rounded text-xs text-amber-700 flex gap-1.5 items-center">
+                <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+                <span>{dateError}</span>
+              </div>
+            )}
+            
+            {(startDate && endDate && !dateError) && (
+              <div className="mt-2 p-1.5 bg-emerald-50 border border-emerald-200 rounded text-xs text-emerald-700">
+                ✓ Desde <strong>{startDate}</strong> hasta <strong>{endDate}</strong>
+              </div>
+            )}
           </div>
         </div>
 

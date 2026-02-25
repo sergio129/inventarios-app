@@ -21,35 +21,57 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || 'day';
+    const customStartDate = searchParams.get('startDate');
+    const customEndDate = searchParams.get('endDate');
 
     await dbConnect();
 
     console.log('📊 Sales Stats - Period:', period);
 
-    // Obtener dates de inicio y fin según período
+    // Obtener dates de inicio y fin según período o filtro personalizado
     const now = new Date();
     let startDate: Date;
     let endDate: Date;
 
-    switch (period) {
-      case 'day':
-        startDate = getStartOfDay(now);
-        endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000 - 1);
-        break;
-      case 'week':
-        startDate = getStartOfWeek(now);
-        endDate = new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000 - 1);
-        break;
-      case 'month':
-        startDate = getStartOfMonth(now);
-        endDate = new Date(startDate.getTime() + 31 * 24 * 60 * 60 * 1000 - 1); // Aproximado
-        break;
-      case 'year':
-        startDate = getStartOfYear(now);
-        endDate = new Date(startDate.getTime() + 365 * 24 * 60 * 60 * 1000 - 1); // Aproximado
-        break;
-      default:
-        return NextResponse.json({ error: 'Período inválido' }, { status: 400 });
+    // Si hay fechas personalizadas, usarlas
+    if (customStartDate && customEndDate) {
+      startDate = new Date(customStartDate + 'T00:00:00');
+      endDate = new Date(customEndDate + 'T23:59:59');
+
+      // Validar que no exceda 30 días
+      const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays > 30) {
+        return NextResponse.json(
+          { error: 'El rango de fechas no puede exceder 30 días' },
+          { status: 400 }
+        );
+      }
+
+      console.log('📅 Custom date range - From:', startDate, 'To:', endDate);
+    } else {
+      // Usar período predefinido
+      switch (period) {
+        case 'day':
+          startDate = getStartOfDay(now);
+          endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000 - 1);
+          break;
+        case 'week':
+          startDate = getStartOfWeek(now);
+          endDate = new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000 - 1);
+          break;
+        case 'month':
+          startDate = getStartOfMonth(now);
+          endDate = new Date(startDate.getTime() + 31 * 24 * 60 * 60 * 1000 - 1);
+          break;
+        case 'year':
+          startDate = getStartOfYear(now);
+          endDate = new Date(startDate.getTime() + 365 * 24 * 60 * 60 * 1000 - 1);
+          break;
+        default:
+          return NextResponse.json({ error: 'Período inválido' }, { status: 400 });
+      }
     }
 
     console.log('📅 Start Date:', startDate);
