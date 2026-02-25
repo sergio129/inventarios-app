@@ -63,6 +63,10 @@ export function InventoryContent() {
   const [isCategoryComboboxOpen, setIsCategoryComboboxOpen] = useState(false);
   const [categorySearchTerm, setCategorySearchTerm] = useState('');
   
+  // Ordenamiento
+  const [sortBy, setSortBy] = useState('nombre');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  
   // Paginación
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page') || '1'));
   const [itemsPerPage, setItemsPerPage] = useState(parseInt(searchParams.get('limit') || '20'));
@@ -97,6 +101,13 @@ export function InventoryContent() {
     fetchCategories();
   }, [session, status]);
 
+  // Re-fetch cuando cambia el ordenamiento
+  useEffect(() => {
+    if (products.length > 0) {
+      fetchProducts();
+    }
+  }, [sortBy, sortOrder]);
+
   // Cerrar combobox de categoría al hacer clic fuera o presionar Escape
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -127,7 +138,7 @@ export function InventoryContent() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('/api/products');
+      const response = await fetch(`/api/products?sortBy=${sortBy}&sortOrder=${sortOrder}`);
       if (response.ok) {
         let data = await response.json();
 
@@ -401,6 +412,18 @@ export function InventoryContent() {
       codigoBarras: product.codigoBarras || ''
     });
     setIsProductDialogOpen(true);
+  };
+
+  // Función para manejar el ordenamiento
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      // Si ya está ordenado por esta columna, invertir el orden
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Si es una columna diferente, ordenar ascendente
+      setSortBy(column);
+      setSortOrder('asc');
+    }
   };
 
   const openCreateDialog = () => {
@@ -1116,15 +1139,79 @@ export function InventoryContent() {
               <Table>
                 <TableHeader>
                   <TableRow className="border-b border-gray-200/50 bg-linear-to-r from-gray-50/80 to-blue-50/30 hover:from-gray-50 hover:to-blue-50/50 transition-all duration-200">
-                    <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm">Producto</TableHead>
-                    <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden md:table-cell">Categoría</TableHead>
-                    <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden lg:table-cell">Marca</TableHead>
-                    <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden md:table-cell">Código</TableHead>
+                    <TableHead 
+                      onClick={() => handleSort('nombre')}
+                      className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm cursor-pointer hover:bg-blue-100/20 transition-colors duration-200 select-none"
+                    >
+                      <div className="flex items-center gap-1">
+                        Producto
+                        {sortBy === 'nombre' && (sortOrder === 'asc' ? ' ↑' : ' ↓')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      onClick={() => handleSort('categoria')}
+                      className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden md:table-cell cursor-pointer hover:bg-blue-100/20 transition-colors duration-200 select-none"
+                    >
+                      <div className="flex items-center gap-1">
+                        Categoría
+                        {sortBy === 'categoria' && (sortOrder === 'asc' ? ' ↑' : ' ↓')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      onClick={() => handleSort('marca')}
+                      className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden lg:table-cell cursor-pointer hover:bg-blue-100/20 transition-colors duration-200 select-none"
+                    >
+                      <div className="flex items-center gap-1">
+                        Marca
+                        {sortBy === 'marca' && (sortOrder === 'asc' ? ' ↑' : ' ↓')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      onClick={() => handleSort('codigo')}
+                      className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden md:table-cell cursor-pointer hover:bg-blue-100/20 transition-colors duration-200 select-none"
+                    >
+                      <div className="flex items-center gap-1">
+                        Código
+                        {sortBy === 'codigo' && (sortOrder === 'asc' ? ' ↑' : ' ↓')}
+                      </div>
+                    </TableHead>
                     <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden lg:table-cell">Código de Barras</TableHead>
-                    <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm">Stock</TableHead>
-                    <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden sm:table-cell">Precio</TableHead>
-                    <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden md:table-cell">💰 Ganancia</TableHead>
-                    <TableHead className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden sm:table-cell">Estado</TableHead>
+                    <TableHead 
+                      onClick={() => handleSort('stock')}
+                      className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm cursor-pointer hover:bg-blue-100/20 transition-colors duration-200 select-none"
+                    >
+                      <div className="flex items-center gap-1">
+                        Stock
+                        {sortBy === 'stock' && (sortOrder === 'asc' ? ' ↑' : ' ↓')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      onClick={() => handleSort('precio')}
+                      className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden sm:table-cell cursor-pointer hover:bg-blue-100/20 transition-colors duration-200 select-none"
+                    >
+                      <div className="flex items-center gap-1">
+                        Precio
+                        {sortBy === 'precio' && (sortOrder === 'asc' ? ' ↑' : ' ↓')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      onClick={() => handleSort('margenGananciaUnidad')}
+                      className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden md:table-cell cursor-pointer hover:bg-blue-100/20 transition-colors duration-200 select-none"
+                    >
+                      <div className="flex items-center gap-1">
+                        💰 Ganancia
+                        {sortBy === 'margenGananciaUnidad' && (sortOrder === 'asc' ? ' ↑' : ' ↓')}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      onClick={() => handleSort('activo')}
+                      className="font-semibold text-gray-900 py-4 px-3 md:px-6 text-xs md:text-sm hidden sm:table-cell cursor-pointer hover:bg-blue-100/20 transition-colors duration-200 select-none"
+                    >
+                      <div className="flex items-center gap-1">
+                        Estado
+                        {sortBy === 'activo' && (sortOrder === 'asc' ? ' ↑' : ' ↓')}
+                      </div>
+                    </TableHead>
                     <TableHead className="font-semibold text-gray-900 py-4 px-2 md:px-6 text-xs md:text-sm">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>

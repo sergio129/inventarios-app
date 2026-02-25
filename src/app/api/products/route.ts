@@ -18,6 +18,8 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
     const categoria = searchParams.get('categoria');
     const activo = searchParams.get('activo');
+    const sortBy = searchParams.get('sortBy') || 'nombre';
+    const sortOrder = searchParams.get('sortOrder') === 'desc' ? -1 : 1;
 
     const query: any = {};
 
@@ -42,7 +44,11 @@ export async function GET(request: NextRequest) {
       query.activo = true; // Por defecto solo productos activos
     }
 
-    const products = await Product.find(query).sort({ fechaCreacion: -1 });
+    // Crear objeto de ordenamiento
+    const sortObj: any = {};
+    sortObj[sortBy] = sortOrder;
+
+    const products = await Product.find(query).sort(sortObj);
 
     return NextResponse.json(products);
 
