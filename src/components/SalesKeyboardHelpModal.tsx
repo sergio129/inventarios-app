@@ -63,10 +63,10 @@ export function SalesKeyboardHelpModal() {
             <h3 className="text-lg font-semibold text-blue-600 mb-3">Métodos de Pago</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {[
-                { key: '1', desc: 'Efectivo' },
-                { key: '2', desc: 'Tarjeta de crédito/débito' },
-                { key: '3', desc: 'Transferencia bancaria' },
-                { key: '4', desc: 'Cheque' },
+                { key: 'ALT+1', desc: 'Efectivo' },
+                { key: 'ALT+2', desc: 'Tarjeta de crédito/débito' },
+                { key: 'ALT+3', desc: 'Transferencia bancaria' },
+                { key: 'ALT+4', desc: 'Cheque' },
               ].map(({ key, desc }) => (
                 <div key={key} className="flex items-center gap-2">
                   <kbd className="px-2 py-1 bg-blue-100 border border-blue-300 rounded text-sm font-mono font-semibold">
@@ -112,9 +112,9 @@ export function SalesKeyboardHelpModal() {
             </p>
             <div className="grid grid-cols-2 gap-2 text-xs">
               {[
-                { key: 'SHIFT+1-4', desc: 'Descuentos rápidos (5%-20%)' },
+                { key: 'ALT+SHIFT+1-4', desc: 'Descuentos rápidos (5%-20%)' },
                 { key: 'CTRL+ALT+K', desc: 'Modal de accesos avanzados' },
-                { key: 'CTRL+SHIFT+1-4', desc: 'Abrir reportes' },
+                { key: 'CTRL+ALT+1-4', desc: 'Abrir reportes' },
               ].map(({ key, desc }) => (
                 <div key={key} className="flex items-center gap-1.5">
                   <kbd className="px-1.5 py-0.5 bg-white border border-purple-300 rounded text-xs font-mono">

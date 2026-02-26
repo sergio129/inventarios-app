@@ -16,7 +16,6 @@ export function useKeyboardShortcuts(shortcuts: Shortcut[]) {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // No ejecutar si el usuario está escribiendo en un input o textarea
       const target = event.target as HTMLElement;
       const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
 
@@ -30,17 +29,21 @@ export function useKeyboardShortcuts(shortcuts: Shortcut[]) {
         const isAltMatch = shortcut.alt ? event.altKey : !event.altKey;
 
         if (isKeyMatch && isCtrlMatch && isShiftMatch && isAltMatch) {
-          // Permitir atajos sin modificadores incluso en inputs (son atajos de aplicación, no de escritura)
-          // Solo bloquear numeros de código de barras (aquellos que están en el input de lectura de código)
-          const inputId = (target as HTMLInputElement).id;
+          // BLOQUEAR atajos de tecla simple (A-Z, 1-9) si estamos escribiendo en un input
+          // EXCEPTO: letras simples (C, P, D, E, N, X) que son atajos de aplicación
           if (isInput && shortcut.key.length === 1 && !shortcut.ctrl && !shortcut.shift && !shortcut.alt) {
-            // Si el input está vacio o es para búsqueda, permitir el atajo
             const inputValue = (target as HTMLInputElement).value;
-            const isSearchInput = (target as HTMLInputElement).placeholder?.includes('Buscar') || 
-                                 (target as HTMLInputElement).placeholder?.includes('buscar');
             
-            // Si es un input de búsqueda o está vacío, permitir el atajo
-            if (!isSearchInput && inputValue.length > 0) {
+            // Bloquear NÚMEROS (1-9) completamente cuando hay input enfocado con contenido
+            if (/^\d$/.test(shortcut.key) && inputValue) {
+              continue;
+            }
+
+            // Bloquear letras SOLO si hay valor en el input Y no es un input vacío
+            // (permitir atajos de aplicación como C, P, D, E, N, X incluso en inputs)
+            const isApplicationHotkey = ['c', 'p', 'd', 'e', 'n', 'x'].includes(shortcut.key.toLowerCase());
+            
+            if (!isApplicationHotkey && inputValue) {
               continue;
             }
           }

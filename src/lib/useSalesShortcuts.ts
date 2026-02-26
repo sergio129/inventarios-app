@@ -84,6 +84,7 @@ export function useSalesShortcuts(props: SalesShortcutsProps) {
     // 1 = Efectivo
     {
       key: '1',
+      alt: true,
       callback: () => {
         onPaymentMethod?.('efectivo');
       },
@@ -91,6 +92,7 @@ export function useSalesShortcuts(props: SalesShortcutsProps) {
     // 2 = Tarjeta
     {
       key: '2',
+      alt: true,
       callback: () => {
         onPaymentMethod?.('tarjeta');
       },
@@ -98,6 +100,7 @@ export function useSalesShortcuts(props: SalesShortcutsProps) {
     // 3 = Transferencia
     {
       key: '3',
+      alt: true,
       callback: () => {
         onPaymentMethod?.('transferencia');
       },
@@ -105,6 +108,7 @@ export function useSalesShortcuts(props: SalesShortcutsProps) {
     // 4 = Cheque
     {
       key: '4',
+      alt: true,
       callback: () => {
         onPaymentMethod?.('cheque');
       },

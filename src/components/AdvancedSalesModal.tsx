@@ -28,10 +28,10 @@ export function AdvancedSalesModal() {
   const [loading, setLoading] = useState(false);
 
   const quickDiscounts: QuickDiscount[] = [
-    { label: '5%', percentage: 5, key: 'shift+1' },
-    { label: '10%', percentage: 10, key: 'shift+2' },
-    { label: '15%', percentage: 15, key: 'shift+3' },
-    { label: '20%', percentage: 20, key: 'shift+4' },
+    { label: '5%', percentage: 5, key: 'alt+shift+1' },
+    { label: '10%', percentage: 10, key: 'alt+shift+2' },
+    { label: '15%', percentage: 15, key: 'alt+shift+3' },
+    { label: '20%', percentage: 20, key: 'alt+shift+4' },
   ];
 
   useEffect(() => {
@@ -190,22 +190,22 @@ export function AdvancedSalesModal() {
                 { 
                   title: 'Últimas Ventas (Hoy)', 
                   desc: 'Ver todas las ventas del día actual',
-                  key: 'CTRL+SHIFT+1'
+                  key: 'CTRL+ALT+1'
                 },
                 { 
                   title: 'Comparativa Semanal', 
                   desc: 'Análisis de ventas de esta semana',
-                  key: 'CTRL+SHIFT+2'
+                  key: 'CTRL+ALT+2'
                 },
                 { 
                   title: 'Top Productos', 
                   desc: 'Productos más vendidos',
-                  key: 'CTRL+SHIFT+3'
+                  key: 'CTRL+ALT+3'
                 },
                 { 
                   title: 'Análisis de Clientes', 
                   desc: 'Segmentación y comportamiento',
-                  key: 'CTRL+SHIFT+4'
+                  key: 'CTRL+ALT+4'
                 },
               ].map(({ title, desc, key }) => (
                 <div

@@ -90,7 +90,7 @@ export function KeyboardHelpModal() {
                 { key: 'X', desc: 'Eliminar último item' },
                 { key: 'CTRL+X', desc: 'Limpiar carrito' },
                 { key: 'CTRL+F', desc: 'Buscar productos' },
-                { key: '1-4', desc: 'Métodos de pago' },
+                { key: 'ALT+1-4', desc: 'Métodos de pago' },
               ].map(({ key, desc }) => (
                 <div key={key} className="flex items-center gap-2">
                   <kbd className="px-2 py-1 bg-purple-100 border border-purple-300 rounded text-sm font-mono font-semibold text-purple-700">
@@ -114,14 +114,14 @@ export function KeyboardHelpModal() {
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">Atajos Avanzados (CTRL+ALT+K)</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {[
-                { key: 'SHIFT+1', desc: 'Descuento 5%' },
-                { key: 'SHIFT+2', desc: 'Descuento 10%' },
-                { key: 'SHIFT+3', desc: 'Descuento 15%' },
-                { key: 'SHIFT+4', desc: 'Descuento 20%' },
-                { key: 'CTRL+SHIFT+1', desc: 'Reporte diario' },
-                { key: 'CTRL+SHIFT+2', desc: 'Reporte semanal' },
-                { key: 'CTRL+SHIFT+3', desc: 'Productos top' },
-                { key: 'CTRL+SHIFT+4', desc: 'Análisis clientes' },
+                { key: 'ALT+SHIFT+1', desc: 'Descuento 5%' },
+                { key: 'ALT+SHIFT+2', desc: 'Descuento 10%' },
+                { key: 'ALT+SHIFT+3', desc: 'Descuento 15%' },
+                { key: 'ALT+SHIFT+4', desc: 'Descuento 20%' },
+                { key: 'CTRL+ALT+1', desc: 'Reporte diario' },
+                { key: 'CTRL+ALT+2', desc: 'Reporte semanal' },
+                { key: 'CTRL+ALT+3', desc: 'Productos top' },
+                { key: 'CTRL+ALT+4', desc: 'Análisis clientes' },
               ].map(({ key, desc }) => (
                 <div key={key} className="flex items-center gap-2">
                   <kbd className="px-2 py-1 bg-indigo-100 border border-indigo-300 rounded text-sm font-mono font-semibold text-indigo-700">
