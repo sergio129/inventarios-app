@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,10 @@ import { Invoice } from '@/components/invoice';
 import { QuickClientInput } from '@/components/quick-client-input';
 import { ReturnsComponent } from '@/components/returns-component';
 import { PriceQueryModal } from '@/components/price-query-modal';
+import { SalesKeyboardHelpModal } from '@/components/SalesKeyboardHelpModal';
+import { AdvancedSalesModal } from '@/components/AdvancedSalesModal';
+import { useSalesShortcuts } from '@/lib/useSalesShortcuts';
+import { useAdvancedSalesShortcuts } from '@/lib/useAdvancedSalesShortcuts';
 import { toast } from 'sonner';
 import { useCart } from '@/lib/cart-context';
 import { formatCurrency } from '@/lib/currency-utils';
@@ -96,6 +100,95 @@ export default function SalesPage() {
   // Estado para validación de descuento
   const [descuentoMaximoPermitido, setDescuentoMaximoPermitido] = useState(0);
   const [mensajeDescuentoMaximo, setMensajeDescuentoMaximo] = useState('');
+
+  // Ref para el input de búsqueda de productos
+  const productSearchInputRef = useRef<HTMLInputElement>(null);
+
+  // Atajos de teclado específicos para ventas
+  useSalesShortcuts({
+    onCalculate: () => {
+      toast.info('Total calculado: ' + formatCurrency(calculateTotal()));
+    },
+    onPay: () => {
+      if (cart.length === 0) {
+        toast.error('El carrito está vacío');
+        return;
+      }
+      createSale();
+    },
+    onApplyDiscount: () => {
+      // Enfocar campo de descuento
+      const discountInput = document.querySelector('input[placeholder*="Descuento"]') as HTMLInputElement;
+      if (discountInput) {
+        discountInput.focus();
+      } else {
+        toast.info('Campo de descuento no encontrado');
+      }
+    },
+    onSelectClient: () => {
+      // Enfocar campo de cliente
+      const clientInput = document.querySelector('input[placeholder*="Cliente"]') as HTMLInputElement;
+      if (clientInput) {
+        clientInput.focus();
+      } else {
+        toast.info('Campo de cliente no encontrado');
+      }
+    },
+    onNewClient: () => {
+      const quickClientButton = document.querySelector('button') as HTMLButtonElement;
+      if (quickClientButton) {
+        quickClientButton.click();
+      } else {
+        toast.info('Opción de nuevo cliente no encontrada');
+      }
+    },
+    onDeleteLastItem: () => {
+      if (cart.length > 0) {
+        removeFromCart(cart[cart.length - 1].producto);
+        toast.success('Último producto eliminado');
+      } else {
+        toast.error('El carrito está vacío');
+      }
+    },
+    onClearCart: () => {
+      if (cart.length === 0) {
+        toast.error('El carrito ya está vacío');
+        return;
+      }
+      const confirmed = window.confirm('¿Deseas vaciar todo el carrito?');
+      if (confirmed) {
+        cart.forEach(item => removeFromCart(item.producto));
+        toast.success('Carrito vaciado');
+      }
+    },
+    onPaymentMethod: (method) => {
+      setMetodoPago(method);
+      toast.success(`Método de pago: ${method}`);
+    },
+    barcodeInputRef: productSearchInputRef,
+  });
+
+  // Atajos avanzados para Fase 3
+  useAdvancedSalesShortcuts({
+    onApplyQuickDiscount: (percentage) => {
+      const subtotal = calculateSubtotal();
+      const discountAmount = (subtotal * percentage) / 100;
+      setDescuento(discountAmount);
+      toast.success(`Descuento aplicado: ${percentage}% (${formatCurrency(discountAmount)})`);
+    },
+    onOpenDailyReport: () => {
+      router.push('/reports?period=today');
+    },
+    onOpenWeeklyReport: () => {
+      router.push('/reports?period=weekly');
+    },
+    onOpenTopProducts: () => {
+      router.push('/reports?view=top-products');
+    },
+    onOpenClientAnalysis: () => {
+      router.push('/reports?view=client-analysis');
+    },
+  });
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -389,6 +482,12 @@ export default function SalesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
+      {/* Modal de Ayuda de Atajos */}
+      <SalesKeyboardHelpModal />
+
+      {/* Modal de Accesos Avanzados (Fase 3) */}
+      <AdvancedSalesModal />
+
       {/* Input invisible para lector de código de barras */}
       <input
         id="barcode-reader"
@@ -478,9 +577,19 @@ export default function SalesPage() {
                 <div className="relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
+                    ref={productSearchInputRef}
                     placeholder="Buscar productos..."
                     value={productSearchTerm}
                     onChange={(e) => setProductSearchTerm(e.target.value)}
+                    onKeyDown={(e) => {
+                      // Si presiona Enter y hay exactamente un producto, agregarlo
+                      if (e.key === 'Enter' && filteredProducts.length === 1) {
+                        e.preventDefault();
+                        addToCart(filteredProducts[0], 'unidad');
+                        setProductSearchTerm('');
+                        toast.success(`${filteredProducts[0].nombre} agregado al carrito`);
+                      }
+                    }}
                     className="pl-10"
                   />
                 </div>

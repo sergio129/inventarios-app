@@ -5,6 +5,8 @@ import AuthProvider from "@/components/AuthProvider";
 import { CartProvider } from "@/lib/cart-context";
 import { Toaster } from "sonner";
 import FullscreenManager from "@/components/FullscreenManager";
+import { KeyboardShortcutsProvider } from "@/components/KeyboardShortcutsProvider";
+import { KeyboardHelpModal } from "@/components/KeyboardHelpModal";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,6 +33,8 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <KeyboardShortcutsProvider />
+        <KeyboardHelpModal />
         <FullscreenManager />
         <AuthProvider>
           <CartProvider>
