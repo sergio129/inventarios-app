@@ -204,13 +204,14 @@ export default function SalesPage() {
 
   // Enfocar el campo de búsqueda automáticamente al cargar el módulo
   useEffect(() => {
-    if (productSearchInputRef.current) {
-      // Usar un setTimeout pequeño para asegurarse de que el DOM está listo
-      const timer = setTimeout(() => {
-        productSearchInputRef.current?.focus();
-      }, 100);
-      return () => clearTimeout(timer);
-    }
+    const timer = setTimeout(() => {
+      if (productSearchInputRef?.current) {
+        productSearchInputRef.current.focus();
+        productSearchInputRef.current.select();
+      }
+    }, 50);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   const fetchSales = async () => {
