@@ -41,12 +41,12 @@ export function SalesKeyboardHelpModal() {
             <h3 className="text-lg font-semibold text-green-600 mb-3">Acciones Principales</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {[
-                { key: 'C', desc: 'Calcular total' },
-                { key: 'P', desc: 'Procesar pago' },
-                { key: 'D', desc: 'Aplicar descuento' },
-                { key: 'E', desc: 'Seleccionar cliente' },
-                { key: 'N', desc: 'Nuevo cliente' },
-                { key: 'X', desc: 'Eliminar último ítem' },
+                { key: 'SHIFT+C', desc: 'Calcular total' },
+                { key: 'SHIFT+P', desc: 'Procesar pago' },
+                { key: 'SHIFT+D', desc: 'Aplicar descuento' },
+                { key: 'SHIFT+E', desc: 'Seleccionar cliente' },
+                { key: 'SHIFT+N', desc: 'Nuevo cliente' },
+                { key: 'SHIFT+X', desc: 'Eliminar último ítem' },
               ].map(({ key, desc }) => (
                 <div key={key} className="flex items-center gap-2">
                   <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-sm font-mono font-semibold">
@@ -85,7 +85,7 @@ export function SalesKeyboardHelpModal() {
               {[
                 { key: 'CTRL+F', desc: 'Enfocar búsqueda de productos' },
                 { key: 'ENTER', desc: 'Agregar producto/confirmar' },
-                { key: 'CTRL+X', desc: 'Vaciar carrito (con confirmación)' },
+                { key: 'CTRL+SHIFT+X', desc: 'Vaciar carrito (con confirmación)' },
               ].map(({ key, desc }) => (
                 <div key={key} className="flex items-center gap-2">
                   <kbd className="px-2 py-1 bg-purple-100 border border-purple-300 rounded text-sm font-mono font-semibold">
