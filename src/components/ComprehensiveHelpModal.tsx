@@ -237,7 +237,7 @@ export function ComprehensiveHelpModal({ isOpen, onClose }: { isOpen: boolean; o
             <Book className="h-8 w-8" />
             <div>
               <h2 className="text-3xl font-bold">Manual Completo de Atajos</h2>
-              <p className="text-blue-100 mt-1">SaludDirecta POS - Sistema de Ventas Rápido</p>
+              <p className="text-blue-100 mt-1">Inventarios POS - Sistema de Ventas Rápido</p>
             </div>
           </div>
           <button
