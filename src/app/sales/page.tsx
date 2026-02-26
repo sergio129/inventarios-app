@@ -590,6 +590,7 @@ export default function SalesPage() {
                   <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     ref={productSearchInputRef}
+                    autoFocus
                     placeholder="Buscar productos..."
                     value={productSearchTerm}
                     onChange={(e) => setProductSearchTerm(e.target.value)}
