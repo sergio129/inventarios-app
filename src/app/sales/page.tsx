@@ -412,6 +412,11 @@ export default function SalesPage() {
         console.error('Error al imprimir automáticamente:', error);
         toast.info('Venta completada pero no se pudo imprimir', { id: 'auto-print' });
       }
+      
+      // Enfocar el campo de búsqueda después de completar la venta
+      setTimeout(() => {
+        productSearchInputRef.current?.focus();
+      }, 500);
     }
     
     fetchSales();
@@ -696,7 +701,13 @@ export default function SalesPage() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => removeFromCart(item.producto)}
+                          onClick={() => {
+                            removeFromCart(item.producto);
+                            // Enfocar el campo de búsqueda automáticamente
+                            setTimeout(() => {
+                              productSearchInputRef.current?.focus();
+                            }, 50);
+                          }}
                           className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
                         >
                           <X className="h-4 w-4" />
