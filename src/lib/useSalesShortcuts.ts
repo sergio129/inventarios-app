@@ -31,52 +31,59 @@ export function useSalesShortcuts(props: SalesShortcutsProps) {
 
   // Atajos específicos para ventas
   useKeyboardShortcuts([
-    // C = Calcular total
+    // SHIFT + C = Calcular total
     {
       key: 'c',
+      shift: true,
       callback: () => {
         onCalculate?.();
       },
     },
-    // P = Procesar pago
+    // SHIFT + P = Procesar pago
     {
       key: 'p',
+      shift: true,
       callback: () => {
         onPay?.();
       },
     },
-    // D = Descuento
+    // SHIFT + D = Descuento
     {
       key: 'd',
+      shift: true,
       callback: () => {
         onApplyDiscount?.();
       },
     },
-    // E = Cliente (buscar/seleccionar)
+    // SHIFT + E = Cliente (buscar/seleccionar)
     {
       key: 'e',
+      shift: true,
       callback: () => {
         onSelectClient?.();
       },
     },
-    // N = Nuevo cliente
+    // SHIFT + N = Nuevo cliente
     {
       key: 'n',
+      shift: true,
       callback: () => {
         onNewClient?.();
       },
     },
-    // X = Eliminar último ítem
+    // SHIFT + X = Eliminar último ítem
     {
       key: 'x',
+      shift: true,
       callback: () => {
         onDeleteLastItem?.();
       },
     },
-    // CTRL + X = Limpiar carrito
+    // CTRL + SHIFT + X = Limpiar carrito
     {
       key: 'x',
       ctrl: true,
+      shift: true,
       callback: () => {
         onClearCart?.();
       },

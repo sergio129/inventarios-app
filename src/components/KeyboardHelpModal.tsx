@@ -82,13 +82,13 @@ export function KeyboardHelpModal() {
             <h3 className="text-lg font-semibold text-purple-600 mb-3">Atajos de Ventas (ALT+H para más info)</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {[
-                { key: 'C', desc: 'Calcular total' },
-                { key: 'P', desc: 'Procesar pago' },
-                { key: 'D', desc: 'Aplicar descuento' },
-                { key: 'E', desc: 'Seleccionar cliente' },
-                { key: 'N', desc: 'Nuevo cliente' },
-                { key: 'X', desc: 'Eliminar último item' },
-                { key: 'CTRL+X', desc: 'Limpiar carrito' },
+                { key: 'SHIFT+C', desc: 'Calcular total' },
+                { key: 'SHIFT+P', desc: 'Procesar pago' },
+                { key: 'SHIFT+D', desc: 'Aplicar descuento' },
+                { key: 'SHIFT+E', desc: 'Seleccionar cliente' },
+                { key: 'SHIFT+N', desc: 'Nuevo cliente' },
+                { key: 'SHIFT+X', desc: 'Eliminar último item' },
+                { key: 'CTRL+SHIFT+X', desc: 'Limpiar carrito' },
                 { key: 'CTRL+F', desc: 'Buscar productos' },
                 { key: 'ALT+1-4', desc: 'Métodos de pago' },
               ].map(({ key, desc }) => (
