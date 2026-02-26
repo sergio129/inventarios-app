@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ComprehensiveHelpModal } from '@/components/ComprehensiveHelpModal';
 
 export function KeyboardHelpModal() {
   const [isOpen, setIsOpen] = useState(false);
+  const [showComprehensive, setShowComprehensive] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -22,7 +24,9 @@ export function KeyboardHelpModal() {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[10000] bg-black/50 flex items-center justify-center p-4">
+    <>
+      <ComprehensiveHelpModal isOpen={showComprehensive} onClose={() => setShowComprehensive(false)} />
+      <div className="fixed inset-0 z-[10000] bg-black/50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b p-4 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-gray-900">Atajos de Teclado (F1)</h2>
@@ -134,12 +138,20 @@ export function KeyboardHelpModal() {
           </section>
 
           <div className="flex gap-2">
+            <Button 
+              onClick={() => setShowComprehensive(true)}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white flex items-center gap-2"
+            >
+              <BookOpen className="h-4 w-4" />
+              Ayuda Completa
+            </Button>
             <Button onClick={() => setIsOpen(false)} className="ml-auto">
               Cerrar
             </Button>
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
