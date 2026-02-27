@@ -231,7 +231,7 @@ export default function Dashboard() {
                       <div className="animate-pulse bg-gray-200 h-4 w-12 rounded"></div>
                     ) : (
                       <p className={`text-sm font-medium ${stat.changeType === 'positive' ? 'text-green-600' : 'text-red-600'}`}>
-                        {`${stat.change >= 0 ? '+' : ''}${stat.change}% vs ayer`}
+                        {`${stat.change >= 0 ? '+' : ''}${(stat.change as number).toFixed(2)}% vs ayer`}
                       </p>
                     )}
                   </div>

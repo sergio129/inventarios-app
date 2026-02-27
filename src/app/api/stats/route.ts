@@ -110,22 +110,22 @@ export async function GET(request: NextRequest) {
     const stats = {
       totalProductos: {
         value: totalProductos.toLocaleString(),
-        change: productosChange,
+        change: parseFloat(productosChange.toFixed(2)),
         changeType: productosChange >= 0 ? 'positive' : 'negative'
       },
       ventasHoy: {
         value: `$${ventasHoyTotal.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
-        change: Math.round(ventasChange),
+        change: parseFloat(ventasChange.toFixed(2)),
         changeType: ventasChange >= 0 ? 'positive' : 'negative'
       },
       usuariosActivos: {
         value: usuariosActivos.toString(),
-        change: Math.round(usuariosChange),
+        change: parseFloat(usuariosChange.toFixed(2)),
         changeType: usuariosChange >= 0 ? 'positive' : 'negative'
       },
       pedidosPendientes: {
         value: pedidosPendientesHoy.toString(),
-        change: Math.round(pedidosChange),
+        change: parseFloat(pedidosChange.toFixed(2)),
         changeType: pedidosChange >= 0 ? 'positive' : 'negative'
       }
     };
