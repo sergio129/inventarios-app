@@ -118,7 +118,7 @@ class ThermalPrinter {
   }
 
   /**
-   * Genera línea de producto con cantidad, tipo, precio y total alineados
+   * Genera línea de producto con cantidad, tipo, precio unitario y total alineados
    */
   private productLine(
     name: string,
@@ -133,22 +133,17 @@ class ThermalPrinter {
 
     const line1 = `${shortName}\n`;
     const qtyStr = `x${quantity} ${tipo}`;
-    const priceStr = `$${unitPrice.toFixed(0)}`;
+    const unitPriceStr = `$${unitPrice.toFixed(0)}`;
     const totalStr = `$${total.toFixed(0)}`;
 
+    // Línea 2: Cantidad + Precio Unitario + Precio Total
     const spacing1 = Math.max(
       1,
-      this.config.charsPerLine - qtyStr.length - priceStr.length
+      this.config.charsPerLine - qtyStr.length - unitPriceStr.length - totalStr.length - 2
     );
-    const line2 = `${qtyStr}${' '.repeat(spacing1)}${priceStr}\n`;
+    const line2 = `${qtyStr}${' '.repeat(spacing1)}${unitPriceStr} ${totalStr}\n`;
 
-    const spacing2 = Math.max(
-      1,
-      this.config.charsPerLine - totalStr.length
-    );
-    const line3 = `${' '.repeat(spacing2)}${totalStr}\n`;
-
-    return line1 + line2 + line3;
+    return line1 + line2;
   }
 
   /**
@@ -216,7 +211,13 @@ class ThermalPrinter {
     r += `No: ${sale.numeroFactura}\r\n`;
     const f = new Date(sale.fechaVenta);
     const fecha = f.toLocaleDateString('es-CO');
-    const hora = f.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true }).replace(/\s*\.\s*/g, ' ');
+    // Ajustar hora a zona horaria de Colombia (UTC-5)
+    const hora = f.toLocaleTimeString('es-CO', { 
+      timeZone: 'America/Bogota',
+      hour: '2-digit', 
+      minute: '2-digit', 
+      hour12: true 
+    }).replace(/\s*\.\s*/g, ' ');
     r += `${fecha} ${hora}\r\n`;
     
     // Cliente si existe
@@ -230,29 +231,57 @@ class ThermalPrinter {
     }
     
     r += sep() + '\r\n';
+    
+    // Encabezado de productos
+    if (width >= 48) {
+      // Ancho 80mm (48 caracteres)
+      r += 'Artíc.     Cant.  P.Unit          Total\r\n';
+    } else {
+      // Ancho 58mm (32 caracteres)
+      r += 'Artíc.   Cant.  P.Unit    Total\r\n';
+    }
+    r += sep() + '\r\n';
 
-    // Productos - Formato compacto
-    // "NombreCorto Cant Tipo $Precio"
+    // Productos - Formato mejorado con columnas alineadas
     for (const item of sale.items) {
-      const tipoAbrev = item.tipoVenta === 'empaque' ? 'Cja' : 'Und';
-      const cant = `${item.cantidad}x`;
-      const precio = formatMoney(item.precioTotal);
+      const tipoAbrev = item.tipoVenta === 'empaque' ? 'C' : 'U';
+      const cantidad = `${item.cantidad}x${tipoAbrev}`;
+      const precioUnit = formatMoney(item.precioUnitario);
+      const precioTotal = formatMoney(item.precioTotal);
       
-      // Espacio necesario para cantidad, tipo y precio
-      const espacioInfo = cant.length + tipoAbrev.length + precio.length + 3;
-      const maxNom = width - espacioInfo;
+      let producto = cleanText(item.nombreProducto);
       
-      // Limpiar y acortar nombre de producto
-      let nom = cleanText(item.nombreProducto);
-      
-      // Acortar mucho más para dejar espacio al precio
-      if (nom.length > maxNom) {
-        nom = nom.substring(0, maxNom);
+      if (width >= 48) {
+        // 80mm - Ancho completo (48 caracteres)
+        // Artículo (13) | Cantidad (9) | Precio (8) | Total (18)
+        const col1Width = 13;
+        const col2Width = 9;
+        const col3Width = 8;
+        const col4Width = width - col1Width - col2Width - col3Width;
+        
+        const prod = producto.length > col1Width ? producto.substring(0, col1Width - 1) : producto;
+        const prodPad = prod.padEnd(col1Width);
+        const cantPad = cantidad.padEnd(col2Width);
+        const precPad = precioUnit.padStart(col3Width);
+        const totalPad = precioTotal.padStart(col4Width);
+        
+        r += prodPad + cantPad + precPad + totalPad + '\r\n';
+      } else {
+        // 58mm - Más compacto (32 caracteres)
+        // Artículo (9) | Cantidad (7) | Precio (6) | Total (10)
+        const col1Width = 9;
+        const col2Width = 7;
+        const col3Width = 6;
+        const col4Width = width - col1Width - col2Width - col3Width;
+        
+        const prod = producto.length > col1Width ? producto.substring(0, col1Width - 1) : producto;
+        const prodPad = prod.padEnd(col1Width);
+        const cantPad = cantidad.padEnd(col2Width);
+        const precPad = precioUnit.padStart(col3Width);
+        const totalPad = precioTotal.padStart(col4Width);
+        
+        r += prodPad + cantPad + precPad + totalPad + '\r\n';
       }
-      
-      // Calcular espacios para alinear precio a la derecha
-      const espacios = width - nom.length - cant.length - tipoAbrev.length - precio.length - 2;
-      r += nom + ' ' + cant + ' ' + tipoAbrev + ' '.repeat(Math.max(1, espacios)) + precio + '\r\n';
     }
 
     r += sep() + '\r\n';
@@ -310,7 +339,13 @@ class ThermalPrinter {
     receipt += `Factura: ${sale.numeroFactura}\n`;
     const fecha = new Date(sale.fechaVenta);
     receipt += `Fecha: ${fecha.toLocaleDateString('es-CO')}\n`;
-    const hora = fecha.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: true }).replace(/\s*\.\s*/g, ' ');
+    // Ajustar hora a zona horaria de Colombia (UTC-5)
+    const hora = fecha.toLocaleTimeString('es-CO', { 
+      timeZone: 'America/Bogota',
+      hour: '2-digit', 
+      minute: '2-digit', 
+      hour12: true 
+    }).replace(/\s*\.\s*/g, ' ');
     receipt += `Hora: ${hora}\n`;
     receipt += this.emptyLine();
 
@@ -333,8 +368,7 @@ class ThermalPrinter {
 
     // Encabezado de productos
     receipt += this.setBold(true);
-    receipt += `Descripción\n`;
-    receipt += `Cant.      Precio    Total\n`;
+    receipt += `Artíc.    Cant.    Precio U.   Total\n`;
     receipt += this.setBold(false);
     receipt += this.separator();
 

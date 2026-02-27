@@ -18,6 +18,7 @@ interface PrinterSale {
   items: Array<{
     nombreProducto: string;
     cantidad: number;
+    tipoVenta?: 'unidad' | 'empaque';
     precioUnitario: number;
     precioTotal: number;
   }>;
@@ -32,38 +33,27 @@ interface PrinterSale {
 
 // Datos de ejemplo
 const exampleSale: PrinterSale = {
-  numeroFactura: 'FAC-20251119-001',
+  numeroFactura: 'FAC-20260227-522',
   cliente: {
-    nombre: 'Juan Carlos Pérez',
-    cedula: '123456789',
-    telefono: '3001234567'
+    nombre: 'FERNANDO SERNA',
+    cedula: '3135182003',
+    telefono: '3135182003'
   },
   items: [
     {
-      nombreProducto: 'SALSA DE PIÑA DIFEER X 4000GR',
-      cantidad: 2,
-      precioUnitario: 7500,
-      precioTotal: 15000
-    },
-    {
-      nombreProducto: 'SALSA DE TOMATE DIFFER X 4000GR',
-      cantidad: 1,
-      precioUnitario: 7500,
-      precioTotal: 7500
-    },
-    {
-      nombreProducto: 'HAMBURGUESAPRUEBA',
-      cantidad: 3,
-      precioUnitario: 17250,
-      precioTotal: 51750
+      nombreProducto: 'PORTACOMIDA C',
+      cantidad: 1000,
+      tipoVenta: 'unidad',
+      precioUnitario: 300,
+      precioTotal: 300000
     }
   ],
-  subtotal: 74250,
-  descuento: 10,
+  subtotal: 300000,
+  descuento: 7,
   impuesto: 0,
-  total: 66825,
+  total: 279000,
   metodoPago: 'efectivo',
-  notas: 'Entrega rápida',
+  notas: '',
   fechaVenta: new Date()
 };
 
@@ -217,7 +207,11 @@ export default function ThermalPreviewPage() {
               <CardContent className="text-sm space-y-2">
                 <div className="flex items-start gap-2">
                   <span className="text-green-600 font-bold">✓</span>
-                  <span>Formato ESC/POS estándar</span>
+                  <span>Precio unitario por producto</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-green-600 font-bold">✓</span>
+                  <span>Hora zona horaria Colombia</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-green-600 font-bold">✓</span>
@@ -251,7 +245,10 @@ export default function ThermalPreviewPage() {
                   • La fuente monoespaciada simula la impresora térmica real
                 </p>
                 <p>
-                  • Los recibos se imprimen automáticamente después de cada venta
+                  • Verás el precio unitario y total de cada producto
+                </p>
+                <p>
+                  • La hora se muestra en zona horaria de Colombia
                 </p>
               </CardContent>
             </Card>
