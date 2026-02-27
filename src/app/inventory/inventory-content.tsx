@@ -18,6 +18,7 @@ import { useCart } from '@/lib/cart-context';
 import { calcularPrecioMinimo } from '@/lib/discount-validator';
 import ImportExportManager from '@/components/import-export-manager';
 import Pagination from '@/components/pagination';
+import { InventoryDashboard } from '@/components/inventory-dashboard';
 
 interface Product {
   _id: string;
@@ -1073,6 +1074,9 @@ export function InventoryContent() {
               )}
           </div>
         </div>
+
+        {/* Inventory Dashboard Summary */}
+        <InventoryDashboard products={products} />
 
         {/* Modern Filters Section */}
         <div className="mb-8">
