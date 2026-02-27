@@ -249,7 +249,7 @@ class ThermalPrinter {
       const precioUnit = formatMoney(item.precioUnitario);
       const precioTotal = formatMoney(item.precioTotal);
       
-      let producto = cleanText(item.nombreProducto);
+      const producto = cleanText(item.nombreProducto);
       
       if (width >= 48) {
         // 80mm - Ancho completo (48 caracteres)
