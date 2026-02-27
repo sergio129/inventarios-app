@@ -4,10 +4,14 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Printer, Download, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Printer, Download, X, Edit } from 'lucide-react';
 import { generateInvoicePDF, printInvoice } from '@/lib/invoice-utils';
 import { printThermalReceipt } from '@/lib/thermal-printer';
 import { toast } from 'sonner';
+import { useSession } from 'next-auth/react';
 
 interface Sale {
   _id: string;
@@ -47,7 +51,15 @@ interface InvoiceProps {
 }
 
 export function Invoice({ sale, onClose, onPrint, onDownload }: InvoiceProps) {
+  const { data: session } = useSession();
   const [isPrinting, setIsPrinting] = useState(false);
+  const [isEditingClient, setIsEditingClient] = useState(false);
+  const [clientData, setClientData] = useState({
+    nombre: sale.cliente?.nombre || '',
+    cedula: sale.cliente?.cedula || '',
+    telefono: sale.cliente?.telefono || ''
+  });
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleThermalPrint = async () => {
     try {
@@ -86,6 +98,35 @@ export function Invoice({ sale, onClose, onPrint, onDownload }: InvoiceProps) {
       }
     }
   };
+
+  const handleSaveClientData = async () => {
+    try {
+      setIsSaving(true);
+      const response = await fetch(`/api/sales/${sale._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          cliente: clientData
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al actualizar datos del cliente');
+      }
+
+      toast.success('Datos del cliente actualizados correctamente');
+      setIsEditingClient(false);
+      // Actualizar el objeto sale con los nuevos datos
+      sale.cliente = clientData;
+    } catch (error) {
+      console.error('Error actualizando cliente:', error);
+      toast.error('Error al actualizar los datos del cliente');
+    } finally {
+      setIsSaving(false);
+    }
+  };
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
@@ -110,6 +151,15 @@ export function Invoice({ sale, onClose, onPrint, onDownload }: InvoiceProps) {
         <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gray-50/50 flex-wrap gap-3">
           <h2 className="text-2xl font-bold text-gray-900">Factura #{sale.numeroFactura}</h2>
           <div className="flex gap-2 flex-wrap">
+            {(session?.user as any)?.role === 'admin' && (
+              <Button 
+                onClick={() => setIsEditingClient(true)}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+              >
+                <Edit className="h-4 w-4" />
+                Editar Cliente
+              </Button>
+            )}
             <Button 
               onClick={handleThermalPrint} 
               disabled={isPrinting}
@@ -252,6 +302,78 @@ export function Invoice({ sale, onClose, onPrint, onDownload }: InvoiceProps) {
             <p>Factura generada automáticamente por el sistema</p>
           </div>
         </div>
+
+        {/* Modal de Edición de Cliente */}
+        <Dialog open={isEditingClient} onOpenChange={setIsEditingClient}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Edit className="h-5 w-5" />
+                Editar Datos del Cliente
+              </DialogTitle>
+              <DialogDescription>
+                Modifique los datos del cliente para la factura #{sale.numeroFactura}. Solo se pueden editar el nombre, cédula y teléfono.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="nombre">Nombre del Cliente</Label>
+                <Input
+                  id="nombre"
+                  value={clientData.nombre}
+                  onChange={(e) => setClientData({ ...clientData, nombre: e.target.value })}
+                  placeholder="Nombre del cliente"
+                  className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cedula">Cédula (Opcional)</Label>
+                <Input
+                  id="cedula"
+                  value={clientData.cedula}
+                  onChange={(e) => setClientData({ ...clientData, cedula: e.target.value })}
+                  placeholder="Número de cédula"
+                  className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="telefono">Teléfono (Opcional)</Label>
+                <Input
+                  id="telefono"
+                  value={clientData.telefono}
+                  onChange={(e) => setClientData({ ...clientData, telefono: e.target.value })}
+                  placeholder="Número de teléfono"
+                  className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
+                <strong>Nota:</strong> Al guardar estos cambios se actualizará la información del cliente en la factura.
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsEditingClient(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="button"
+                onClick={handleSaveClientData}
+                disabled={isSaving}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

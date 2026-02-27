@@ -49,7 +49,7 @@ export async function PUT(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const { estado, notas } = await request.json();
+    const { estado, notas, cliente } = await request.json();
 
     await dbConnect();
 
@@ -68,6 +68,24 @@ export async function PUT(
 
     if (notas !== undefined) {
       sale.notas = notas;
+    }
+
+    // Permitir edición de datos del cliente (nombre, cédula, teléfono)
+    // Solo si es admin o el vendedor de la venta
+    if (cliente && typeof cliente === 'object') {
+      // Validar que solo se editen estos campos permitidos
+      if (cliente.nombre !== undefined) {
+        sale.cliente = sale.cliente || {};
+        sale.cliente.nombre = cliente.nombre?.trim() || '';
+      }
+      if (cliente.cedula !== undefined) {
+        sale.cliente = sale.cliente || {};
+        sale.cliente.cedula = cliente.cedula?.trim() || '';
+      }
+      if (cliente.telefono !== undefined) {
+        sale.cliente = sale.cliente || {};
+        sale.cliente.telefono = cliente.telefono?.trim() || '';
+      }
     }
 
     sale.fechaActualizacion = new Date();
