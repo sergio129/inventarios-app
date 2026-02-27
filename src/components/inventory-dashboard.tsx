@@ -43,7 +43,7 @@ export const InventoryDashboard = memo(function InventoryDashboard({ products }:
 
   const { totalInvested, totalSalesValue } = calculateTotals();
   const potentialProfit = totalSalesValue - totalInvested;
-  const profitMargin = totalInvested > 0 ? ((potentialProfit / totalInvested) * 100).toFixed(2) : '0.00';
+  const profitMargin = totalSalesValue > 0 ? ((potentialProfit / totalSalesValue) * 100).toFixed(2) : '0.00';
 
   const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat('es-CO', {
