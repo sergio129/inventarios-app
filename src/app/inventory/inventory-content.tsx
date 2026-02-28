@@ -469,9 +469,53 @@ export function InventoryContent() {
     }
   };
 
-  const openCreateDialog = () => {
+  // Obtener la siguiente sugerencia de código consecutivo
+  const getNextCodigoSuggestion = () => {
+    if (products.length === 0) {
+      return '1'; // Si no hay productos, empezar en 1
+    }
+
+    // Extraer números de todos los códigos existentes
+    const numeros: number[] = [];
+
+    products.forEach(product => {
+      if (product.codigo) {
+        // Extraer todos los números del código
+        const matches = product.codigo.match(/\d+/g);
+        if (matches) {
+          matches.forEach(match => {
+            const num = parseInt(match);
+            if (!isNaN(num)) {
+              numeros.push(num);
+            }
+          });
+        }
+      }
+    });
+
+    // Si no hay números encontrados, empezar en 1
+    if (numeros.length === 0) {
+      return '1';
+    }
+
+    // Encontrar el número más alto
+    const maxNumero = Math.max(...numeros);
+    
+    // Retornar el siguiente número
+    return (maxNumero + 1).toString();
+  };
+
+  const openCreateDialog = async () => {
     setEditingProduct(null);
     resetCreateForm();
+    
+    // Sugerir el siguiente código consecutivo
+    const nextCodigo = getNextCodigoSuggestion();
+    setCreateForm(prevForm => ({
+      ...prevForm,
+      codigo: nextCodigo
+    }));
+    
     setIsProductDialogOpen(true);
   };
 
