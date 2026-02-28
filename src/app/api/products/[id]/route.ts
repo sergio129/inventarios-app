@@ -7,15 +7,16 @@ import { registrarAuditLog, detectarCambios } from '@/lib/audit-service';
 import { validarPreciosCoherentes } from '@/lib/validation-service';
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  // Obtener id antes del try-catch para disponibilidad en catch
+  const { id } = await params;
+  const updateData = await request.json();
+
   try {
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
-
-    const { id } = await params;
-    const updateData = await request.json();
 
     await dbConnect();
 
@@ -133,6 +134,30 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (error && (error.code === 11000 || error.name === 'MongoServerError')) {
       const dupKey = error.keyPattern ? Object.keys(error.keyPattern)[0] : 'valor';
       const fieldName = dupKey === 'codigoBarras' ? 'código de barras' : dupKey === 'codigo' ? 'código interno' : dupKey;
+      
+      // Buscar el producto que ya tiene ese código (excepto el que se está editando)
+      await dbConnect();
+      const existingProduct = await Product.findOne({ 
+        [dupKey]: dupKey === 'codigo' ? updateData.codigo : updateData.codigoBarras,
+        _id: { $ne: id } // Excluir el producto que se está editando
+      });
+      
+      if (existingProduct) {
+        return NextResponse.json(
+          { 
+            error: `Ya existe otro producto con este ${fieldName}`,
+            fieldName: fieldName,
+            existingProduct: {
+              _id: existingProduct._id,
+              nombre: existingProduct.nombre,
+              codigo: existingProduct.codigo,
+              codigoBarras: existingProduct.codigoBarras
+            }
+          },
+          { status: 400 }
+        );
+      }
+      
       return NextResponse.json(
         { error: `Ya existe un producto con este ${fieldName}` },
         { status: 400 }

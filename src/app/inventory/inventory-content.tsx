@@ -293,6 +293,32 @@ export function InventoryContent() {
     return filteredProducts.slice(startIndex, endIndex);
   }, [filteredProducts, currentPage, itemsPerPage]);
 
+  // Validar si el código interno ya existe
+  const validateCodigoInterno = async (codigo: string, productIdToExclude?: string) => {
+    if (!codigo.trim()) return null;
+
+    try {
+      const response = await fetch(`/api/products?search=${encodeURIComponent(codigo)}`);
+      if (response.ok) {
+        const products = await response.json();
+        const existingProduct = products.find((p: Product) => 
+          p.codigo === codigo.trim() && p._id !== productIdToExclude
+        );
+        
+        if (existingProduct) {
+          return {
+            exists: true,
+            product: existingProduct
+          };
+        }
+      }
+    } catch (error) {
+      console.error('Error validando código:', error);
+    }
+
+    return { exists: false };
+  };
+
   const createProduct = async () => {
     // Validación del lado del cliente
     if (!createForm.nombre.trim()) {
@@ -325,6 +351,14 @@ export function InventoryContent() {
     }
     if (!createForm.codigo.trim()) {
       toast.error('El código interno es requerido');
+      return;
+    }
+
+    // Validar que el código no exista ya
+    const codigoValidation = await validateCodigoInterno(createForm.codigo);
+    if (codigoValidation?.exists) {
+      const existente = codigoValidation.product;
+      toast.error(`El código interno "${createForm.codigo}" ya existe.\n\nProducto: ${existente.nombre}`);
       return;
     }
 
@@ -384,7 +418,15 @@ export function InventoryContent() {
         fetchProducts();
       } else {
         const error = await response.json();
-        toast.error(error.error || 'Error al crear producto');
+        
+        // Si hay un producto existente con el código, mostrar información detallada
+        if (error.existingProduct) {
+          const existente = error.existingProduct;
+          const mensaje = `${error.error}\n\nProducto existente:\n• Nombre: ${existente.nombre}\n• Código: ${existente.codigo || 'N/A'}`;
+          toast.error(mensaje);
+        } else {
+          toast.error(error.error || 'Error al crear producto');
+        }
       }
     } catch (error) {
       console.error('Error creating product:', error);
@@ -467,6 +509,16 @@ export function InventoryContent() {
   const updateProduct = async () => {
     if (!editingProduct) return;
 
+    // Validar que el código no exista en otro producto (si cambió)
+    if (createForm.codigo !== editingProduct.codigo) {
+      const codigoValidation = await validateCodigoInterno(createForm.codigo, editingProduct._id);
+      if (codigoValidation?.exists) {
+        const existente = codigoValidation.product;
+        toast.error(`El código interno "${createForm.codigo}" ya existe.\n\nProducto: ${existente.nombre}`);
+        return;
+      }
+    }
+
     try {
       const stockCajas = parseInt(createForm.stockCajas) || 0;
       const unidadesPorCaja = parseInt(createForm.unidadesPorCaja) || 1;
@@ -500,7 +552,15 @@ export function InventoryContent() {
         fetchProducts();
       } else {
         const error = await response.json();
-        toast.error(error.error || 'Error al actualizar producto');
+        
+        // Si hay un producto existente con el código, mostrar información detallada
+        if (error.existingProduct) {
+          const existente = error.existingProduct;
+          const mensaje = `${error.error}\n\nProducto existente:\n• Nombre: ${existente.nombre}\n• Código: ${existente.codigo || 'N/A'}`;
+          toast.error(mensaje);
+        } else {
+          toast.error(error.error || 'Error al actualizar producto');
+        }
       }
     } catch (error) {
       console.error('Error updating product:', error);

@@ -62,31 +62,34 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // Obtener los datos antes del try-catch para disponibilidad en catch
+  const requestBody = await request.json();
+  
+  const {
+    nombre,
+    descripcion,
+    precio,
+    precioCaja,
+    precioCompra,
+    precioCompraCaja,
+    stockCajas,
+    unidadesPorCaja,
+    stockUnidadesSueltas,
+    stockMinimo,
+    categoria,
+    marca,
+    codigo,
+    codigoBarras,
+    margenGananciaUnidad,
+    margenGananciaCaja
+  } = requestBody;
+
   try {
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
-
-    const {
-      nombre,
-      descripcion,
-      precio,
-      precioCaja,
-      precioCompra,
-      precioCompraCaja,
-      stockCajas,
-      unidadesPorCaja,
-      stockUnidadesSueltas,
-      stockMinimo,
-      categoria,
-      marca,
-      codigo,
-      codigoBarras,
-      margenGananciaUnidad,
-      margenGananciaCaja
-    } = await request.json();
 
     // Validación de campos requeridos
     if (!nombre || precio === undefined || precio === null ||
@@ -153,6 +156,27 @@ export async function POST(request: NextRequest) {
     if (error && (error.code === 11000 || error.name === 'MongoServerError')) {
       const dupKey = error.keyPattern ? Object.keys(error.keyPattern)[0] : 'valor';
       const fieldName = dupKey === 'codigoBarras' ? 'código de barras' : dupKey === 'codigo' ? 'código interno' : dupKey;
+      
+      // Buscar el producto que ya tiene ese código
+      await dbConnect();
+      const existingProduct = await Product.findOne({ [dupKey]: dupKey === 'codigo' ? codigo : codigoBarras });
+      
+      if (existingProduct) {
+        return NextResponse.json(
+          { 
+            error: `Ya existe un producto con este ${fieldName}`,
+            fieldName: fieldName,
+            existingProduct: {
+              _id: existingProduct._id,
+              nombre: existingProduct.nombre,
+              codigo: existingProduct.codigo,
+              codigoBarras: existingProduct.codigoBarras
+            }
+          },
+          { status: 400 }
+        );
+      }
+      
       return NextResponse.json(
         { error: `Ya existe un producto con este ${fieldName}` },
         { status: 400 }
